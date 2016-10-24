@@ -1,6 +1,7 @@
 package nablarch.common.dao;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -119,9 +120,9 @@ public class StandardSqlBuilderTest {
                 params.size(),
                 is(3));
 
-        assertThat((String) params.get(0), is(""));
+        assertThat(params.get(0), is(nullValue()));
         assertThat((Long) params.get(1), is(12345L));
-        assertThat(((String) params.get(2)), is(""));
+        assertThat((params.get(2)), is(nullValue()));
     }
 
     /**
