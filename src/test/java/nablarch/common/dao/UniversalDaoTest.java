@@ -3,6 +3,8 @@ package nablarch.common.dao;
 import static nablarch.common.dao.UniversalDao.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -140,6 +142,25 @@ public class UniversalDaoTest {
     }
 
     /**
+     * {@link UniversalDao#findById(Class, Object...)}のテスト。
+     * <p/>
+     * データベース上に空文字で設定されているカラムが、{@code null}で取得できること。
+     */
+    @Test
+    public void findById_nullValue() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "", DateUtil.getDate("20140101"), DaoTestHelper.getDate("20150401123456"), 9L, false)
+        );
+        Users user = UniversalDao.findById(Users.class, 1L);
+        assertThat(user.getId(), is(1L));
+        assertThat(user.getName(), is(nullValue()));
+        assertThat(user.getBirthday(), is(DateUtil.getDate("20140101")));
+        assertThat(user.getInsertDate(), is(DaoTestHelper.getDate("20150401123456")));
+        assertThat(user.getVersion(), is(9L));
+        assertThat(user.isActive(), is(false));
+    }
+
+    /**
      * {@link UniversalDao#findAll(Class)}のテストケース
      *
      * @throws Exception
@@ -177,6 +198,24 @@ public class UniversalDaoTest {
             assertThat(user.getId(), is(id));
             id++;
         }
+    }
+
+    /**
+     * {@link UniversalDao#findAll(Class)}のテストケース
+     * <p/>
+     * データベース上に空文字で設定されているカラムが、{@code null}で取得できること。
+     * @throws Exception
+     */
+    @Test
+    public void findAll_nullValue() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "", DateUtil.getDate("20000101"), DaoTestHelper.getDate("20150401123456"))
+        );
+        EntityList<Users> result = UniversalDao.findAll(Users.class);
+
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0).getId(), is(1L));
+        assertThat(result.get(0).getName(), is(nullValue()));
     }
     
     /**
@@ -242,6 +281,24 @@ public class UniversalDaoTest {
             id++;
         }
     }
+
+    /**
+     * {@link UniversalDao#findAllBySqlFile(Class, String, Object)}のテストケース
+     * <p/>
+     * データベース上に空文字で設定されているカラムが、{@code null}で取得できること。
+     * @throws Exception
+     */
+    @Test
+    public void findAllBySqlFile_nullValue() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "", DateUtil.getDate("20000101"), DaoTestHelper.getDate("20150401123456"))
+        );
+
+        EntityList<Users> result = UniversalDao.findAllBySqlFile(Users.class, "FIND_ALL_USERS");
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0).getId(), is(1L));
+        assertThat(result.get(0).getName(), is(nullValue()));
+    }
     
     /**
      * {@link UniversalDao#findBySqlFile(Class, String, Object)}のテストケース
@@ -264,6 +321,28 @@ public class UniversalDaoTest {
         assertThat(user.getName(), is("name_3"));
         assertThat(user.getBirthday(), is(DateUtil.getDate("20110103")));
         assertThat(user.getVersion(), is(999L));
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}のテストケース
+     * <p/>
+     * データベース上に空文字で設定されているカラムが、{@code null}で取得できること。
+     * @throws Exception
+     */
+    @Test
+    public void findBySqlFile_nullValue() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "name_1", DateUtil.getDate("20110101"), DaoTestHelper.getDate("20150401123456"), 9L),
+                new Users(2L, "", DateUtil.getDate("20110102"), DaoTestHelper.getDate("20150402123456"), 99L),
+                new Users(3L, "name_3", DateUtil.getDate("20110103"), DaoTestHelper.getDate("20150403123456"), 999L)
+        );
+
+        Users cond = new Users();
+        cond.setId(2L);
+
+        Users user = UniversalDao.findBySqlFile(Users.class, "FIND_BY_ID", cond);
+        assertThat(user.getId(), is(2L));
+        assertThat(user.getName(), is(nullValue()));
     }
     
     /**
@@ -369,6 +448,31 @@ public class UniversalDaoTest {
     }
 
     /**
+     * {@link UniversalDao#update(Object)}のテストケース。
+     * <p/>
+     * エンティティに空文字を設定した場合に、データベース上のカラムが{@code null}に更新されること。
+     */
+    @Test
+    public void update_nullValue() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "name_1", new Date(), DaoTestHelper.getDate("20150401123456"), 1L),
+                new Users(2L, "name_2", new Date(), DaoTestHelper.getDate("20150401123456"), 2L),
+                new Users(3L, "name_3", new Date(), DaoTestHelper.getDate("20150401123456"), 3L)
+        );
+
+        Users user = VariousDbTestHelper.findById(Users.class, 2L);
+        user.setName("");
+
+        int updateCount = UniversalDao.update(user);
+        connection.commit();
+
+        Users actual = VariousDbTestHelper.findById(Users.class, 2L);
+        assertThat(updateCount, is(1));
+        assertThat(actual.getId(), is(2L));
+        assertThat(actual.getName(), is(nullValue()));
+    }
+
+    /**
      * {@link UniversalDao#batchUpdate}のテスト。
      */
     @Test
@@ -414,6 +518,37 @@ public class UniversalDaoTest {
     }
 
     /**
+     * {@link UniversalDao#batchUpdate}のテスト。
+     * <p/>
+     * エンティティに空文字を設定した場合に、データベース上のカラムが{@code null}に更新されること。
+     */
+    @Test
+    public void batchUpdate_nullValue() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "name_1", new Date(), DaoTestHelper.getDate("20150401123456"), 1L),
+                new Users(2L, "name_2", new Date(), DaoTestHelper.getDate("20150401123456"), 2L)
+        );
+
+        Users user1 = UniversalDao.findById(Users.class, 1L);
+        user1.setName("");
+
+        Users user2 = UniversalDao.findById(Users.class, 2L);
+        user2.setName("なまえに更新");
+
+        UniversalDao.batchUpdate(Arrays.asList(user1, user2));
+
+        connection.commit();
+
+        Users actual = VariousDbTestHelper.findById(Users.class, 1L);
+        assertThat(actual.getId(), is(1L));
+        assertThat(actual.getName(), is(nullValue()));
+
+        actual = VariousDbTestHelper.findById(Users.class, 2L);
+        assertThat(actual.getId(), is(2L));
+        assertThat(actual.getName(), is("なまえに更新"));
+    }
+
+    /**
      * {@link UniversalDao#insert(Object)}のテスト。
      *
      * @throws Exception
@@ -453,6 +588,47 @@ public class UniversalDaoTest {
         assertThat(actual.getBirthday(), is(user.getBirthday()));
         assertThat(actual.getInsertDate(), is(user.getInsertDate()));
         assertThat(actual.getVersion(), is(user.getVersion()));
+    }
+
+    /**
+     * {@link UniversalDao#insert(Object)}のテスト。
+     * <p/>
+     * エンティティに空文字を設定した場合に、データベース上のカラムが{@code null}で登録されること。
+     *
+     * @throws Exception
+     */
+    @Test
+    public void insert_nullValue(@Mocked final IdGenerator mockGenerator) throws Exception {
+        VariousDbTestHelper.delete(Users.class);
+
+        new Expectations() {{
+            mockGenerator.generateId("USER_ID_SEQ");
+            result = "1";
+        }};
+
+        Users user = new Users();
+        user.setName("");
+        user.setBirthday(DateUtil.getDate("19700101"));
+        user.setInsertDate(DaoTestHelper.getDate("20150401123456"));
+
+        final DaoContextFactory daoContextFactory = new BasicDaoContextFactory();
+        setDialect(new DefaultDialect() {
+            @Override
+            public boolean supportsSequence() {
+                return true;
+            }
+        }, connection);
+        daoContextFactory.setSequenceIdGenerator(mockGenerator);
+        repositoryResource.addComponent("daoContextFactory", daoContextFactory);
+
+        UniversalDao.insert(user);
+
+        connection.commit();
+
+        Users actual = VariousDbTestHelper.findById(Users.class, 1L);
+
+        assertThat(actual.getId(), is(1L));
+        assertThat(actual.getName(), is(nullValue()));
     }
 
     /**
@@ -500,6 +676,49 @@ public class UniversalDaoTest {
         assertThat(actual2.getBirthday(), is(user2.getBirthday()));
         assertThat(actual2.getInsertDate(), is(user2.getInsertDate()));
         assertThat(actual2.getVersion(), is(user2.getVersion()));
+    }
+
+    /**
+     * {@link UniversalDao#batchInsert(List)}のテスト。
+     * <p/>
+     * エンティティに空文字を設定した場合に、データベース上のカラムが{@code null}で登録されること。
+     *
+     * @throws Exception
+     */
+    @Test
+    public void batchInsert_nullValue(@Mocked final IdGenerator mockGenerator) throws Exception {
+        VariousDbTestHelper.delete(Users.class);
+
+        new Expectations() {{
+            mockGenerator.generateId("USER_ID_SEQ");
+            returns("1", "100");
+        }};
+
+        Users user1 = new Users(
+                null, "ユーザ名1", DateUtil.getDate("19700101"), DaoTestHelper.getDate("20150401123456"));
+        Users user2 = new Users(
+                null, "", DateUtil.getDate("19700101"), DaoTestHelper.getDate("20150401123456"));
+
+        final DaoContextFactory daoContextFactory = new BasicDaoContextFactory();
+        setDialect(new DefaultDialect() {
+            @Override
+            public boolean supportsSequence() {
+                return true;
+            }
+        }, connection);
+        daoContextFactory.setSequenceIdGenerator(mockGenerator);
+        repositoryResource.addComponent("daoContextFactory", daoContextFactory);
+
+        UniversalDao.batchInsert(Arrays.asList(user1, user2));
+        connection.commit();
+
+        Users actual = VariousDbTestHelper.findById(Users.class, 1L);
+        assertThat(actual.getId(), is(1L));
+        assertThat(actual.getName(), is("ユーザ名1"));
+
+        actual = VariousDbTestHelper.findById(Users.class, 100L);
+        assertThat(actual.getId(), is(100L));
+        assertThat(actual.getName(), is(nullValue()));
     }
 
     /**
