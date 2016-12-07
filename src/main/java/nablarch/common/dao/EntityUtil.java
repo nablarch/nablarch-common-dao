@@ -1,8 +1,5 @@
 package nablarch.common.dao;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,36 +182,8 @@ public final class EntityUtil {
                     continue;
                 }
 
-                final Class<?> type = meta.getPropertyType();
-                if (type.equals(String.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getString(meta.getName()));
-                } else if (type.equals(Short.class) || type.equals(short.class)) {
-                    final BigDecimal d = row.getBigDecimal(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.shortValue() : null);
-                } else if (type.equals(Integer.class) || type.equals(int.class)) {
-                    final BigDecimal d = row.getBigDecimal(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.intValue() : null);
-                } else if (type.equals(Long.class) || type.equals(long.class)) {
-                    final BigDecimal d = row.getBigDecimal(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.longValue() : null);
-                } else if (type.equals(BigDecimal.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getBigDecimal(meta.getName()));
-                } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-                    final Boolean b = row.getBoolean(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), b);
-                } else if (type.equals(Date.class)) {
-                    if (meta.getJdbcType() == Timestamp.class) {
-                        BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
-                    } else {
-                        BeanUtil.setProperty(entity, meta.getPropertyName(), row.getDate(meta.getName()));
-                    }
-                } else if (type.equals(Timestamp.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
-                } else if (type.isArray() && type.getComponentType().equals(byte.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getBytes(meta.getName()));
-                } else {
-                    throw new RuntimeException("Unknown type " + type + " at " + meta.getName());
-                }
+                Object value = row.getObject(meta.getName(), meta.getPropertyType());
+                BeanUtil.setProperty(entity, meta.getPropertyName(), value);
             }
             return entity;
         } catch (InstantiationException e) {

@@ -35,6 +35,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import nablarch.core.db.dialect.DefaultDialect;
+import nablarch.core.db.dialect.converter.AttributeConverter;
 import org.hamcrest.CoreMatchers;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -1069,6 +1071,8 @@ public class EntityUtilTest {
 
             private int[] intArray;
 
+            private OriginalType originalType;
+
             public void setStringType(String stringType) {
                 this.stringType = stringType;
             }
@@ -1196,6 +1200,71 @@ public class EntityUtilTest {
 
             public void setIntArray(int[] intArray) {
                 this.intArray = intArray;
+            }
+
+            public OriginalType getOriginalType() {
+                return originalType;
+            }
+
+            public void setOriginalType(OriginalType originalType) {
+                this.originalType = originalType;
+            }
+        }
+
+        public static class OriginalType {
+            private String str;
+
+            public OriginalType(String str) {
+                this.str = str;
+            }
+
+            @Override
+            public boolean equals(Object other) {
+                if (other instanceof OriginalType) {
+                    return str.equals(((OriginalType) other).str);
+                }
+                return false;
+            }
+        }
+
+        public static class HogeFugaConverter implements AttributeConverter<String> {
+
+            @Override
+            public <DB> DB convertToDatabase(String javaAttribute, Class<DB> databaseType) {
+                return databaseType.cast("hoge");
+            }
+
+            @Override
+            public String convertFromDatabase(Object databaseAttribute) {
+                return "fuga";
+            }
+        }
+
+        public static class OriginalTypeConverter implements AttributeConverter<OriginalType> {
+
+            @Override
+            public <DB> DB convertToDatabase(OriginalType javaAttribute, Class<DB> databaseType) {
+                return databaseType.cast("hoge");
+            }
+
+            @Override
+            public OriginalType convertFromDatabase(Object databaseAttribute) {
+                return new OriginalType("fuga");
+            }
+        }
+
+        public static class DummyDialect extends DefaultDialect {
+            private Map<Class<?>, AttributeConverter<?>> converters;
+
+            public DummyDialect() {
+                converters = new HashMap<Class<?>, AttributeConverter<?>>();
+                converters.put(String.class, new HogeFugaConverter());
+                converters.put(OriginalType.class, new OriginalTypeConverter());
+            }
+
+            @Override
+            protected <T> AttributeConverter<T> getAttributeConverter(Class<T> javaType) {
+                return (AttributeConverter<T>) converters.get(javaType);
             }
         }
 
@@ -1392,6 +1461,22 @@ public class EntityUtilTest {
         @Test(expected = BeansException.class)
         public void setterAccessError() {
             EntityUtil.createEntity(SetterAccessError.class, createEmptySqlRow());
+        }
+
+        @Test
+        public void otherDialect() {
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>(), new DummyDialect());
+            row.put("STRING_TYPE", "hoge");
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getStringType(), is("fuga"));
+        }
+
+        @Test
+        public void originalType() {
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>(), new DummyDialect());
+            row.put("ORIGINAL_TYPE", "hoge");
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getOriginalType(), is(new OriginalType("fuga")));
         }
 
         private static SqlRow createEmptySqlRow() {
