@@ -1,5 +1,9 @@
 package nablarch.common.dao;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,12 +174,13 @@ public final class EntityUtil {
      * @param entityClass 生成するエンティティのクラス
      * @param row 検索結果の1レコード
      * @return エンティティオブジェクト
-     * @throws RuntimeException エンティティクラスのプロパティにサポート外の型が定義されている場合
+     * @throws IllegalStateException エンティティクラスのプロパティにサポート外の型が定義されている場合
      * @throws BeansException エンティティオブジェクトの生成に失敗した場合
      */
     public static <T> T createEntity(final Class<T> entityClass, final SqlRow row) {
         try {
-            final T entity = entityClass.newInstance();
+            Constructor<T> constructor = entityClass.getConstructor();
+            final T entity = constructor.newInstance();
             final EntityMeta entityMeta = findEntityMeta(entityClass);
             for (ColumnMeta meta : entityMeta.getAllColumns()) {
                 if (!row.containsKey(meta.getName())) {
@@ -183,12 +188,21 @@ public final class EntityUtil {
                 }
 
                 Object value = row.getObject(meta.getName(), meta.getPropertyType());
-                BeanUtil.setProperty(entity, meta.getPropertyName(), value);
+                PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(entityClass, meta.getPropertyName());
+                Method setter = descriptor.getWriteMethod();
+                if (setter == null) {
+                    continue;
+                }
+                setter.invoke(entity, value);
             }
             return entity;
+        } catch (NoSuchMethodException e) {
+            throw new BeansException(e);
         } catch (InstantiationException e) {
             throw new BeansException(e);
         } catch (IllegalAccessException e) {
+            throw new BeansException(e); // 到達しない
+        } catch (InvocationTargetException e) {
             throw new BeansException(e);
         }
     }

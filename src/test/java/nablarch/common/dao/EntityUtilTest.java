@@ -1,13 +1,10 @@
 package nablarch.common.dao;
 
 import static nablarch.common.dao.EntityUtil.getTableName;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -55,11 +52,10 @@ import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.hamcrest.Matchers;
+import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 /**
@@ -623,6 +619,9 @@ public class EntityUtilTest {
      */
     public static class FindVersionColumn {
 
+        @Rule
+        public ExpectedException exception = ExpectedException.none();
+
         /**
          * バージョンカラムが存在しないクラスの場合
          */
@@ -657,7 +656,7 @@ public class EntityUtilTest {
         /**
          * バージョンカラムが複数存在した場合エラーとなること
          */
-        @Test(expected = IllegalEntityException.class)
+        @Test
         public void multiVersionCol() throws Exception {
             class Hoge {
 
@@ -671,6 +670,7 @@ public class EntityUtilTest {
                     return 1;
                 }
             }
+            exception.expect(IllegalEntityException.class);
             EntityUtil.findVersionColumn(new Hoge());
         }
     }
@@ -679,6 +679,9 @@ public class EntityUtilTest {
      * {@link EntityUtil#findGeneratedValueColumn(Object)}のテストクラス。
      */
     public static class FindGeneratedValueColumn {
+
+        @Rule
+        public ExpectedException exception = ExpectedException.none();
 
         /**
          * 採番対象カラムが存在しないクラスの場合
@@ -710,7 +713,7 @@ public class EntityUtilTest {
             assertThat(generatedValueColumn.getGeneratorName(), is("HOGE_ID"));
         }
 
-        @Test(expected = IllegalEntityException.class)
+        @Test
         public void multiGeneratedValue() {
             class Hoge {
 
@@ -724,6 +727,7 @@ public class EntityUtilTest {
                     return 1L;
                 }
             }
+            exception.expect(IllegalEntityException.class);
             EntityUtil.findGeneratedValueColumn(new Hoge());
         }
 
@@ -1073,6 +1077,8 @@ public class EntityUtilTest {
 
             private OriginalType originalType;
 
+            private String noSetter;
+
             public void setStringType(String stringType) {
                 this.stringType = stringType;
             }
@@ -1208,6 +1214,10 @@ public class EntityUtilTest {
 
             public void setOriginalType(OriginalType originalType) {
                 this.originalType = originalType;
+            }
+
+            public String getNoSetter() {
+                return noSetter;
             }
         }
 
@@ -1430,37 +1440,73 @@ public class EntityUtilTest {
             assertThat(entity.getByteArray(), is(bytes));
         }
 
-        @Test(expected = RuntimeException.class)
+        @Rule
+        public ExpectedException exception = ExpectedException.none();
+
+        @Test
         public void listType() {
             SqlRow row = createEmptySqlRow();
             row.put("LIST_TYPE", null);
+
+            exception.expect(IllegalStateException.class);
+            exception.expectMessage("Data types incompatible with List. column name = [LIST_TYPE]");
             EntityUtil.createEntity(Hoge.class, row);
         }
 
-        @Test(expected = RuntimeException.class)
+        @Test
         public void intArray() {
             SqlRow row = createEmptySqlRow();
             row.put("intArray", null);
+
+            exception.expect(IllegalStateException.class);
+            exception.expectMessage("Data types incompatible with int[]. column name = [INT_ARRAY]");
             EntityUtil.createEntity(Hoge.class, row);
         }
 
-        @Test(expected = BeansException.class)
-        public void instantiateError() {
-            class Fuga {
+        @Test
+        public void noSetter() {
+            SqlRow row = createEmptySqlRow();
+            row.put("noSetter", "hoge");
 
-            }
-            EntityUtil.createEntity(Fuga.class, createEmptySqlRow());
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getNoSetter(), is(nullValue()));
         }
 
-        public static class SetterAccessError {
-
-            private SetterAccessError() {
+        public static class NoConstructorClass {
+            private NoConstructorClass() {
             }
         }
 
-        @Test(expected = BeansException.class)
-        public void setterAccessError() {
-            EntityUtil.createEntity(SetterAccessError.class, createEmptySqlRow());
+        @Test
+        public void noConstructor() {
+            exception.expect(BeansException.class);
+            exception.expectCause(Matchers.<Throwable>instanceOf(NoSuchMethodException.class));
+            EntityUtil.createEntity(NoConstructorClass.class, createEmptySqlRow());
+        }
+
+        public static abstract class AbstractEntity {
+            public AbstractEntity() {
+            }
+        }
+
+        @Test
+        public void abstractEntity() {
+            exception.expect(BeansException.class);
+            exception.expectCause(Matchers.<Throwable>instanceOf(InstantiationException.class));
+            EntityUtil.createEntity(AbstractEntity.class, createEmptySqlRow());
+        }
+
+        public static class ExceptionConstractorClass {
+            public ExceptionConstractorClass() throws Exception {
+                throw new Exception();
+            }
+        }
+
+        @Test
+        public void exceptionConstractor() {
+            exception.expect(BeansException.class);
+            exception.expectCause(Matchers.<Throwable>instanceOf(InvocationTargetException.class));
+            EntityUtil.createEntity(ExceptionConstractorClass.class, createEmptySqlRow());
         }
 
         @Test
