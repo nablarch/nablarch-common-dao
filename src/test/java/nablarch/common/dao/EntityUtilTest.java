@@ -1509,6 +1509,27 @@ public class EntityUtilTest {
             EntityUtil.createEntity(ExceptionConstractorClass.class, createEmptySqlRow());
         }
 
+        public static class ExceptionSetterClass {
+            private String prop;
+            public String getProp() {
+                return prop;
+            }
+            public void setProp(String prop) throws Exception {
+                this.prop = prop;
+                throw new Exception();
+            }
+        }
+
+        @Test
+        public void exceptionSetter() {
+            SqlRow row = createEmptySqlRow();
+            row.put("prop", "hoge");
+
+            exception.expect(BeansException.class);
+            exception.expectCause(CoreMatchers.<Throwable>instanceOf(InvocationTargetException.class));
+            EntityUtil.createEntity(ExceptionSetterClass.class, row);
+        }
+
         @Test
         public void otherDialect() {
             SqlRow row = new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>(), new DummyDialect());

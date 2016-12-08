@@ -175,31 +175,63 @@ public final class EntityUtil {
      * @param row 検索結果の1レコード
      * @return エンティティオブジェクト
      * @throws IllegalStateException エンティティクラスのプロパティにサポート外の型が定義されている場合
-     * @throws BeansException エンティティオブジェクトの生成に失敗した場合
+     * @throws BeansException エンティティオブジェクトの生成に失敗した場合, セッターが正常に呼び出せなかった場合
      */
     public static <T> T createEntity(final Class<T> entityClass, final SqlRow row) {
+        T entity = createInstance(entityClass);
+        final EntityMeta entityMeta = findEntityMeta(entityClass);
+        for (ColumnMeta meta : entityMeta.getAllColumns()) {
+            if (!row.containsKey(meta.getName())) {
+                continue;
+            }
+
+            Object value = row.getObject(meta.getName(), meta.getPropertyType());
+            setProperty(entity, meta.getPropertyName(), value);
+        }
+        return entity;
+    }
+
+    /**
+     * {@link Constructor} を使用してエンティティのインスタンスを生成する。<br>
+     *  生成時に例外が発生した場合は {@link BeansException} にラップして送出する。
+     *
+     * @param entityClass 生成するエンティティのクラス
+     * @param <T> 生成するエンティティの型
+     * @return 生成したエンティティ
+     * @throws BeansException エンティティの生成に失敗した場合
+     */
+    private static <T> T createInstance(final Class<T> entityClass) {
         try {
             Constructor<T> constructor = entityClass.getConstructor();
-            final T entity = constructor.newInstance();
-            final EntityMeta entityMeta = findEntityMeta(entityClass);
-            for (ColumnMeta meta : entityMeta.getAllColumns()) {
-                if (!row.containsKey(meta.getName())) {
-                    continue;
-                }
-
-                Object value = row.getObject(meta.getName(), meta.getPropertyType());
-                PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(entityClass, meta.getPropertyName());
-                Method setter = descriptor.getWriteMethod();
-                if (setter == null) {
-                    continue;
-                }
-                setter.invoke(entity, value);
-            }
-            return entity;
+            return constructor.newInstance();
         } catch (NoSuchMethodException e) {
             throw new BeansException(e);
         } catch (InstantiationException e) {
             throw new BeansException(e);
+        } catch (IllegalAccessException e) {
+            throw new BeansException(e); // 到達しない
+        } catch (InvocationTargetException e) {
+            throw new BeansException(e);
+        }
+    }
+
+    /**
+     * エンティティのプロパティに値をセットする。
+     *
+     * @param entity 対象のエンティティ
+     * @param propertyName 値をセットするプロパティ名
+     * @param value セットする値
+     * @throws BeansException セッターが正常に呼び出せなかった場合
+     */
+    private static void setProperty(Object entity, final String propertyName, final Object value) {
+        PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(entity.getClass(), propertyName);
+        Method setter = descriptor.getWriteMethod();
+        if (setter == null) {
+            return ;
+        }
+
+        try {
+            setter.invoke(entity, value);
         } catch (IllegalAccessException e) {
             throw new BeansException(e); // 到達しない
         } catch (InvocationTargetException e) {
