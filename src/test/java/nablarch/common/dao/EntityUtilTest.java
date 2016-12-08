@@ -2,6 +2,7 @@ package nablarch.common.dao;
 
 import static nablarch.common.dao.EntityUtil.getTableName;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1450,6 +1451,10 @@ public class EntityUtilTest {
 
             exception.expect(IllegalStateException.class);
             exception.expectMessage("Data types incompatible with List. column name = [LIST_TYPE]");
+            exception.expectCause(CoreMatchers.<Throwable>allOf(
+                    instanceOf(IllegalStateException.class),
+                    hasProperty("message", is("This dialect does not support [List] type."))
+            ));
             EntityUtil.createEntity(Hoge.class, row);
         }
 
@@ -1460,6 +1465,10 @@ public class EntityUtilTest {
 
             exception.expect(IllegalStateException.class);
             exception.expectMessage("Data types incompatible with int[]. column name = [INT_ARRAY]");
+            exception.expectCause(CoreMatchers.<Throwable>allOf(
+                    instanceOf(IllegalStateException.class),
+                    hasProperty("message", is("This dialect does not support [int[]] type."))
+            ));
             EntityUtil.createEntity(Hoge.class, row);
         }
 

@@ -204,13 +204,7 @@ public final class EntityUtil {
         try {
             Constructor<T> constructor = entityClass.getConstructor();
             return constructor.newInstance();
-        } catch (NoSuchMethodException e) {
-            throw new BeansException(e);
-        } catch (InstantiationException e) {
-            throw new BeansException(e);
-        } catch (IllegalAccessException e) {
-            throw new BeansException(e); // 到達しない
-        } catch (InvocationTargetException e) {
+        } catch (Exception e) {
             throw new BeansException(e);
         }
     }
@@ -232,9 +226,7 @@ public final class EntityUtil {
 
         try {
             setter.invoke(entity, value);
-        } catch (IllegalAccessException e) {
-            throw new BeansException(e); // 到達しない
-        } catch (InvocationTargetException e) {
+        } catch (Exception e) {
             throw new BeansException(e);
         }
     }
