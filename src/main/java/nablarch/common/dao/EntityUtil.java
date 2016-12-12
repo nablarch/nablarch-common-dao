@@ -1,8 +1,9 @@
 package nablarch.common.dao;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,53 +174,59 @@ public final class EntityUtil {
      * @param entityClass 生成するエンティティのクラス
      * @param row 検索結果の1レコード
      * @return エンティティオブジェクト
-     * @throws RuntimeException エンティティクラスのプロパティにサポート外の型が定義されている場合
-     * @throws BeansException エンティティオブジェクトの生成に失敗した場合
+     * @throws IllegalStateException エンティティクラスのプロパティにサポート外の型が定義されている場合
+     * @throws BeansException エンティティオブジェクトの生成に失敗した場合, セッターが正常に呼び出せなかった場合
      */
     public static <T> T createEntity(final Class<T> entityClass, final SqlRow row) {
-        try {
-            final T entity = entityClass.newInstance();
-            final EntityMeta entityMeta = findEntityMeta(entityClass);
-            for (ColumnMeta meta : entityMeta.getAllColumns()) {
-                if (!row.containsKey(meta.getName())) {
-                    continue;
-                }
-
-                final Class<?> type = meta.getPropertyType();
-                if (type.equals(String.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getString(meta.getName()));
-                } else if (type.equals(Short.class) || type.equals(short.class)) {
-                    final BigDecimal d = row.getBigDecimal(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.shortValue() : null);
-                } else if (type.equals(Integer.class) || type.equals(int.class)) {
-                    final BigDecimal d = row.getBigDecimal(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.intValue() : null);
-                } else if (type.equals(Long.class) || type.equals(long.class)) {
-                    final BigDecimal d = row.getBigDecimal(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.longValue() : null);
-                } else if (type.equals(BigDecimal.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getBigDecimal(meta.getName()));
-                } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-                    final Boolean b = row.getBoolean(meta.getName());
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), b);
-                } else if (type.equals(Date.class)) {
-                    if (meta.getJdbcType() == Timestamp.class) {
-                        BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
-                    } else {
-                        BeanUtil.setProperty(entity, meta.getPropertyName(), row.getDate(meta.getName()));
-                    }
-                } else if (type.equals(Timestamp.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
-                } else if (type.isArray() && type.getComponentType().equals(byte.class)) {
-                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getBytes(meta.getName()));
-                } else {
-                    throw new RuntimeException("Unknown type " + type + " at " + meta.getName());
-                }
+        T entity = createInstance(entityClass);
+        final EntityMeta entityMeta = findEntityMeta(entityClass);
+        for (ColumnMeta meta : entityMeta.getAllColumns()) {
+            if (!row.containsKey(meta.getName())) {
+                continue;
             }
-            return entity;
-        } catch (InstantiationException e) {
+
+            Object value = row.getObject(meta.getName(), meta.getPropertyType());
+            setProperty(entity, meta.getPropertyName(), value);
+        }
+        return entity;
+    }
+
+    /**
+     * {@link Constructor} を使用してエンティティのインスタンスを生成する。<br>
+     *  生成時に例外が発生した場合は {@link BeansException} にラップして送出する。
+     *
+     * @param entityClass 生成するエンティティのクラス
+     * @param <T> 生成するエンティティの型
+     * @return 生成したエンティティ
+     * @throws BeansException エンティティの生成に失敗した場合
+     */
+    private static <T> T createInstance(final Class<T> entityClass) {
+        try {
+            Constructor<T> constructor = entityClass.getConstructor();
+            return constructor.newInstance();
+        } catch (Exception e) {
             throw new BeansException(e);
-        } catch (IllegalAccessException e) {
+        }
+    }
+
+    /**
+     * エンティティのプロパティに値をセットする。
+     *
+     * @param entity 対象のエンティティ
+     * @param propertyName 値をセットするプロパティ名
+     * @param value セットする値
+     * @throws BeansException セッターが正常に呼び出せなかった場合
+     */
+    private static void setProperty(Object entity, final String propertyName, final Object value) {
+        PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(entity.getClass(), propertyName);
+        Method setter = descriptor.getWriteMethod();
+        if (setter == null) {
+            return ;
+        }
+
+        try {
+            setter.invoke(entity, value);
+        } catch (Exception e) {
             throw new BeansException(e);
         }
     }
