@@ -2,10 +2,10 @@ package nablarch.common.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Entity;
 
+import nablarch.core.beans.BeanUtil;
 import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
@@ -71,14 +71,15 @@ public class StandardSqlBuilder {
     public <T> SqlWithParams buildUpdateSql(final T entity) {
         final BatchSqlWithColumns sqlWithColumns = buildBatchUpdateSql(entity.getClass());
 
-        final Map<ColumnMeta, Object> columns = EntityUtil.findAllColumns(entity);
         final List<Object> params = new ArrayList<Object>();
 
-        for (ColumnMeta column : sqlWithColumns.getColumns()) {
-            params.add(columns.get(column));
+        List<ColumnMeta> columns = sqlWithColumns.getColumns();
+        for (ColumnMeta column : columns) {
+            Object value = BeanUtil.getProperty(entity, column.getPropertyName());
+            params.add(value);
         }
 
-        return new SqlWithParams(sqlWithColumns.getSql(), params);
+        return new SqlWithParams(sqlWithColumns.getSql(), params, columns);
     }
 
     /**
@@ -147,13 +148,13 @@ public class StandardSqlBuilder {
 
         final BatchSqlWithColumns sqlWithColumns = buildBatchDeleteSql(entity.getClass());
 
-        final Map<ColumnMeta, Object> columns = EntityUtil.findIdColumns(entity);
-
         final List<Object> params = new ArrayList<Object>();
-        for (ColumnMeta column : sqlWithColumns.getColumns()) {
-            params.add(columns.get(column));
+        List<ColumnMeta> columns = sqlWithColumns.getColumns();
+        for (ColumnMeta column : columns) {
+            Object value = BeanUtil.getProperty(entity, column.getPropertyName());
+            params.add(value);
         }
-        return new SqlWithParams(sqlWithColumns.getSql(), params);
+        return new SqlWithParams(sqlWithColumns.getSql(), params, columns);
     }
 
     /**
@@ -223,12 +224,13 @@ public class StandardSqlBuilder {
     private <T> SqlWithParams buildInsertSql(final T entity, final boolean includeGeneratedColumn) {
         final BatchSqlWithColumns sqlWithColumns = buildInsertSqlWithColumns(entity.getClass(), includeGeneratedColumn);
 
-        final Map<ColumnMeta, Object> columnsWithParam = EntityUtil.findAllColumns(entity);
+        List<ColumnMeta> columns = sqlWithColumns.getColumns();
         final List<Object> params = new ArrayList<Object>();
-        for (ColumnMeta column : sqlWithColumns.getColumns()) {
-            params.add(columnsWithParam.get(column));
+        for (ColumnMeta column : columns) {
+            Object value = BeanUtil.getProperty(entity, column.getPropertyName());
+            params.add(value);
         }
-        return new SqlWithParams(sqlWithColumns.getSql(), params);
+        return new SqlWithParams(sqlWithColumns.getSql(), params, columns);
     }
 
     /**

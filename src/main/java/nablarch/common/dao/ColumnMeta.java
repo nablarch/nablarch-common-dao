@@ -72,6 +72,15 @@ public class ColumnMeta implements Serializable {
     /** ID生成オブジェクトを識別する名称 */
     private final String generatorName;
 
+    /** SQL型 */
+    private int sqlType;
+
+    /** SQL型が未設定であることを表すダミーデータ */
+    private static final int UNDEFINED_SQL_TYPE = 0;
+
+    /** SQL型が設定されているか */
+    private boolean hasSqlType = true;
+
     /**
      * コンストラクタ。
      *
@@ -96,6 +105,12 @@ public class ColumnMeta implements Serializable {
         generationType = generatedValueMetaData.generationType;
         generatorName = generatedValueMetaData.generatorName;
 
+        try {
+            sqlType = DatabaseUtil.getSqlTypes(entityMeta.getSchemaName(), entityMeta.getTableName(), name);
+        } catch (RuntimeException e) {
+            sqlType = UNDEFINED_SQL_TYPE;
+            hasSqlType = false;
+        }
     }
 
     /**
@@ -242,6 +257,18 @@ public class ColumnMeta implements Serializable {
         return generatorName;
     }
 
+    /**
+     * SQL型を取得する。
+     *
+     * @return SQL型
+     */
+    public int getSqlType() {
+        if (!hasSqlType) {
+            throw new IllegalStateException("SQL type is not found.");
+        }
+        return sqlType;
+    }
+
     @Override
     public boolean equals(final Object another) {
         if (another == null || !(another instanceof ColumnMeta)) {
@@ -376,4 +403,3 @@ public class ColumnMeta implements Serializable {
         }
     }
 }
-

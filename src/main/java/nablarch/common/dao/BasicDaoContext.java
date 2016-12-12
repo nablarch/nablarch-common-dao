@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import javax.persistence.Entity;
@@ -16,7 +15,6 @@ import javax.persistence.OptimisticLockException;
 
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.beans.BeanUtil;
-import nablarch.core.beans.ConversionUtil;
 import nablarch.core.db.DbAccessException;
 import nablarch.core.db.connection.AppDbConnection;
 import nablarch.core.db.dialect.Dialect;
@@ -90,7 +88,7 @@ public class BasicDaoContext implements DaoContext {
         final SqlPStatement stmt = dbConnection.prepareStatement(sql);
         for (int i = 0; i < idColumns.size(); i++) {
             final ColumnMeta meta = idColumns.get(i);
-            stmt.setObject(i + 1, ConversionUtil.convert(meta.getJdbcType(), id[i]));
+            stmt.setObject(i + 1, id[i], meta.getSqlType());
         }
         final ResultSetIterator rsIter = stmt.executeQuery();
         if (!rsIter.next()) {
@@ -325,9 +323,7 @@ public class BasicDaoContext implements DaoContext {
 
         final SqlPStatement stmt = dbConnection.prepareStatement(sqlWithParams.getSql());
 
-        for (int i = 0; i < sqlWithParams.getParams().size(); i++) {
-            stmt.setObject(i + 1, sqlWithParams.getParams().get(i));
-        }
+        setObjects(stmt, sqlWithParams);
         final int rows = stmt.executeUpdate();
         if ((EntityUtil.findVersionColumn(entity) != null) && (rows == 0)) {
             throw new OptimisticLockException();
@@ -370,16 +366,24 @@ public class BasicDaoContext implements DaoContext {
             sqlWithParams = sqlBuilder.buildInsertSql(entity);
             stmt = dbConnection.prepareStatement(sqlWithParams.getSql());
         }
-        final ListIterator<Object> valueIter = sqlWithParams.getParams()
-                .listIterator();
-        int index = 1;
-        while (valueIter.hasNext()) {
-            stmt.setObject(index, valueIter.next());
-            index++;
-        }
+
+        setObjects(stmt, sqlWithParams);
         stmt.executeUpdate();
 
         postInsert(entity, generationType, stmt);
+    }
+
+    /**
+     * データベースの定義情報に基づいて型変換したパラメータをステートメントに設定する。
+     * @param stmt ステートメント
+     * @param sqlWithParams パラメータ
+     */
+    private void setObjects(SqlPStatement stmt, SqlWithParams sqlWithParams) {
+        for (int i = 0; i < sqlWithParams.getParams().size(); i++) {
+            Object value = sqlWithParams.getParams().get(i);
+            ColumnMeta columnMeta = sqlWithParams.getColumns().get(i);
+            stmt.setObject(i + 1, value, columnMeta.getSqlType());
+        }
     }
 
     @Override
@@ -639,11 +643,10 @@ public class BasicDaoContext implements DaoContext {
      */
     private static <T> void addBatchParameter(
             final SqlPStatement statement, final T entity, final List<ColumnMeta> columns) {
-        final Map<ColumnMeta, Object> columnValues = EntityUtil.findAllColumns(entity);
-        int index = 1;
-        for (ColumnMeta column : columns) {
-            statement.setObject(index, columnValues.get(column));
-            index += 1;
+        for (int i = 0; i < columns.size(); i++) {
+            ColumnMeta columnMeta = columns.get(i);
+            Object value = BeanUtil.getProperty(entity, columnMeta.getPropertyName());
+            statement.setObject(i + 1, value, columnMeta.getSqlType());
         }
         statement.addBatch();
     }

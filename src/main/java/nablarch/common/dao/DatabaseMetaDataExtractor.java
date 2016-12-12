@@ -2,6 +2,7 @@ package nablarch.common.dao;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,30 @@ public class DatabaseMetaDataExtractor {
             final DatabaseMetaData metaData = DatabaseUtil.getMetaData();
             return toPrimaryKeyMap(
                     metaData.getPrimaryKeys(null, null, DatabaseUtil.doConvertIdentifiers(metaData, tableName)));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * カラムのSQL型を{@link DatabaseMetaData}から取得する。
+     * @param schemaName スキーマ名
+     * @param tableName テーブル名
+     * @param columnName カラム名
+     * @return カラムのSQL型
+     */
+    public int getSqlTypes(String schemaName, String tableName, String columnName) {
+        try {
+            DatabaseMetaData metaData = DatabaseUtil.getMetaData();
+            String convertedSchemaName =
+                    schemaName != null ? DatabaseUtil.doConvertIdentifiers(metaData, schemaName) : null;
+            String convertedTableName =
+                    DatabaseUtil.doConvertIdentifiers(metaData, tableName);
+            String convertedColumnName =
+                    DatabaseUtil.doConvertIdentifiers(metaData, columnName);
+            ResultSet columns = metaData.getColumns(null, convertedSchemaName, convertedTableName, convertedColumnName);
+            columns.next();
+            return columns.getInt("DATA_TYPE");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

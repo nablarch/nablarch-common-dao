@@ -19,15 +19,20 @@ public class SqlWithParams implements Serializable {
     /** パラメータ */
     private final List<Object> params;
 
+    /** バインド変数に対応したカラムのメタ情報 */
+    private final List<ColumnMeta> columns;
+
     /**
      * コンストラクタ。
      *
      * @param sql SQL文
      * @param params SQLに埋め込むパラメータ
+     * @param columns カラムのメタ情報
      */
-    public SqlWithParams(final String sql, final List<Object> params) {
+    public SqlWithParams(final String sql, final List<Object> params, List<ColumnMeta> columns) {
         this.sql = sql;
         this.params = Collections.unmodifiableList(params);
+        this.columns = columns;
     }
 
     /**
@@ -47,5 +52,13 @@ public class SqlWithParams implements Serializable {
     public List<Object> getParams() {
         return new ArrayList<Object>(params);
     }
-}
 
+    /**
+     * バインド変数に対応したカラムのメタ情報のリストを返す。
+     *
+     * @return カラムのメタ情報のリスト
+     */
+    public List<ColumnMeta> getColumns() {
+        return new ArrayList<ColumnMeta>(columns);
+    }
+}
