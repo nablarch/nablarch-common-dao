@@ -54,11 +54,30 @@ public class SqlWithParams implements Serializable {
     }
 
     /**
-     * バインド変数に対応したカラムのメタ情報のリストを返す。
+     * 指定したインデックスのパラメータを返す。
      *
-     * @return カラムのメタ情報のリスト
+     * @param index インデックス
+     * @return パラメータ
      */
-    public List<ColumnMeta> getColumns() {
-        return new ArrayList<ColumnMeta>(columns);
+    public Object getParam(int index) {
+        return params.get(index);
+    }
+
+    /**
+     * 指定したインデックスのカラムのメタ情報を返す。
+     * @param index インデックス
+     * @return カラムのメタ情報
+     */
+    public ColumnMeta getColumn(int index) {
+        return columns.get(index);
+    }
+
+    /**
+     * パラメータの個数を返す。
+     *
+     * @return パラメータの個数
+     */
+    public int getParamSize() {
+        return params.size();
     }
 }

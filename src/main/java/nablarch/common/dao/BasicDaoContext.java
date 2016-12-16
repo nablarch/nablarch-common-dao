@@ -379,12 +379,9 @@ public class BasicDaoContext implements DaoContext {
      * @param sqlWithParams パラメータ
      */
     private void setObjects(SqlPStatement stmt, SqlWithParams sqlWithParams) {
-        List<Object> params = sqlWithParams.getParams();
-        List<ColumnMeta> columns = sqlWithParams.getColumns();
-        for (int i = 0; i < params.size(); i++) {
-            Object value = params.get(i);
-            ColumnMeta columnMeta = columns.get(i);
-            stmt.setObject(i + 1, value, columnMeta.getSqlType());
+        for (int i = 0; i < sqlWithParams.getParamSize(); i++) {
+            stmt.setObject(i + 1, sqlWithParams.getParam(i),
+                    sqlWithParams.getColumn(i).getSqlType());
         }
     }
 
