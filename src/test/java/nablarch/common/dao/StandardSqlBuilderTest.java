@@ -18,14 +18,32 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
+import nablarch.core.db.connection.DbConnectionContext;
 import nablarch.core.util.StringUtil;
 
+import nablarch.test.support.SystemRepositoryResource;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
  * {@link StandardSqlBuilder}のテストクラス。
  */
 public class StandardSqlBuilderTest {
+
+    @ClassRule
+    public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+    @Before
+    public void setUp() throws Exception {
+        repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        DbConnectionContext.removeConnection();
+    }
 
     /** テスト対象 */
     private StandardSqlBuilder sut = new StandardSqlBuilder();

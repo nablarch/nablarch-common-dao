@@ -7,9 +7,11 @@ import static org.junit.Assert.fail;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import nablarch.test.support.db.helper.TargetDb;
 import org.hamcrest.collection.IsMapContaining;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -34,6 +36,11 @@ import mockit.Expectations;
 import mockit.Mocked;
 import mockit.NonStrictExpectations;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * {@link DatabaseUtil}のテストクラス。
  */
@@ -50,6 +57,7 @@ public class DatabaseUtilTest {
     public static void setUpClass() throws Exception {
         VariousDbTestHelper.createTable(Users.class);
         VariousDbTestHelper.createTable(Address.class);
+        VariousDbTestHelper.createTable(WithSchemaEntity.class);
     }
 
     @Before
@@ -79,6 +87,56 @@ public class DatabaseUtilTest {
         Map<String, Short> primaryKeys = DatabaseUtil.getPrimaryKey("DAO_USERS");
         assertThat("主キーは1つ", primaryKeys.size(), is(1));
         assertThat(primaryKeys.get("USER_ID"), is(Short.valueOf("1")));
+    }
+
+    /**
+     * SQL型の取得テスト：デフォルトスキーマ
+     * @throws Exception
+     */
+    @TargetDb(include = TargetDb.Db.ORACLE)
+    @Test
+    public void getSqlType_defaultSchema() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("USER_ID"), is(Types.DECIMAL));
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        assertThat(actual.get("BIRTHDAY"), is(Types.TIMESTAMP));
+        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
+        assertThat(actual.get("VERSION"), is(Types.DECIMAL));
+        assertThat(actual.get("ACTIVE"), is(Types.DECIMAL));
+    }
+
+    /**
+     * SQL型の取得テスト：スキーマを指定
+     * @throws Exception
+     */
+    @TargetDb(include = TargetDb.Db.ORACLE)
+    @Test
+    public void getSqlType_otherSchema() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        actual = DatabaseUtil.getSqlTypeMap("test_schema", "TEST_SCHEMA_USERS");
+        assertThat(actual.get("NAME"), is(Types.DECIMAL));
+    }
+
+    /**
+     * SQL型の取得テスト：SQL型取得時にSQLエラーが発生した場合は、RuntimeExceptionが送出される。
+     *
+     * @throws Exception
+     */
+    @Test
+    public void getSqlType_SQLException() throws Exception {
+        new Expectations(DbConnectionContext.class) {{
+            DbConnectionContext.getConnection();
+            result = new SQLException("sql error");
+        }};
+
+        RuntimeException exception = null;
+        try {
+            DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        } catch (RuntimeException e) {
+            exception = e;
+        }
+        assertThat(exception.getCause(), is(instanceOf(SQLException.class)));
     }
 
     /**
@@ -311,5 +369,17 @@ public class DatabaseUtilTest {
         }
     }
 
-}
+    // ---------------------------------------- test entity
 
+    @Entity
+    @Table(name = "TEST_SCHEMA_USERS", schema = "test_schema")
+    public static class WithSchemaEntity {
+
+        @Id
+        @Column(name = "USER_ID", length = 15)
+        public Long id;
+
+        @Column(name = "NAME", length = 1)
+        public Integer name;
+    }
+}

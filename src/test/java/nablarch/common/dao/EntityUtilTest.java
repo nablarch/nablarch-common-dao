@@ -70,6 +70,19 @@ public class EntityUtilTest {
      */
     public static class GetTableNameClass {
 
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
+
         /**
          * Tableアノテーションが設定されていないクラスの場合のケース
          */
@@ -107,6 +120,19 @@ public class EntityUtilTest {
      * {@link EntityUtil#getSchemaName(Class)}のテスト。
      */
     public static class GetSchemaName {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
 
         /**
          * {@link Table}アノテーションが設定されていない場合は、スキーマ名はnull
@@ -157,6 +183,19 @@ public class EntityUtilTest {
      * {@link EntityUtil#getTableNameWithSchema(Class)}のテスト。
      */
     public static class GetTableNameWithSchema {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
 
         /**
          * {@link Table}アノテーションが設定されていない場合は、テーブル名のみが取得される。
@@ -294,6 +333,19 @@ public class EntityUtilTest {
      */
     public static class FindIdColumnsFromEntity {
 
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
+
         /**
          * IDカラムが存在しないクラスのケース
          */
@@ -334,8 +386,8 @@ public class EntityUtilTest {
         public static class MultiId {
 
             @Id
-            public Long getId() {
-                return 100L;
+            public Integer getId() {
+                return 100;
             }
 
             @Id
@@ -366,6 +418,19 @@ public class EntityUtilTest {
      * {@link EntityUtil#findAllColumns(Class)}及び{@link EntityUtil#findAllColumns(Object)}のテストクラス。
      */
     public static class FindAllColumnsFromClass {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
 
         private static ColumnMeta findColumn(List<ColumnMeta> columns, String columnName) {
             for (ColumnMeta column : columns) {
@@ -487,6 +552,7 @@ public class EntityUtilTest {
                 assertThat("採番対象カラム", column.isGeneratedValue(), is(true));
                 assertThat("IDカラム", column.isIdColumn(), is(true));
                 assertThat("バージョンカラムではない", column.isVersion(), is(false));
+                assertThat("SQL型", column.getSqlType(), is(Types.VARCHAR));
             }
 
             userNameカラム:
@@ -609,8 +675,8 @@ public class EntityUtilTest {
             List<ColumnMeta> columnMetas = EntityUtil.findAllColumns(Hoge.class);
             for (ColumnMeta meta : columnMetas) {
                 Object actual = columns.get(meta);
-                assertThat(meta.getName(), actual, is(BeanUtil.getProperty(hoge, meta.getPropertyName(),
-                        meta.getJdbcType())));
+                assertThat(meta.getName(), actual,
+                        is(BeanUtil.getProperty(hoge, meta.getPropertyName(),null)));
             }
         }
     }
@@ -619,6 +685,19 @@ public class EntityUtilTest {
      * {@link EntityUtil#findVersionColumn(Object)}のテストクラス。
      */
     public static class FindVersionColumn {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
 
         @Rule
         public ExpectedException exception = ExpectedException.none();
@@ -680,6 +759,19 @@ public class EntityUtilTest {
      * {@link EntityUtil#findGeneratedValueColumn(Object)}のテストクラス。
      */
     public static class FindGeneratedValueColumn {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
 
         @Rule
         public ExpectedException exception = ExpectedException.none();
@@ -1041,6 +1133,19 @@ public class EntityUtilTest {
      * {@link EntityUtil#createEntity(Class, SqlRow)}のテストクラス。
      */
     public static class CreateEntity {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
 
         public static class Hoge {
 
@@ -1571,6 +1676,19 @@ public class EntityUtilTest {
             public Long getId() {
                 return 1L;
             }
+        }
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+        @Before
+        public void setUp() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
         }
 
         @Test

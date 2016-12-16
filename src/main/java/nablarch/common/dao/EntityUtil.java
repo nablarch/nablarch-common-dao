@@ -2,7 +2,6 @@ package nablarch.common.dao;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -81,8 +80,6 @@ public final class EntityUtil {
 
     /**
      * エンティティからIDカラムの情報と、その値を全て取得する。
-     * <p/>
-     * 値は{@link ColumnMeta#getJdbcType()}の型に変換されて返される。
      *
      * @param <T> エンティティクラスの型
      * @param entity エンティティオブジェクト
@@ -92,7 +89,7 @@ public final class EntityUtil {
         assert (entity != null);
         final Map<ColumnMeta, Object> idColumns = new LinkedHashMap<ColumnMeta, Object>();
         for (ColumnMeta meta : findEntityMeta(entity.getClass()).getIdColumns()) {
-            idColumns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), meta.getJdbcType()));
+            idColumns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), null));
         }
         return idColumns;
     }
@@ -109,8 +106,6 @@ public final class EntityUtil {
 
     /**
      * エンティティから全カラムの情報と、その値を取得する。
-     * <p/>
-     * 値は{@link ColumnMeta#getJdbcType()}の型に変換されて返される。
      *
      * @param <T> エンティティクラスの型
      * @param entity エンティティ
@@ -121,7 +116,7 @@ public final class EntityUtil {
         final Map<ColumnMeta, Object> columns = new LinkedHashMap<ColumnMeta, Object>();
 
         for (ColumnMeta meta : findEntityMeta(entity.getClass()).getAllColumns()) {
-            columns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), meta.getJdbcType()));
+            columns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), null));
         }
         return columns;
     }
@@ -217,7 +212,7 @@ public final class EntityUtil {
      * @param value セットする値
      * @throws BeansException セッターが正常に呼び出せなかった場合
      */
-    private static void setProperty(Object entity, final String propertyName, final Object value) {
+    public static void setProperty(Object entity, final String propertyName, final Object value) {
         PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(entity.getClass(), propertyName);
         Method setter = descriptor.getWriteMethod();
         if (setter == null) {

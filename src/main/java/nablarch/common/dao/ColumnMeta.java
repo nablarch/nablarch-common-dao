@@ -72,13 +72,16 @@ public class ColumnMeta implements Serializable {
     /** ID生成オブジェクトを識別する名称 */
     private final String generatorName;
 
+    /** SQL型 */
+    private int sqlType;
+
     /**
      * コンストラクタ。
      *
      * @param entityMeta エンティティ定義のメタデータ
      * @param pd プロパティ情報
      */
-    public ColumnMeta(final EntityMeta entityMeta, final PropertyDescriptor pd) {
+    public ColumnMeta(final EntityMeta entityMeta, final PropertyDescriptor pd, Map<String, Integer> sqlTypeMap) {
         this.entityMeta = entityMeta;
 
         final Method getterMethod = pd.getReadMethod();
@@ -96,6 +99,7 @@ public class ColumnMeta implements Serializable {
         generationType = generatedValueMetaData.generationType;
         generatorName = generatedValueMetaData.generatorName;
 
+        sqlType = sqlTypeMap.get(name.toUpperCase());
     }
 
     /**
@@ -242,6 +246,15 @@ public class ColumnMeta implements Serializable {
         return generatorName;
     }
 
+    /**
+     * SQL型を取得する。
+     *
+     * @return SQL型
+     */
+    public int getSqlType() {
+        return sqlType;
+    }
+
     @Override
     public boolean equals(final Object another) {
         if (another == null || !(another instanceof ColumnMeta)) {
@@ -376,4 +389,3 @@ public class ColumnMeta implements Serializable {
         }
     }
 }
-

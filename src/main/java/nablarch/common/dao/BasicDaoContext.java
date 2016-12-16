@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import javax.persistence.Entity;
@@ -16,7 +15,6 @@ import javax.persistence.OptimisticLockException;
 
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.beans.BeanUtil;
-import nablarch.core.beans.ConversionUtil;
 import nablarch.core.db.DbAccessException;
 import nablarch.core.db.connection.AppDbConnection;
 import nablarch.core.db.dialect.Dialect;
@@ -90,7 +88,7 @@ public class BasicDaoContext implements DaoContext {
         final SqlPStatement stmt = dbConnection.prepareStatement(sql);
         for (int i = 0; i < idColumns.size(); i++) {
             final ColumnMeta meta = idColumns.get(i);
-            stmt.setObject(i + 1, ConversionUtil.convert(meta.getJdbcType(), id[i]));
+            stmt.setObject(i + 1, id[i], meta.getSqlType());
         }
         final ResultSetIterator rsIter = stmt.executeQuery();
         if (!rsIter.next()) {
@@ -325,9 +323,7 @@ public class BasicDaoContext implements DaoContext {
 
         final SqlPStatement stmt = dbConnection.prepareStatement(sqlWithParams.getSql());
 
-        for (int i = 0; i < sqlWithParams.getParams().size(); i++) {
-            stmt.setObject(i + 1, sqlWithParams.getParams().get(i));
-        }
+        setObjects(stmt, sqlWithParams);
         final int rows = stmt.executeUpdate();
         if ((EntityUtil.findVersionColumn(entity) != null) && (rows == 0)) {
             throw new OptimisticLockException();
@@ -370,16 +366,23 @@ public class BasicDaoContext implements DaoContext {
             sqlWithParams = sqlBuilder.buildInsertSql(entity);
             stmt = dbConnection.prepareStatement(sqlWithParams.getSql());
         }
-        final ListIterator<Object> valueIter = sqlWithParams.getParams()
-                .listIterator();
-        int index = 1;
-        while (valueIter.hasNext()) {
-            stmt.setObject(index, valueIter.next());
-            index++;
-        }
+
+        setObjects(stmt, sqlWithParams);
         stmt.executeUpdate();
 
         postInsert(entity, generationType, stmt);
+    }
+
+    /**
+     * データベースの定義情報に基づいて型変換したパラメータをステートメントに設定する。
+     * @param stmt ステートメント
+     * @param sqlWithParams パラメータ
+     */
+    private void setObjects(SqlPStatement stmt, SqlWithParams sqlWithParams) {
+        for (int i = 0; i < sqlWithParams.getParamSize(); i++) {
+            stmt.setObject(i + 1, sqlWithParams.getParam(i),
+                    sqlWithParams.getColumn(i).getSqlType());
+        }
     }
 
     @Override
@@ -502,7 +505,8 @@ public class BasicDaoContext implements DaoContext {
         final ColumnMeta versionColumn = EntityUtil.findVersionColumn(entity);
         if (versionColumn != null
                 && Number.class.isAssignableFrom(versionColumn.getPropertyType())) {
-            BeanUtil.setProperty(entity, versionColumn.getPropertyName(), 0L);
+            EntityUtil.setProperty(entity, versionColumn.getPropertyName(),
+                    convertToPropertyType(0L, versionColumn));
         }
 
         if (generationType == null || generationType == GenerationType.IDENTITY) {
@@ -512,7 +516,8 @@ public class BasicDaoContext implements DaoContext {
         ColumnMeta generatedValueColumn = EntityUtil.findGeneratedValueColumn(entity);
         IdGenerator generator = idGenerators.get(generationType);
         String id = generator.generateId(generatedValueColumn.getGeneratorName());
-        BeanUtil.setProperty(entity, generatedValueColumn.getPropertyName(), id);
+        EntityUtil.setProperty(entity, generatedValueColumn.getPropertyName(),
+                convertToPropertyType(id, generatedValueColumn));
     }
 
     /**
@@ -538,7 +543,8 @@ public class BasicDaoContext implements DaoContext {
         try {
             if (keys.next()) {
                 String id = keys.getString(1);
-                BeanUtil.setProperty(entity, generatedValueColumn.getPropertyName(), id);
+                EntityUtil.setProperty(entity, generatedValueColumn.getPropertyName(),
+                        convertToPropertyType(id, generatedValueColumn));
             }
         } catch (SQLException e) {
             throw new DbAccessException("failed to get auto generated key. entity name = "
@@ -577,7 +583,8 @@ public class BasicDaoContext implements DaoContext {
             for (T entity : entities) {
                 if (keys.next()) {
                     String id = keys.getString(1);
-                    BeanUtil.setProperty(entity, generatedValueColumn.getPropertyName(), id);
+                    EntityUtil.setProperty(entity, generatedValueColumn.getPropertyName(),
+                            convertToPropertyType(id, generatedValueColumn));
                 } else {
                     throw new IllegalStateException(
                             "generated key not found. entity name=[" + entityClass.getName() + ']');
@@ -642,10 +649,20 @@ public class BasicDaoContext implements DaoContext {
         final Map<ColumnMeta, Object> columnValues = EntityUtil.findAllColumns(entity);
         int index = 1;
         for (ColumnMeta column : columns) {
-            statement.setObject(index, columnValues.get(column));
+            statement.setObject(index, columnValues.get(column), column.getSqlType());
             index += 1;
         }
         statement.addBatch();
+    }
+
+    /**
+     * 値をプロパティの型に合わせて変換する。
+     * @param value 変換対象の値
+     * @param column カラムのメタ情報
+     * @return 変換した値
+     */
+    private Object convertToPropertyType(final Object value, ColumnMeta column) {
+        return dialect.convertFromDatabase(value, column.getPropertyType());
     }
 
     /**
