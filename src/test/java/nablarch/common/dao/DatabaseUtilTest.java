@@ -94,13 +94,13 @@ public class DatabaseUtilTest {
      */
     @Test
     public void getSqlType_defaultSchema() throws Exception {
-        DatabaseUtil.getSqlTypes(null, "DAO_USERS", "USER_ID");
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "USER_ID"), is(Types.DECIMAL));
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "NAME"), is(Types.VARCHAR));
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "BIRTHDAY"), is(Types.TIMESTAMP));
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "INSERT_DATE"), is(Types.TIMESTAMP));
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "VERSION"), is(Types.DECIMAL));
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "active"), is(Types.DECIMAL));
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("USER_ID"), is(Types.DECIMAL));
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        assertThat(actual.get("BIRTHDAY"), is(Types.TIMESTAMP));
+        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
+        assertThat(actual.get("VERSION"), is(Types.DECIMAL));
+        assertThat(actual.get("ACTIVE"), is(Types.DECIMAL));
     }
 
     /**
@@ -109,8 +109,10 @@ public class DatabaseUtilTest {
      */
     @Test
     public void getSqlType_otherSchema() throws Exception {
-        assertThat(DatabaseUtil.getSqlTypes(null, "DAO_USERS", "NAME"), is(Types.VARCHAR));
-        assertThat(DatabaseUtil.getSqlTypes("test_schema", "DAO_USERS", "NAME"), is(Types.DECIMAL));
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        actual = DatabaseUtil.getSqlTypeMap("test_schema", "TEST_SCHEMA_USERS");
+        assertThat(actual.get("NAME"), is(Types.DECIMAL));
     }
 
     /**
@@ -127,7 +129,7 @@ public class DatabaseUtilTest {
 
         RuntimeException exception = null;
         try {
-            DatabaseUtil.getSqlTypes(null, "DAO_USERS", "NAME");
+            DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
         } catch (RuntimeException e) {
             exception = e;
         }
@@ -367,7 +369,7 @@ public class DatabaseUtilTest {
     // ---------------------------------------- test entity
 
     @Entity
-    @Table(name = "DAO_USERS", schema = "test_schema")
+    @Table(name = "TEST_SCHEMA_USERS", schema = "test_schema")
     public static class WithSchemaEntity {
 
         @Id

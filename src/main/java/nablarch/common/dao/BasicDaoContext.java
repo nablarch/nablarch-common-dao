@@ -379,9 +379,11 @@ public class BasicDaoContext implements DaoContext {
      * @param sqlWithParams パラメータ
      */
     private void setObjects(SqlPStatement stmt, SqlWithParams sqlWithParams) {
-        for (int i = 0; i < sqlWithParams.getParams().size(); i++) {
-            Object value = sqlWithParams.getParams().get(i);
-            ColumnMeta columnMeta = sqlWithParams.getColumns().get(i);
+        List<Object> params = sqlWithParams.getParams();
+        List<ColumnMeta> columns = sqlWithParams.getColumns();
+        for (int i = 0; i < params.size(); i++) {
+            Object value = params.get(i);
+            ColumnMeta columnMeta = columns.get(i);
             stmt.setObject(i + 1, value, columnMeta.getSqlType());
         }
     }
@@ -506,7 +508,8 @@ public class BasicDaoContext implements DaoContext {
         final ColumnMeta versionColumn = EntityUtil.findVersionColumn(entity);
         if (versionColumn != null
                 && Number.class.isAssignableFrom(versionColumn.getPropertyType())) {
-            BeanUtil.setProperty(entity, versionColumn.getPropertyName(), 0L);
+            EntityUtil.setProperty(entity, versionColumn.getPropertyName(),
+                    convertToPropertyType(0L, versionColumn));
         }
 
         if (generationType == null || generationType == GenerationType.IDENTITY) {
@@ -516,7 +519,8 @@ public class BasicDaoContext implements DaoContext {
         ColumnMeta generatedValueColumn = EntityUtil.findGeneratedValueColumn(entity);
         IdGenerator generator = idGenerators.get(generationType);
         String id = generator.generateId(generatedValueColumn.getGeneratorName());
-        BeanUtil.setProperty(entity, generatedValueColumn.getPropertyName(), id);
+        EntityUtil.setProperty(entity, generatedValueColumn.getPropertyName(),
+                convertToPropertyType(id, generatedValueColumn));
     }
 
     /**
@@ -542,7 +546,8 @@ public class BasicDaoContext implements DaoContext {
         try {
             if (keys.next()) {
                 String id = keys.getString(1);
-                BeanUtil.setProperty(entity, generatedValueColumn.getPropertyName(), id);
+                EntityUtil.setProperty(entity, generatedValueColumn.getPropertyName(),
+                        convertToPropertyType(id, generatedValueColumn));
             }
         } catch (SQLException e) {
             throw new DbAccessException("failed to get auto generated key. entity name = "
@@ -581,7 +586,8 @@ public class BasicDaoContext implements DaoContext {
             for (T entity : entities) {
                 if (keys.next()) {
                     String id = keys.getString(1);
-                    BeanUtil.setProperty(entity, generatedValueColumn.getPropertyName(), id);
+                    EntityUtil.setProperty(entity, generatedValueColumn.getPropertyName(),
+                            convertToPropertyType(id, generatedValueColumn));
                 } else {
                     throw new IllegalStateException(
                             "generated key not found. entity name=[" + entityClass.getName() + ']');
@@ -643,12 +649,23 @@ public class BasicDaoContext implements DaoContext {
      */
     private static <T> void addBatchParameter(
             final SqlPStatement statement, final T entity, final List<ColumnMeta> columns) {
-        for (int i = 0; i < columns.size(); i++) {
-            ColumnMeta columnMeta = columns.get(i);
-            Object value = BeanUtil.getProperty(entity, columnMeta.getPropertyName());
-            statement.setObject(i + 1, value, columnMeta.getSqlType());
+        final Map<ColumnMeta, Object> columnValues = EntityUtil.findAllColumns(entity);
+        int index = 1;
+        for (ColumnMeta column : columns) {
+            statement.setObject(index, columnValues.get(column), column.getSqlType());
+            index += 1;
         }
         statement.addBatch();
+    }
+
+    /**
+     * 値をプロパティの型に合わせて変換する。
+     * @param value 変換対象の値
+     * @param column カラムのメタ情報
+     * @return 変換した値
+     */
+    private Object convertToPropertyType(final Object value, ColumnMeta column) {
+        return dialect.convertFromDatabase(value, column.getPropertyType());
     }
 
     /**

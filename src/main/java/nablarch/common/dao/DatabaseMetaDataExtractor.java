@@ -2,7 +2,6 @@ package nablarch.common.dao;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,21 +38,18 @@ public class DatabaseMetaDataExtractor {
      * カラムのSQL型を{@link DatabaseMetaData}から取得する。
      * @param schemaName スキーマ名
      * @param tableName テーブル名
-     * @param columnName カラム名
-     * @return カラムのSQL型
+     * @return カラムのSQL型(key:カラム名、value: SQL型のMap
      */
-    public int getSqlTypes(String schemaName, String tableName, String columnName) {
+    public Map<String, Integer> getSqlTypeMap(String schemaName, String tableName) {
+
         try {
             DatabaseMetaData metaData = DatabaseUtil.getMetaData();
             String convertedSchemaName =
                     schemaName != null ? DatabaseUtil.doConvertIdentifiers(metaData, schemaName) : null;
             String convertedTableName =
                     DatabaseUtil.doConvertIdentifiers(metaData, tableName);
-            String convertedColumnName =
-                    DatabaseUtil.doConvertIdentifiers(metaData, columnName);
-            ResultSet columns = metaData.getColumns(null, convertedSchemaName, convertedTableName, convertedColumnName);
-            columns.next();
-            return columns.getInt("DATA_TYPE");
+            ResultSet columns = metaData.getColumns(null, convertedSchemaName, convertedTableName, "%");
+            return toSqlTypeMap(columns);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -75,6 +71,26 @@ public class DatabaseMetaDataExtractor {
                                 .toUpperCase(),
                         resultSet.getShort("KEY_SEQ")
                 );
+            }
+            return result;
+        } finally {
+            resultSet.close();
+        }
+    }
+
+    /**
+     * カラムのメタ情報を、キーがカラム名、値がSQL型のMapに変換する
+     *
+     * @param resultSet カラムのメタ情報({@link DatabaseMetaData#getColumns(String, String, String, String)})の結果
+     * @return 変換した値
+     * @throws SQLException データベース例外
+     */
+    private static Map<String, Integer> toSqlTypeMap(ResultSet resultSet) throws SQLException {
+        try {
+            final Map<String, Integer> result = new HashMap<String, Integer>();
+            while (resultSet.next()) {
+                result.put(resultSet.getString("COLUMN_NAME").toUpperCase(),
+                        resultSet.getInt("DATA_TYPE"));
             }
             return result;
         } finally {

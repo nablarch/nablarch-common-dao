@@ -75,19 +75,13 @@ public class ColumnMeta implements Serializable {
     /** SQL型 */
     private int sqlType;
 
-    /** SQL型が未設定であることを表すダミーデータ */
-    private static final int UNDEFINED_SQL_TYPE = 0;
-
-    /** SQL型が設定されているか */
-    private boolean hasSqlType = true;
-
     /**
      * コンストラクタ。
      *
      * @param entityMeta エンティティ定義のメタデータ
      * @param pd プロパティ情報
      */
-    public ColumnMeta(final EntityMeta entityMeta, final PropertyDescriptor pd) {
+    public ColumnMeta(final EntityMeta entityMeta, final PropertyDescriptor pd, Map<String, Integer> sqlTypeMap) {
         this.entityMeta = entityMeta;
 
         final Method getterMethod = pd.getReadMethod();
@@ -105,12 +99,7 @@ public class ColumnMeta implements Serializable {
         generationType = generatedValueMetaData.generationType;
         generatorName = generatedValueMetaData.generatorName;
 
-        try {
-            sqlType = DatabaseUtil.getSqlTypes(entityMeta.getSchemaName(), entityMeta.getTableName(), name);
-        } catch (RuntimeException e) {
-            sqlType = UNDEFINED_SQL_TYPE;
-            hasSqlType = false;
-        }
+        sqlType = sqlTypeMap.get(name.toUpperCase());
     }
 
     /**
@@ -263,9 +252,6 @@ public class ColumnMeta implements Serializable {
      * @return SQL型
      */
     public int getSqlType() {
-        if (!hasSqlType) {
-            throw new IllegalStateException("SQL type is not found.");
-        }
         return sqlType;
     }
 

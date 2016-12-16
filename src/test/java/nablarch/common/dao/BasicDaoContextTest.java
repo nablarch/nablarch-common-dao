@@ -31,6 +31,7 @@ import nablarch.common.dao.DaoTestHelper.AutoGenUsers;
 import nablarch.common.dao.DaoTestHelper.IdentityGenUsers;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.DaoTestHelper.Users2;
+import nablarch.common.dao.DaoTestHelper.Users3;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.common.idgenerator.TableIdGenerator;
 import nablarch.core.db.DbAccessException;
@@ -83,6 +84,7 @@ public class BasicDaoContextTest {
     public static void setUpClass() throws Exception {
         VariousDbTestHelper.createTable(Users.class);
         VariousDbTestHelper.createTable(Users2.class);
+        VariousDbTestHelper.createTable(Users3.class);
         VariousDbTestHelper.createTable(Address.class);
     }
 
@@ -919,6 +921,16 @@ public class BasicDaoContextTest {
             assertThat(actual.getBirthday(), is(DateUtil.getDate("19001212")));
             assertThat(actual.getInsertDate(), is(DaoTestHelper.getDate("20001231010101")));
             assertThat(actual.getVersion(), is("99"));
+        }
+
+        IDおよびバージョンカラムがLongではないテーブル_insertの前処理で変換が必要:
+        {
+            Users3 user = new Users3();
+            sut.insert(user);
+
+            Users3 actual = sut.findById(Users3.class, 1);
+            assertThat(actual.getId(), is(1));
+            assertThat(actual.getVersion(), is(0));
         }
     }
 

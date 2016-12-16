@@ -39,11 +39,10 @@ public final class DatabaseUtil {
      *
      * @param schemaName スキーマ名
      * @param tableName テーブル名
-     * @param columnName カラム名
-     * @return カラムのSQL型
+     * @return カラムのSQL型(キー:カラム名、値:SQL型)
      */
-    public static int getSqlTypes(String schemaName, String tableName, String columnName) {
-        return getDatabaseMetaDataExtractor().getSqlTypes(schemaName, tableName, columnName);
+    public static Map<String, Integer> getSqlTypeMap(String schemaName, String tableName) {
+        return getDatabaseMetaDataExtractor().getSqlTypeMap(schemaName, tableName);
     }
 
     /**

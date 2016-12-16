@@ -5,8 +5,12 @@ import static org.junit.Assert.*;
 
 import nablarch.core.db.connection.DbConnectionContext;
 
-import org.junit.After;
+import nablarch.test.support.SystemRepositoryResource;
+
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.ClassRule;
 
 /**
  * {@link EntityMeta}のテストクラス。
@@ -15,6 +19,14 @@ import org.junit.Test;
  * 本クラスでは、{@link EntityUtilTest}では実施できないequalsのみテストを行っている。
  */
 public class EntityMetaTest {
+
+    @ClassRule
+    public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+
+    @Before
+    public void setUp() throws Exception {
+        repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+    }
 
     @After
     public void tearDown() throws Exception {

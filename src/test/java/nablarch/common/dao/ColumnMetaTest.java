@@ -1,32 +1,28 @@
 package nablarch.common.dao;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.runner.RunWith;
 
 import javax.persistence.Id;
 import javax.persistence.Version;
 
-import nablarch.core.db.connection.ConnectionFactory;
 import nablarch.core.db.connection.DbConnectionContext;
-import nablarch.core.db.connection.TransactionManagerConnection;
-import nablarch.core.transaction.TransactionContext;
 import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
-import org.junit.*;
-import org.junit.runner.RunWith;
-
-import java.sql.Types;
-import java.util.List;
 
 @RunWith(DatabaseTestRunner.class)
 public class ColumnMetaTest {
 
     @ClassRule
     public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-    /** テストで使用するデータベース接続 */
-    private TransactionManagerConnection connection;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -35,41 +31,12 @@ public class ColumnMetaTest {
 
     @Before
     public void setUp() throws Exception {
-        ConnectionFactory connectionFactory = repositoryResource.getComponent("connectionFactory");
-        connection = connectionFactory.getConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
-        DbConnectionContext.setConnection(connection);
-        repositoryResource.addComponent("databaseMetaDataExtractor", null);
+        repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
     }
 
     @After
     public void tearDown() throws Exception {
         DbConnectionContext.removeConnection();
-        try {
-            connection.terminate();
-        } catch (Exception ignored) {
-        }
-    }
-
-    /**
-     * {@link ColumnMeta#getSqlType()}のテスト。
-     * @throws Exception
-     */
-    @Test
-    public void getSqlType() throws Exception {
-        // データベースからSQL型が取得できれば、ColumnMetaからも取得できる。
-        List<ColumnMeta> idColumns = EntityUtil.findIdColumns(DaoTestHelper.Users.class);
-        int sqlType = idColumns.get(0).getSqlType();
-        assertThat(sqlType, is(Types.DECIMAL));
-
-        // データベースからSQL型が取得できない場合、ColumnMetaから取得できない
-        idColumns = EntityUtil.findIdColumns(Entity.class);
-        try {
-            idColumns.get(0).getSqlType();
-            fail();
-        } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), is("SQL type is not found."));
-        }
-
     }
 
     /**
