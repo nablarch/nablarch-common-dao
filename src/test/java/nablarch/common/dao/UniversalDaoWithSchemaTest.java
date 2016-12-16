@@ -43,6 +43,7 @@ public class UniversalDaoWithSchemaTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         Connection connection = VariousDbTestHelper.getNativeConnection();
+        connection.setAutoCommit(false);
         try {
 
             final PreparedStatement drop = connection.prepareStatement("drop table ssd_master.user_schema_table");
@@ -51,6 +52,7 @@ public class UniversalDaoWithSchemaTest {
             } catch (SQLException ignore) {
                 // nop
             }
+            connection.commit();
 
             final PreparedStatement insert = connection.prepareStatement(
                     "create table ssd_master.user_schema_table ("
@@ -59,6 +61,7 @@ public class UniversalDaoWithSchemaTest {
                             + " PRIMARY KEY (user_id))");
             insert.execute();
             insert.close();
+            connection.commit();
         } finally {
             connection.close();
         }
