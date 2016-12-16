@@ -11,6 +11,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import nablarch.test.support.db.helper.TargetDb;
 import org.hamcrest.collection.IsMapContaining;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -92,6 +93,7 @@ public class DatabaseUtilTest {
      * SQL型の取得テスト：デフォルトスキーマ
      * @throws Exception
      */
+    @TargetDb(include = TargetDb.Db.ORACLE)
     @Test
     public void getSqlType_defaultSchema() throws Exception {
         Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
@@ -107,6 +109,7 @@ public class DatabaseUtilTest {
      * SQL型の取得テスト：スキーマを指定
      * @throws Exception
      */
+    @TargetDb(include = TargetDb.Db.ORACLE)
     @Test
     public void getSqlType_otherSchema() throws Exception {
         Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
