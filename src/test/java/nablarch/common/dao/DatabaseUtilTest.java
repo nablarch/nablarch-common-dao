@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -219,10 +220,10 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_notConverted() throws Exception {
-        final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
 
-        new Expectations(metaData) {{
+        new NonStrictExpectations(connection) {{
+            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
+            final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
             result = true;
         }};
@@ -261,10 +262,9 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_convertLower() throws Exception {
-        final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
-
-        new NonStrictExpectations(metaData) {{
+        new NonStrictExpectations(connection) {{
+            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
+            final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
             result = false;
             metaData.storesUpperCaseIdentifiers();
@@ -284,10 +284,10 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_convertOther() throws Exception {
-        final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
 
-        new NonStrictExpectations(metaData) {{
+        new NonStrictExpectations(connection) {{
+            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
+            final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
             result = false;
             metaData.storesUpperCaseIdentifiers();
@@ -307,10 +307,10 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_SQLException() throws Exception {
-        final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
 
-        new Expectations(metaData) {{
+        new NonStrictExpectations(connection) {{
+            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
+            final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
             result = new SQLException("error");
         }};
@@ -353,15 +353,17 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiersMetaData_SQLException() throws SQLException {
-        final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
 
-        new Expectations(metaData) {{
+        new NonStrictExpectations(connection) {{
+            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
+            final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
             result = new SQLException("error");
         }};
 
         try {
+            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
+            final DatabaseMetaData metaData = connection.getMetaData();
             DatabaseUtil.convertIdentifiers(metaData, "hoge_fuga");
             fail();
         } catch (RuntimeException e) {
