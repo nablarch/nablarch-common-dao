@@ -73,7 +73,7 @@ public class UniversalDaoWithSchemaTest {
         connection = connectionFactory.getConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
         DbConnectionContext.setConnection(connection);
 
-        final SqlPStatement statement = connection.prepareStatement("truncate table ssd_master.user_schema_table");
+        final SqlPStatement statement = connection.prepareStatement("delete from ssd_master.user_schema_table");
         statement.executeUpdate();
         connection.commit();
     }

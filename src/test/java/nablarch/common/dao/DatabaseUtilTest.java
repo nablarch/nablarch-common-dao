@@ -91,12 +91,13 @@ public class DatabaseUtilTest {
     }
 
     /**
-     * SQL型の取得テスト：デフォルトスキーマ
+     * SQL型の取得テスト：デフォルトスキーマ。
+     * Oracle用。
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.ORACLE)
     @Test
-    public void getSqlType_defaultSchema() throws Exception {
+    public void getSqlType_defaultSchema_Oracle() throws Exception {
         Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
         assertThat(actual.get("USER_ID"), is(Types.DECIMAL));
         assertThat(actual.get("NAME"), is(Types.VARCHAR));
@@ -107,16 +108,99 @@ public class DatabaseUtilTest {
     }
 
     /**
-     * SQL型の取得テスト：スキーマを指定
+     * SQL型の取得テスト：デフォルトスキーマ。
+     * SQLServer用。
+     * @throws Exception
+     */
+    @TargetDb(include = TargetDb.Db.SQL_SERVER)
+    @Test
+    public void getSqlType_defaultSchema_SqlServer() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("USER_ID"), is(Types.NUMERIC));
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        assertThat(actual.get("BIRTHDAY"), is(Types.TIMESTAMP));
+        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
+        assertThat(actual.get("VERSION"), is(Types.NUMERIC));
+        assertThat(actual.get("ACTIVE"), is(Types.BIT));
+    }
+
+    /**
+     * SQL型の取得テスト：デフォルトスキーマ。
+     * PostgreSQL用。
+     * @throws Exception
+     */
+    @TargetDb(include = TargetDb.Db.POSTGRE_SQL)
+    @Test
+    public void getSqlType_defaultSchema_PostgreSQL() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("USER_ID"), is(Types.BIGINT));
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        assertThat(actual.get("BIRTHDAY"), is(Types.DATE));
+        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
+        assertThat(actual.get("VERSION"), is(Types.BIGINT));
+        assertThat(actual.get("ACTIVE"), is(Types.BIT));
+    }
+
+    /**
+     * SQL型の取得テスト：デフォルトスキーマ。
+     * H2用。
+     * @throws Exception
+     */
+    @TargetDb(include = TargetDb.Db.H2)
+    @Test
+    public void getSqlType_defaultSchema_H2() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("USER_ID"), is(Types.BIGINT));
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        assertThat(actual.get("BIRTHDAY"), is(Types.DATE));
+        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
+        assertThat(actual.get("VERSION"), is(Types.BIGINT));
+        assertThat(actual.get("ACTIVE"), is(Types.BOOLEAN));
+    }
+
+    /**
+     * SQL型の取得テスト：デフォルトスキーマ。
+     * DB2用。
+     * @throws Exception
+     */
+    @TargetDb(include = TargetDb.Db.DB2)
+    @Test
+    public void getSqlType_defaultSchema_DB2() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("USER_ID"), is(Types.BIGINT));
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        assertThat(actual.get("BIRTHDAY"), is(Types.DATE));
+        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
+        assertThat(actual.get("VERSION"), is(Types.BIGINT));
+        assertThat(actual.get("ACTIVE"), is(Types.SMALLINT));
+    }
+
+    /**
+     * SQL型の取得テスト：スキーマを指定。
+     * Oracle用。
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.ORACLE)
     @Test
-    public void getSqlType_otherSchema() throws Exception {
+    public void getSqlType_otherSchema_Oracle() throws Exception {
         Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
         assertThat(actual.get("NAME"), is(Types.VARCHAR));
         actual = DatabaseUtil.getSqlTypeMap("test_schema", "TEST_SCHEMA_USERS");
         assertThat(actual.get("NAME"), is(Types.DECIMAL));
+    }
+
+    /**
+     * SQL型の取得テスト：スキーマを指定。
+     * SQLServer, PostgreSQL, H2, DB2用。
+     * @throws Exception
+     */
+    @TargetDb(include = {TargetDb.Db.SQL_SERVER, TargetDb.Db.POSTGRE_SQL, TargetDb.Db.H2, TargetDb.Db.DB2} )
+    @Test
+    public void getSqlType_otherSchema_SqlServer_PostgreSQL_H2_DB2() throws Exception {
+        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
+        assertThat(actual.get("NAME"), is(Types.VARCHAR));
+        actual = DatabaseUtil.getSqlTypeMap("test_schema", "TEST_SCHEMA_USERS");
+        assertThat(actual.get("NAME"), is(Types.INTEGER));
     }
 
     /**
