@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
+import nablarch.common.dao.DaoTestHelper.SumVersion;
 import nablarch.common.dao.UniversalDao.Transaction;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
@@ -680,6 +682,23 @@ public class UniversalDaoTest {
         } catch (Exception e) {
             assertThat("DaoContextFactoryがリポジトリにない場合はエラー", e, is(instanceOf(IllegalStateException.class)));
         }
+    }
+
+    /**
+     * 集約関数を使ったSQLを使用するテスト
+     */
+    @Test
+    public void testUseSqlFunction() {
+        VariousDbTestHelper.delete(Users.class);
+
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, null, null, null, 100000000000000000L), //18桁
+                new Users(2L, null, null, null, 900000000000000000L) //18桁
+        );
+
+        List<SumVersion> actual = UniversalDao.findAllBySqlFile(SumVersion.class, "SUM_VERSION");
+
+        assertThat(actual.get(0).getSumVersion(), is(new BigDecimal("1000000000000000000"))); //19桁
     }
 
     /**

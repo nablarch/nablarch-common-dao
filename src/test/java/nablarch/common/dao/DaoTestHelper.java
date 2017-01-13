@@ -1,5 +1,6 @@
 package nablarch.common.dao;
 
+import java.math.BigDecimal;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -508,7 +509,20 @@ public class DaoTestHelper {
             this.address = address;
         }
     }
-    
+
+    /** 集約関数の結果をマッピングするBeanクラス */
+    public static class SumVersion {
+        private BigDecimal sumVersion;
+
+        public BigDecimal getSumVersion() {
+            return sumVersion;
+        }
+
+        public void setSumVersion(BigDecimal sumVersion) {
+            this.sumVersion = sumVersion;
+        }
+    }
+
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
     
     public static Date getDate(String date) {

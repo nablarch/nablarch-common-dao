@@ -73,7 +73,7 @@ public class ColumnMeta implements Serializable {
     private final String generatorName;
 
     /** SQL型 */
-    private int sqlType;
+    private Integer sqlType;
 
     /**
      * コンストラクタ。
@@ -251,7 +251,7 @@ public class ColumnMeta implements Serializable {
      *
      * @return SQL型
      */
-    public int getSqlType() {
+    public Integer getSqlType() {
         return sqlType;
     }
 
