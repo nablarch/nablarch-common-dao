@@ -523,6 +523,35 @@ public class DaoTestHelper {
         }
     }
 
+    /**
+     * カラムの型指定がされていないエンティティクラス。
+     * エンティティが不正の場合のテストで使用。
+     */
+    @Entity
+    public static class IllegalEntity {
+
+        @Id
+        private Integer id;
+        private String string;
+
+        @Id
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
+            this.string = string;
+        }
+    }
+
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
     
     public static Date getDate(String date) {

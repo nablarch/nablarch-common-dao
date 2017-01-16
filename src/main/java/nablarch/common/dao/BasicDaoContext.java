@@ -88,6 +88,9 @@ public class BasicDaoContext implements DaoContext {
         final SqlPStatement stmt = dbConnection.prepareStatement(sql);
         for (int i = 0; i < idColumns.size(); i++) {
             final ColumnMeta meta = idColumns.get(i);
+            if (meta.getSqlType() == null) {
+                throw new IllegalEntityException("The sql type of the column in the entity class is not specified.");
+            }
             stmt.setObject(i + 1, id[i], meta.getSqlType());
         }
         final ResultSetIterator rsIter = stmt.executeQuery();
@@ -380,6 +383,9 @@ public class BasicDaoContext implements DaoContext {
      */
     private void setObjects(SqlPStatement stmt, SqlWithParams sqlWithParams) {
         for (int i = 0; i < sqlWithParams.getParamSize(); i++) {
+            if (sqlWithParams.getColumn(i).getSqlType() == null) {
+                throw new IllegalEntityException("The sql type of the column in the entity class is not specified.");
+            }
             stmt.setObject(i + 1, sqlWithParams.getParam(i),
                     sqlWithParams.getColumn(i).getSqlType());
         }
@@ -649,6 +655,9 @@ public class BasicDaoContext implements DaoContext {
         final Map<ColumnMeta, Object> columnValues = EntityUtil.findAllColumns(entity);
         int index = 1;
         for (ColumnMeta column : columns) {
+            if (column.getSqlType() == null) {
+                throw new IllegalEntityException("The sql type of the column in the entity class is not specified.");
+            }
             statement.setObject(index, columnValues.get(column), column.getSqlType());
             index += 1;
         }
