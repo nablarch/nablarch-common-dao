@@ -16,7 +16,7 @@ import java.util.List;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
-import nablarch.common.dao.DaoTestHelper.SumVersion;
+import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
 import nablarch.common.dao.UniversalDao.Transaction;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
@@ -685,20 +685,48 @@ public class UniversalDaoTest {
     }
 
     /**
-     * 集約関数を使ったSQLを使用するテスト
+     * 集約関数を使ったSQLを使用するテスト(BigDecimal）
      */
     @Test
-    public void testUseSqlFunction() {
+    public void testUseSqlFunctionBigDecimal() {
         VariousDbTestHelper.delete(Users.class);
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, null, null, null, null),
+                new Users(2L, null, null, null, null)
+        );
 
+        List<SqlFunctionResult> actual = UniversalDao.findAllBySqlFile(SqlFunctionResult.class, "USE_FUNCTION_BIG_DECIMAL");
+        assertThat(actual.get(0).getBigDecimalCol(), is(new BigDecimal("2.2")));
+    }
+
+    /**
+     * 集約関数を使ったSQLを使用するテスト(Integer）
+     */
+    @Test
+    public void testUseSqlFunctionInteger() {
+        VariousDbTestHelper.delete(Users.class);
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, null, null, null, null),
+                new Users(2L, null, null, null, null)
+        );
+
+        List<SqlFunctionResult> actual = UniversalDao.findAllBySqlFile(SqlFunctionResult.class, "USE_FUNCTION_INTEGER");
+        assertThat(actual.get(0).getIntegerCol(), is(200));
+    }
+
+    /**
+     * 集約関数を使ったSQLを使用するテスト(Long）
+     */
+    @Test
+    public void testUseSqlFunctionLong() {
+        VariousDbTestHelper.delete(Users.class);
         VariousDbTestHelper.setUpTable(
                 new Users(1L, null, null, null, 100000000000000000L), //18桁
                 new Users(2L, null, null, null, 900000000000000000L) //18桁
         );
 
-        List<SumVersion> actual = UniversalDao.findAllBySqlFile(SumVersion.class, "SUM_VERSION");
-
-        assertThat(actual.get(0).getSumVersion(), is(new BigDecimal("1000000000000000000"))); //19桁
+        List<SqlFunctionResult> actual = UniversalDao.findAllBySqlFile(SqlFunctionResult.class, "USE_FUNCTION_LONG");
+        assertThat(actual.get(0).getLongCol(), is(1000000000000000000L)); //19桁
     }
 
     /**

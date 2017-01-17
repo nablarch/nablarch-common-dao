@@ -511,15 +511,33 @@ public class DaoTestHelper {
     }
 
     /** 集約関数の結果をマッピングするBeanクラス */
-    public static class SumVersion {
-        private BigDecimal sumVersion;
+    public static class SqlFunctionResult {
+        private BigDecimal bigDecimalCol;
+        private Integer integerCol;
+        private Long longCol;
 
-        public BigDecimal getSumVersion() {
-            return sumVersion;
+        public BigDecimal getBigDecimalCol() {
+            return bigDecimalCol;
         }
 
-        public void setSumVersion(BigDecimal sumVersion) {
-            this.sumVersion = sumVersion;
+        public void setBigDecimalCol(BigDecimal bigDecimalCol) {
+            this.bigDecimalCol = bigDecimalCol;
+        }
+
+        public Integer getIntegerCol() {
+            return integerCol;
+        }
+
+        public void setIntegerCol(Integer integerCol) {
+            this.integerCol = integerCol;
+        }
+
+        public Long getLongCol() {
+            return longCol;
+        }
+
+        public void setLongCol(Long longCol) {
+            this.longCol = longCol;
         }
     }
 

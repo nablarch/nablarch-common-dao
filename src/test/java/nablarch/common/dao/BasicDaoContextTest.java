@@ -182,8 +182,8 @@ public class BasicDaoContextTest {
      */
     @Test
     public void findByIdIllegalEntity() throws Exception {
-        exception.expect(IllegalEntityException.class);
-        exception.expectMessage("The sql type of the column in the entity class is not specified.");
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Unable to get SQL type from DB.");
         sut.findById(IllegalEntity.class, 1);
     }
 
@@ -817,8 +817,8 @@ public class BasicDaoContextTest {
         illegalEntity.setId(1);
         illegalEntity.setString("str");
 
-        exception.expect(IllegalEntityException.class);
-        exception.expectMessage("The sql type of the column in the entity class is not specified.");
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Unable to get SQL type from DB.");
         sut.update(illegalEntity);
     }
 
@@ -887,8 +887,8 @@ public class BasicDaoContextTest {
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
 
-        exception.expect(IllegalEntityException.class);
-        exception.expectMessage("The sql type of the column in the entity class is not specified.");
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Unable to get SQL type from DB.");
         sut.batchUpdate(illegalEntities);
     }
 
@@ -1260,8 +1260,8 @@ public class BasicDaoContextTest {
         illegalEntity.setId(1);
         illegalEntity.setString("str");
 
-        exception.expect(IllegalEntityException.class);
-        exception.expectMessage("The sql type of the column in the entity class is not specified.");
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Unable to get SQL type from DB.");
         sut.insert(illegalEntity);
     }
 
@@ -1750,8 +1750,8 @@ public class BasicDaoContextTest {
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
 
-        exception.expect(IllegalEntityException.class);
-        exception.expectMessage("The sql type of the column in the entity class is not specified.");
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Unable to get SQL type from DB.");
         sut.batchInsert(illegalEntities);
     }
 
@@ -1904,8 +1904,8 @@ public class BasicDaoContextTest {
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
 
-        exception.expect(IllegalEntityException.class);
-        exception.expectMessage("The sql type of the column in the entity class is not specified.");
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Unable to get SQL type from DB.");
         sut.batchDelete(illegalEntities);
     }
 
