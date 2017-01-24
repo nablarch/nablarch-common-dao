@@ -182,7 +182,7 @@ public class BasicDaoContextTest {
      */
     @Test
     public void findByIdIllegalEntity() throws Exception {
-        exception.expect(RuntimeException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.findById(IllegalEntity.class, 1);
     }
@@ -817,7 +817,7 @@ public class BasicDaoContextTest {
         illegalEntity.setId(1);
         illegalEntity.setString("str");
 
-        exception.expect(RuntimeException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.update(illegalEntity);
     }
@@ -887,7 +887,7 @@ public class BasicDaoContextTest {
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
 
-        exception.expect(RuntimeException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.batchUpdate(illegalEntities);
     }
@@ -1260,7 +1260,7 @@ public class BasicDaoContextTest {
         illegalEntity.setId(1);
         illegalEntity.setString("str");
 
-        exception.expect(RuntimeException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.insert(illegalEntity);
     }
@@ -1750,7 +1750,7 @@ public class BasicDaoContextTest {
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
 
-        exception.expect(RuntimeException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.batchInsert(illegalEntities);
     }
@@ -1904,7 +1904,7 @@ public class BasicDaoContextTest {
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
 
-        exception.expect(RuntimeException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.batchDelete(illegalEntities);
     }

@@ -88,7 +88,7 @@ public class BasicDaoContext implements DaoContext {
         for (int i = 0; i < idColumns.size(); i++) {
             final ColumnMeta meta = idColumns.get(i);
             if (meta.getSqlType() == null) {
-                throw new RuntimeException("Unable to get SQL type from DB.");
+                throw new IllegalStateException("Unable to get SQL type from DB.");
             }
             stmt.setObject(i + 1, id[i], meta.getSqlType());
         }
@@ -383,7 +383,7 @@ public class BasicDaoContext implements DaoContext {
     private void setObjects(SqlPStatement stmt, SqlWithParams sqlWithParams) {
         for (int i = 0; i < sqlWithParams.getParamSize(); i++) {
             if (sqlWithParams.getColumn(i).getSqlType() == null) {
-                throw new RuntimeException("Unable to get SQL type from DB.");
+                throw new IllegalStateException("Unable to get SQL type from DB.");
             }
             stmt.setObject(i + 1, sqlWithParams.getParam(i),
                     sqlWithParams.getColumn(i).getSqlType());
@@ -655,7 +655,7 @@ public class BasicDaoContext implements DaoContext {
         int index = 1;
         for (ColumnMeta column : columns) {
             if (column.getSqlType() == null) {
-                throw new RuntimeException("Unable to get SQL type from DB.");
+                throw new IllegalStateException("Unable to get SQL type from DB.");
             }
             statement.setObject(index, columnValues.get(column), column.getSqlType());
             index += 1;
