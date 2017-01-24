@@ -73,13 +73,14 @@ public class ColumnMeta implements Serializable {
     private final String generatorName;
 
     /** SQL型 */
-    private int sqlType;
+    private final Integer sqlType;
 
     /**
      * コンストラクタ。
      *
      * @param entityMeta エンティティ定義のメタデータ
      * @param pd プロパティ情報
+     * @param sqlTypeMap カラムのSQL型(キー:カラム名、値:SQL型)
      */
     public ColumnMeta(final EntityMeta entityMeta, final PropertyDescriptor pd, Map<String, Integer> sqlTypeMap) {
         this.entityMeta = entityMeta;
@@ -251,7 +252,7 @@ public class ColumnMeta implements Serializable {
      *
      * @return SQL型
      */
-    public int getSqlType() {
+    public Integer getSqlType() {
         return sqlType;
     }
 

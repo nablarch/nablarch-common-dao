@@ -59,6 +59,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+
 /**
  * {@link EntityUtil}に関するテストクラス
  */
@@ -422,11 +423,6 @@ public class EntityUtilTest {
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
-
         @After
         public void tearDown() throws Exception {
             DbConnectionContext.removeConnection();
@@ -533,11 +529,13 @@ public class EntityUtilTest {
             }
         }
 
+
         /**
          * 全ての属性情報が取得できること。
          */
         @Test
-        public void findAllColumnsFromClass() {
+        public void findAllColumnsFromEntityClass() {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
             List<ColumnMeta> columns = EntityUtil.findAllColumns(Hoge.class);
 
             IDカラム:
@@ -668,7 +666,9 @@ public class EntityUtilTest {
          * {@link EntityUtil#findAllColumns(Class)}のテスト。
          */
         @Test
-        public void findAllColumnsFromEntity() {
+        public void findAllColumnsFromEntityInstance() {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
+
             Hoge hoge = new Hoge();
             Map<ColumnMeta, Object> columns = EntityUtil.findAllColumns(hoge);
 
@@ -679,6 +679,59 @@ public class EntityUtilTest {
                         is(BeanUtil.getProperty(hoge, meta.getPropertyName(),null)));
             }
         }
+
+        /**
+         * エンティティでないBeanクラス
+         */
+        public static class FugaDto {
+            private BigDecimal bigDecimal;
+            private String string;
+
+            public BigDecimal getBigDecimal() {
+                return bigDecimal;
+            }
+
+            public void setBigDecimal(BigDecimal bigDecimal) {
+                this.bigDecimal = bigDecimal;
+            }
+
+            public String getString() {
+                return string;
+            }
+
+            public void setString(String string) {
+                this.string = string;
+            }
+        }
+        @Test
+        public void findAllColumnsFromNotEntityClass() throws Exception {
+            repositoryResource.addComponent("databaseMetaDataExtractor", new DatabaseMetaDataExtractor() {
+                @Override
+                public Map<String, Integer> getSqlTypeMap(String schemaName, String tableName) {
+                    return new HashMap<String, Integer>();
+                }
+            });
+            List<ColumnMeta> actual = EntityUtil.findAllColumns(FugaDto.class);
+
+            ColumnMeta bigDecimal = findColumn(actual, "BIG_DECIMAL");
+            assertThat(bigDecimal.getName(), is("BIG_DECIMAL"));
+            assertThat(bigDecimal.getPropertyName(), is("bigDecimal"));
+            assertThat(bigDecimal.getPropertyType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
+            assertThat(bigDecimal.getJdbcType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
+            assertThat(bigDecimal.getGenerationType(), is(nullValue()));
+            assertThat(bigDecimal.getGeneratorName(), is(nullValue()));
+            assertThat(bigDecimal.getSqlType(), is(nullValue()));
+
+            ColumnMeta string = findColumn(actual, "STRING");
+            assertThat(string.getName(), is("STRING"));
+            assertThat(string.getPropertyName(), is("string"));
+            assertThat(string.getPropertyType(), CoreMatchers.<Class<?>>equalTo(String.class));
+            assertThat(string.getJdbcType(), CoreMatchers.<Class<?>>equalTo(String.class));
+            assertThat(string.getGenerationType(), is(nullValue()));
+            assertThat(string.getGeneratorName(), is(nullValue()));
+            assertThat(string.getSqlType(), is(nullValue()));
+        }
+
     }
 
     /**

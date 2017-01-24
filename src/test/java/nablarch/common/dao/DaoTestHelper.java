@@ -1,5 +1,6 @@
 package nablarch.common.dao;
 
+import java.math.BigDecimal;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -508,7 +509,67 @@ public class DaoTestHelper {
             this.address = address;
         }
     }
-    
+
+    /** 集約関数の結果をマッピングするBeanクラス */
+    public static class SqlFunctionResult {
+        private BigDecimal bigDecimalCol;
+        private Integer integerCol;
+        private Long longCol;
+
+        public BigDecimal getBigDecimalCol() {
+            return bigDecimalCol;
+        }
+
+        public void setBigDecimalCol(BigDecimal bigDecimalCol) {
+            this.bigDecimalCol = bigDecimalCol;
+        }
+
+        public Integer getIntegerCol() {
+            return integerCol;
+        }
+
+        public void setIntegerCol(Integer integerCol) {
+            this.integerCol = integerCol;
+        }
+
+        public Long getLongCol() {
+            return longCol;
+        }
+
+        public void setLongCol(Long longCol) {
+            this.longCol = longCol;
+        }
+    }
+
+    /**
+     * カラムの型指定がされていないエンティティクラス。
+     * エンティティが不正の場合のテストで使用。
+     */
+    @Entity
+    public static class IllegalEntity {
+
+        @Id
+        private Integer id;
+        private String string;
+
+        @Id
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
+            this.string = string;
+        }
+    }
+
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
     
     public static Date getDate(String date) {
