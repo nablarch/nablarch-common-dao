@@ -40,11 +40,7 @@ dependencies {
 
   testCompile 'com.nablarch.framework:nablarch-core-repository:1.0.1'
   testCompile 'com.nablarch.framework:nablarch-common-idgenerator-jdbc:1.0.1'
-  testCompile 'com.nablarch.dev:nablarch-test-support:0.0.5'
   testRuntime 'org.slf4j:slf4j-nop:1.7.12' // for cobertura
-
-  testCompile 'com.oracle:ucp:11.2.0.3.0'
-  testCompile 'com.oracle:ojdbc6:11.2.0.2.0'
 }
 
 test {
