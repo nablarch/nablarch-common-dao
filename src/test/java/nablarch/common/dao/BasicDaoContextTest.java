@@ -34,7 +34,6 @@ import nablarch.common.dao.DaoTestHelper.Users2;
 import nablarch.common.dao.DaoTestHelper.Users3;
 import nablarch.common.dao.DaoTestHelper.IllegalEntity;
 import nablarch.common.idgenerator.IdGenerator;
-import nablarch.common.idgenerator.TableIdGenerator;
 import nablarch.core.db.DbAccessException;
 import nablarch.core.db.connection.ConnectionFactory;
 import nablarch.core.db.connection.DbConnectionContext;
@@ -84,7 +83,7 @@ public class BasicDaoContextTest {
     private IdGenerator mockSequenceIdGenerator;
 
     @Mocked
-    private TableIdGenerator mockTableIdGenerator;
+    private IdGenerator mockTableIdGenerator;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
