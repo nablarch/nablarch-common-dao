@@ -23,7 +23,7 @@ import java.util.Map;
 
 import javax.persistence.GenerationType;
 import javax.persistence.OptimisticLockException;
-
+import nablarch.core.db.statement.BasicSqlPStatement;
 import org.hamcrest.CoreMatchers;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -34,7 +34,6 @@ import nablarch.common.dao.DaoTestHelper.Users2;
 import nablarch.common.dao.DaoTestHelper.Users3;
 import nablarch.common.dao.DaoTestHelper.IllegalEntity;
 import nablarch.common.idgenerator.IdGenerator;
-import nablarch.common.idgenerator.TableIdGenerator;
 import nablarch.core.db.DbAccessException;
 import nablarch.core.db.connection.ConnectionFactory;
 import nablarch.core.db.connection.DbConnectionContext;
@@ -78,13 +77,13 @@ public class BasicDaoContextTest {
     private TransactionManagerConnection connection;
 
     /** テスト対象 */
-    BasicDaoContext sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect());
+    private BasicDaoContext sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect());
 
     @Mocked
     private IdGenerator mockSequenceIdGenerator;
 
     @Mocked
-    private TableIdGenerator mockTableIdGenerator;
+    private IdGenerator mockTableIdGenerator;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -178,10 +177,16 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * エンティティのカラムの型が指定されていない場合、例外を送出すること。
+     * SQL型が取得できない場合、例外を送出すること。
      */
     @Test
     public void findByIdIllegalEntity() throws Exception {
+        new Expectations(connection) {{
+            connection.prepareStatement(anyString);
+            result = new BasicSqlPStatement(null, null);
+        }};
+        sut.setDbConnection(connection);
+
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
         sut.findById(IllegalEntity.class, 1);
@@ -809,13 +814,19 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * エンティティのカラムの型が指定されていない場合、例外を送出すること。
+     * SQL型が取得できない場合、例外を送出すること。
      */
     @Test
     public void updateIllegalEntity() throws Exception {
-        IllegalEntity illegalEntity = new IllegalEntity();
+        final IllegalEntity illegalEntity = new IllegalEntity();
         illegalEntity.setId(1);
         illegalEntity.setString("str");
+
+        new Expectations(connection) {{
+            connection.prepareStatement(anyString);
+            result = new BasicSqlPStatement(null, null);
+        }};
+        sut.setDbConnection(connection);
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
@@ -877,15 +888,21 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * エンティティのカラムの型が指定されていない場合、例外を送出すること。
+     * SQL型が取得できない場合、例外を送出すること。
      */
     @Test
     public void batchUpdateIllegalEntity() throws Exception {
-        IllegalEntity illegalEntity = new IllegalEntity();
+        final IllegalEntity illegalEntity = new IllegalEntity();
         illegalEntity.setId(1);
         illegalEntity.setString("str");
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
+
+        new Expectations(connection) {{
+            connection.prepareStatement(anyString);
+            result = new BasicSqlPStatement(null, null);
+        }};
+        sut.setDbConnection(connection);
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
@@ -1252,13 +1269,19 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * エンティティのカラムの型が指定されていない場合、例外を送出すること。
+     * SQL型が取得できない場合、例外を送出すること。
      */
     @Test
     public void insertIllegalEntity() throws Exception {
-        IllegalEntity illegalEntity = new IllegalEntity();
+        final IllegalEntity illegalEntity = new IllegalEntity();
         illegalEntity.setId(1);
         illegalEntity.setString("str");
+
+        new Expectations(connection) {{
+            connection.prepareStatement(anyString);
+            result = new BasicSqlPStatement(null, null);
+        }};
+        sut.setDbConnection(connection);
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
@@ -1740,15 +1763,21 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * エンティティのカラムの型が指定されていない場合、例外を送出すること。
+     * SQL型が取得できない場合、例外を送出すること。
      */
     @Test
     public void batchInsertIllegalEntity() throws Exception {
-        IllegalEntity illegalEntity = new IllegalEntity();
+        final IllegalEntity illegalEntity = new IllegalEntity();
         illegalEntity.setId(1);
         illegalEntity.setString("str");
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
+
+        new Expectations(connection) {{
+            connection.prepareStatement(anyString);
+            result = new BasicSqlPStatement(null, null);
+        }};
+        sut.setDbConnection(connection);
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
@@ -1894,15 +1923,21 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * エンティティのカラムの型が指定されていない場合、例外を送出すること。
+     * SQL型が取得できない場合、例外を送出すること。
      */
     @Test
     public void batchDeleteIllegalEntity() throws Exception {
-        IllegalEntity illegalEntity = new IllegalEntity();
+        final IllegalEntity illegalEntity = new IllegalEntity();
         illegalEntity.setId(1);
         illegalEntity.setString("str");
         ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
         illegalEntities.add(illegalEntity);
+
+        new Expectations(connection) {{
+            connection.prepareStatement(anyString);
+            result = new BasicSqlPStatement(null, null);
+        }};
+        sut.setDbConnection(connection);
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to get SQL type from DB.");
