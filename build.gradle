@@ -20,6 +20,7 @@ apply plugin: 'com.nablarch.dev.nablarch-version'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'cobertura'
+apply from: 'https://github.com/nablarch/nablarch-gradle-plugin/blob/develop/scripts/cobertura/cobertura-0.0.1.gradle?raw=true'
 
 // ビルド時のJavaバージョンを指定する
 sourceCompatibility=JavaVersion.VERSION_1_6
@@ -46,51 +47,11 @@ test {
 
   jvmArgs (
       '-XX:PermSize=32m',
-      '-XX:+UseParallelGC',
       '-Dfile.encoding=UTF-8',
       '-XX:-UseSplitVerifier'
   )
 
   ignoreFailures = true
-
-  cobertura {
-    coverageSourceDirs = ["${projectDir}/src/main/java/"]
-    coverageIgnoreTrivial = true
-    coverageFormats = ['xml']
-    coverageDirs = [project.sourceSets.main.output.classesDir]
-    auxiliaryClasspath = files('src/main/resources') + configurations.testRuntime.asFileTree
-  }
-}
-
-def coberturaReportDir = new File(project.buildDir, "cobertura-report")
-
-task generateCoberturaReportByAnt(dependsOn: 'cobertura') {
-  def dataFile = "${project.buildDir}/cobertura/cobertura.ser"
-
-  inputs.file file(dataFile)
-  outputs.dir coberturaReportDir
-
-  doLast {
-    ant {
-      taskdef(resource: 'tasks.properties', classpath: configurations.cobertura.asPath + ':' + configurations.testRuntime.asPath)
-
-      'cobertura-report'(
-          destdir: coberturaReportDir,
-          datafile: dataFile,
-          srcdir: "${projectDir}/src/main/java/",
-          format: 'xml'
-      )
-    }
-  }
-}
-
-task coverage(dependsOn: ['clean', 'generateCoberturaReportByAnt'])
-
-sonarRunner {
-  sonarProperties {
-    property "sonar.java.coveragePlugin", "cobertura"
-    property "sonar.cobertura.reportPath", "${coberturaReportDir}/coverage.xml"
-  }
 }
 
 tasks.sonarRunner {
