@@ -14,6 +14,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
@@ -727,6 +732,69 @@ public class UniversalDaoTest {
 
         List<SqlFunctionResult> actual = UniversalDao.findAllBySqlFile(SqlFunctionResult.class, "USE_FUNCTION_LONG");
         assertThat(actual.get(0).getLongCol(), is(1000000000000000000L)); //19桁
+    }
+    
+    @Entity
+    @Table(name = "clob_column")
+    public static class ClobColumn {
+        @Id
+        @Column(name = "id", length = 18)
+        public Long id;
+
+        @Column(name = "clob", columnDefinition = "clob")
+        public String clob;
+
+        @Id
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(final Long id) {
+            this.id = id;
+        }
+
+        public String getClob() {
+            return clob;
+        }
+
+        public void setClob(final String clob) {
+            this.clob = clob;
+        }
+    }
+
+    /**
+     * CLOB型のカラムにデータを登録できること
+     */
+    @Test
+    public void test_insertClobColumn() throws Exception {
+        VariousDbTestHelper.createTable(ClobColumn.class);
+        final ClobColumn entity = new ClobColumn();
+        entity.id = 1L;
+        entity.clob = "clobカラムの値";
+        UniversalDao.insert(entity);
+        connection.commit();
+
+        final ClobColumn actual = VariousDbTestHelper.findById(ClobColumn.class, entity.id);
+        assertThat(actual.clob, is(entity.clob));
+    }
+
+    /**
+     * CLOB型のカラムのデータを更新できること
+     */
+    @Test
+    public void test_updateClobColumn() throws Exception {
+        VariousDbTestHelper.createTable(ClobColumn.class);
+        final ClobColumn entity = new ClobColumn();
+        entity.id = 12345L;
+        entity.clob = "変更前";
+        VariousDbTestHelper.insert(entity);
+        
+        entity.clob = "updateを使って更新";
+        UniversalDao.update(entity);
+        connection.commit();
+        
+        final ClobColumn actual = VariousDbTestHelper.findById(ClobColumn.class, entity.id);
+        assertThat(actual.clob, is(entity.clob));
     }
 
     /**

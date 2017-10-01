@@ -2,3 +2,4 @@ nablarch.common.dao.DaoTestHelper$Users
 nablarch.common.dao.DaoTestHelper$Address
 nablarch.common.dao.DaoTestHelper$UsersExcludeOracle
 nablarch.common.dao.DaoTestHelper$Users2
+nablarch.common.dao.UniversalDaoTest$ClobColumn
