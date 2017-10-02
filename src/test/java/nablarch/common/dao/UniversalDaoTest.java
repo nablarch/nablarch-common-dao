@@ -3,6 +3,7 @@ package nablarch.common.dao;
 import static nablarch.common.dao.UniversalDao.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -795,6 +796,40 @@ public class UniversalDaoTest {
         
         final ClobColumn actual = VariousDbTestHelper.findById(ClobColumn.class, entity.id);
         assertThat(actual.clob, is(entity.clob));
+    }
+
+    /**
+     * {@link UniversalDao#findById(Class, Object...)}を使用してCLOBカラムの値が取得できること。
+     * @throws Exception
+     */
+    @Test
+    public void test_findById_clobColumn() throws Exception {
+        VariousDbTestHelper.createTable(ClobColumn.class);
+        final ClobColumn entity = new ClobColumn();
+        entity.id = 12345L;
+        entity.clob = "CLOBの値";
+        VariousDbTestHelper.insert(entity);
+
+        final ClobColumn actual = UniversalDao.findById(ClobColumn.class, entity.id);
+        assertThat(actual.clob, is(entity.clob));
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用してCLOBカラムの値が取得できること。
+     */
+    @Test
+    public void test_findAllBySqlFile_clobColumn() throws Exception {
+        VariousDbTestHelper.createTable(ClobColumn.class);
+        final ClobColumn entity = new ClobColumn();
+        entity.id = 12345L;
+        entity.clob = "CLOBに格納するデータ";
+        VariousDbTestHelper.insert(entity);
+
+        final EntityList<ClobColumn> actual = UniversalDao.findAllBySqlFile(ClobColumn.class, "find", new Object[] {entity.id});
+
+        assertThat(actual, hasSize(1));
+        assertThat(actual.get(0).clob, is(entity.clob));
+
     }
 
     /**
