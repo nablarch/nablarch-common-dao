@@ -35,7 +35,6 @@ import org.junit.runner.RunWith;
 
 import mockit.Expectations;
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -305,7 +304,7 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiers_notConverted() throws Exception {
 
-        new NonStrictExpectations(connection) {{
+        new Expectations(connection) {{
             final Connection connection = DatabaseUtilTest.this.connection.getConnection();
             final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
@@ -323,15 +322,17 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_convertUpper() throws Exception {
-        final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
+        final DatabaseMetaData metaData = DatabaseUtil.getMetaData();
 
-        new NonStrictExpectations(metaData) {{
+        new Expectations(metaData) {{
             metaData.storesMixedCaseIdentifiers();
+            minTimes = 0;
             result = false;
             metaData.storesUpperCaseIdentifiers();
+            minTimes = 0;
             result = true;
             metaData.storesLowerCaseIdentifiers();
+            minTimes = 0;
             result = false;
         }};
 
@@ -346,7 +347,7 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_convertLower() throws Exception {
-        new NonStrictExpectations(connection) {{
+        new Expectations(connection) {{
             final Connection connection = DatabaseUtilTest.this.connection.getConnection();
             final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
@@ -369,7 +370,7 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiers_convertOther() throws Exception {
 
-        new NonStrictExpectations(connection) {{
+        new Expectations(connection) {{
             final Connection connection = DatabaseUtilTest.this.connection.getConnection();
             final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
@@ -392,7 +393,7 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiers_SQLException() throws Exception {
 
-        new NonStrictExpectations(connection) {{
+        new Expectations(connection) {{
             final Connection connection = DatabaseUtilTest.this.connection.getConnection();
             final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
@@ -438,7 +439,7 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiersMetaData_SQLException() throws SQLException {
 
-        new NonStrictExpectations(connection) {{
+        new Expectations(connection) {{
             final Connection connection = DatabaseUtilTest.this.connection.getConnection();
             final DatabaseMetaData metaData = connection.getMetaData();
             metaData.storesMixedCaseIdentifiers();
