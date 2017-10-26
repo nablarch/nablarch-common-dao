@@ -10,6 +10,7 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -929,9 +930,9 @@ public class BasicDaoContextTest {
 
         new Expectations() {{
             mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("1");
+            returns("1", "1");
             mockTableIdGenerator.generateId("ADDRESS_ID_SEQ");
-            returns("1");
+            returns("1", "1");
         }};
 
         バージョンカラムが存在しているテーブル:
@@ -1090,7 +1091,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString,(String[]) withNotNull());
             ResultSet keys = statement.getGeneratedKeys();
             keys.next();
             result = true;
@@ -1120,7 +1121,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
             ResultSet keys = statement.getGeneratedKeys();
             keys.next();
             result = true;
@@ -1152,7 +1153,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
             statement.getGeneratedKeys()
                     .next();
             result = new SQLException("error");
@@ -1252,7 +1253,7 @@ public class BasicDaoContextTest {
 
         new Expectations() {{
             mockTableIdGenerator.generateId("DAO_USERS_USER_ID");
-            returns("101");
+            returns("101", null);
         }};
 
         AutoGenUsers users = new AutoGenUsers(null, "1", DateUtil.getDate("20000102"),
@@ -1522,7 +1523,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
             ResultSet keys = statement.getGeneratedKeys();
             keys.next();
             returns(true, true, true, false);
@@ -1558,7 +1559,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
             ResultSet keys = statement.getGeneratedKeys();
             keys.next();
             returns(true, false);
@@ -1589,7 +1590,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
             statement.getGeneratedKeys().next();
             result = new SQLException("error");
         }};
@@ -1621,7 +1622,7 @@ public class BasicDaoContextTest {
         });
 
         new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, new String[] {anyString});
+            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
             final ResultSet rs = statement.getGeneratedKeys();
             rs.next();
             returns(true, false);
