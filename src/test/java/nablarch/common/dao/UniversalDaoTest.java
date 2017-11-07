@@ -66,6 +66,7 @@ public class UniversalDaoTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         VariousDbTestHelper.createTable(Users.class);
+        VariousDbTestHelper.createTable(Address.class);
     }
 
     @Before
