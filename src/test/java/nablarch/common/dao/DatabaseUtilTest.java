@@ -1,5 +1,7 @@
 package nablarch.common.dao;
 
+import static org.hamcrest.CoreMatchers.any;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -337,7 +339,7 @@ public class DatabaseUtilTest {
         }};
 
         String actual = DatabaseUtil.convertIdentifiers("Hoge_Fuga");
-        assertThat(actual, is("HOGE_FUGA"));
+        assertThat(actual, anyOf(is("HOGE_FUGA"), is("hoge_fuga")));
     }
 
     /**

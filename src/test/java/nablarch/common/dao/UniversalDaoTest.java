@@ -1,8 +1,7 @@
 package nablarch.common.dao;
 
 import static nablarch.common.dao.UniversalDao.exists;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -21,8 +20,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import nablarch.common.dao.DaoTestHelper.Address;
-import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
+import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.UniversalDao.Transaction;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
@@ -38,6 +37,7 @@ import nablarch.core.transaction.TransactionFactory;
 import nablarch.core.util.DateUtil;
 import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
+import nablarch.test.support.db.helper.TargetDb;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 
 import org.junit.After;
@@ -764,10 +764,40 @@ public class UniversalDaoTest {
         }
     }
 
+    @Entity
+    @Table(name = "text_column")
+    public static class TextColumn {
+
+        @Id
+        @Column(name = "id", length = 18)
+        public Long id;
+
+        @Column(name = "text", columnDefinition = "text")
+        public String text;
+
+        @Id
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(final Long id) {
+            this.id = id;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(final String text) {
+            this.text = text;
+        }
+    }
+
     /**
      * CLOB型のカラムにデータを登録できること
      */
     @Test
+    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
     public void test_insertClobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -781,9 +811,28 @@ public class UniversalDaoTest {
     }
 
     /**
+     * TEXT型のカラムにデータを登録できること
+     */
+    @Test
+    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    public void test_insertTextColumn() throws Exception {
+        VariousDbTestHelper.createTable(TextColumn.class);
+        final TextColumn entity = new TextColumn();
+        entity.id = 1L;
+        entity.text = "textカラムの値";
+        UniversalDao.insert(entity);
+        connection.commit();
+
+        final TextColumn actual = VariousDbTestHelper.findById(TextColumn.class, entity.id);
+        assertThat(actual.text, is(entity.text));
+    }
+    
+
+    /**
      * CLOB型のカラムのデータを更新できること
      */
     @Test
+    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
     public void test_updateClobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -800,10 +849,31 @@ public class UniversalDaoTest {
     }
 
     /**
+     * TEXT型のカラムのデータを更新できること
+     */
+    @Test
+    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    public void test_updateTextColumn() throws Exception {
+        VariousDbTestHelper.createTable(TextColumn.class);
+        final TextColumn entity = new TextColumn();
+        entity.id = 12345L;
+        entity.text = "変更前";
+        VariousDbTestHelper.insert(entity);
+
+        entity.text = "updateを使って更新";
+        UniversalDao.update(entity);
+        connection.commit();
+
+        final TextColumn actual = VariousDbTestHelper.findById(TextColumn.class, entity.id);
+        assertThat(actual.text, is(entity.text));
+    }
+
+    /**
      * {@link UniversalDao#findById(Class, Object...)}を使用してCLOBカラムの値が取得できること。
      * @throws Exception
      */
     @Test
+    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
     public void test_findById_clobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -816,9 +886,28 @@ public class UniversalDaoTest {
     }
 
     /**
+     * {@link UniversalDao#findById(Class, Object...)}を使用してTEXTカラムの値が取得できること。
+     *
+     * @throws Exception
+     */
+    @Test
+    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    public void test_findById_textColumn() throws Exception {
+        VariousDbTestHelper.createTable(TextColumn.class);
+        final TextColumn entity = new TextColumn();
+        entity.id = 12345L;
+        entity.text = "TEXTの値";
+        VariousDbTestHelper.insert(entity);
+
+        final TextColumn actual = UniversalDao.findById(TextColumn.class, entity.id);
+        assertThat(actual.text, is(entity.text));
+    }
+
+    /**
      * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用してCLOBカラムの値が取得できること。
      */
     @Test
+    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
     public void test_findAllBySqlFile_clobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -830,6 +919,26 @@ public class UniversalDaoTest {
 
         assertThat(actual, hasSize(1));
         assertThat(actual.get(0).clob, is(entity.clob));
+
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用してTEXTカラムの値が取得できること。
+     */
+    @Test
+    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    public void test_findAllBySqlFile_textColumn() throws Exception {
+        VariousDbTestHelper.createTable(TextColumn.class);
+        final TextColumn entity = new TextColumn();
+        entity.id = 12345L;
+        entity.text = "TEXTに格納するデータ";
+        VariousDbTestHelper.insert(entity);
+
+        final EntityList<TextColumn> actual = UniversalDao.findAllBySqlFile(TextColumn.class, "find",
+                new Object[] {entity.id});
+
+        assertThat(actual, hasSize(1));
+        assertThat(actual.get(0).text, is(entity.text));
 
     }
 
