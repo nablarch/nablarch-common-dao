@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.text.IsEqualIgnoringCase.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -15,7 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nablarch.test.support.db.helper.TargetDb;
+
 import org.hamcrest.collection.IsMapContaining;
+import org.hamcrest.text.IsEqualIgnoringCase;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
@@ -94,6 +97,7 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：デフォルトスキーマ。
      * Oracle用。
+     *
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.ORACLE)
@@ -111,6 +115,7 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：デフォルトスキーマ。
      * SQLServer用。
+     *
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.SQL_SERVER)
@@ -128,6 +133,7 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：デフォルトスキーマ。
      * PostgreSQL用。
+     *
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.POSTGRE_SQL)
@@ -145,6 +151,7 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：デフォルトスキーマ。
      * H2用。
+     *
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.H2)
@@ -162,6 +169,7 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：デフォルトスキーマ。
      * DB2用。
+     *
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.DB2)
@@ -179,6 +187,7 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：スキーマを指定。
      * Oracle用。
+     *
      * @throws Exception
      */
     @TargetDb(include = TargetDb.Db.ORACLE)
@@ -193,9 +202,10 @@ public class DatabaseUtilTest {
     /**
      * SQL型の取得テスト：スキーマを指定。
      * SQLServer, PostgreSQL, H2, DB2用。
+     *
      * @throws Exception
      */
-    @TargetDb(include = {TargetDb.Db.SQL_SERVER, TargetDb.Db.POSTGRE_SQL, TargetDb.Db.H2, TargetDb.Db.DB2} )
+    @TargetDb(include = {TargetDb.Db.SQL_SERVER, TargetDb.Db.POSTGRE_SQL, TargetDb.Db.H2, TargetDb.Db.DB2})
     @Test
     public void getSqlType_otherSchema_SqlServer_PostgreSQL_H2_DB2() throws Exception {
         Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
@@ -339,7 +349,7 @@ public class DatabaseUtilTest {
         }};
 
         String actual = DatabaseUtil.convertIdentifiers("Hoge_Fuga");
-        assertThat(actual, anyOf(is("HOGE_FUGA"), is("hoge_fuga")));
+        assertThat(actual, equalToIgnoringCase("HOGE_FUGA"));
     }
 
     /**
@@ -423,7 +433,7 @@ public class DatabaseUtilTest {
     public void convertIdentifiersMetaData() throws SQLException {
 
         final DatabaseMetaData metaData = connection.getConnection()
-                .getMetaData();
+                                                    .getMetaData();
         new Expectations(metaData) {{
             metaData.storesMixedCaseIdentifiers();
             result = true;
