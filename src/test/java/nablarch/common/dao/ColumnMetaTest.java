@@ -1,14 +1,7 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import org.junit.Test;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
 
 import javax.persistence.Id;
 import javax.persistence.Version;
@@ -18,26 +11,17 @@ import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 @RunWith(DatabaseTestRunner.class)
 public class ColumnMetaTest {
 
     @ClassRule
     public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        VariousDbTestHelper.createTable(DaoTestHelper.Users.class);
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        DbConnectionContext.removeConnection();
-    }
 
     /**
      * {@link ColumnMeta#equals(Object)}のテスト。

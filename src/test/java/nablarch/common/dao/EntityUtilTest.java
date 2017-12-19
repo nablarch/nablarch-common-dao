@@ -2,7 +2,6 @@ package nablarch.common.dao;
 
 import static nablarch.common.dao.EntityUtil.getTableName;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.InvocationTargetException;
@@ -33,9 +32,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
-import nablarch.core.db.dialect.DefaultDialect;
-import nablarch.core.db.dialect.converter.AttributeConverter;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
@@ -45,6 +43,8 @@ import nablarch.core.db.connection.AppDbConnection;
 import nablarch.core.db.connection.ConnectionFactory;
 import nablarch.core.db.connection.DbConnectionContext;
 import nablarch.core.db.connection.TransactionManagerConnection;
+import nablarch.core.db.dialect.DefaultDialect;
+import nablarch.core.db.dialect.converter.AttributeConverter;
 import nablarch.core.db.statement.SqlRow;
 import nablarch.core.db.transaction.JdbcTransactionFactory;
 import nablarch.core.transaction.Transaction;
@@ -53,8 +53,11 @@ import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 
-import org.hamcrest.Matchers;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -73,11 +76,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -124,11 +122,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -187,11 +180,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -336,11 +324,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -535,7 +518,6 @@ public class EntityUtilTest {
          */
         @Test
         public void findAllColumnsFromEntityClass() {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
             List<ColumnMeta> columns = EntityUtil.findAllColumns(Hoge.class);
 
             IDカラム:
@@ -550,7 +532,6 @@ public class EntityUtilTest {
                 assertThat("採番対象カラム", column.isGeneratedValue(), is(true));
                 assertThat("IDカラム", column.isIdColumn(), is(true));
                 assertThat("バージョンカラムではない", column.isVersion(), is(false));
-                assertThat("SQL型", column.getSqlType(), is(Types.VARCHAR));
             }
 
             userNameカラム:
@@ -667,7 +648,6 @@ public class EntityUtilTest {
          */
         @Test
         public void findAllColumnsFromEntityInstance() {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
 
             Hoge hoge = new Hoge();
             Map<ColumnMeta, Object> columns = EntityUtil.findAllColumns(hoge);
@@ -676,7 +656,7 @@ public class EntityUtilTest {
             for (ColumnMeta meta : columnMetas) {
                 Object actual = columns.get(meta);
                 assertThat(meta.getName(), actual,
-                        is(BeanUtil.getProperty(hoge, meta.getPropertyName(),null)));
+                        is(BeanUtil.getProperty(hoge, meta.getPropertyName(), meta.getJdbcType())));
             }
         }
 
@@ -705,12 +685,6 @@ public class EntityUtilTest {
         }
         @Test
         public void findAllColumnsFromNotEntityClass() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DatabaseMetaDataExtractor() {
-                @Override
-                public Map<String, Integer> getSqlTypeMap(String schemaName, String tableName) {
-                    return new HashMap<String, Integer>();
-                }
-            });
             List<ColumnMeta> actual = EntityUtil.findAllColumns(FugaDto.class);
 
             ColumnMeta bigDecimal = findColumn(actual, "BIG_DECIMAL");
@@ -720,7 +694,6 @@ public class EntityUtilTest {
             assertThat(bigDecimal.getJdbcType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
             assertThat(bigDecimal.getGenerationType(), is(nullValue()));
             assertThat(bigDecimal.getGeneratorName(), is(nullValue()));
-            assertThat(bigDecimal.getSqlType(), is(nullValue()));
 
             ColumnMeta string = findColumn(actual, "STRING");
             assertThat(string.getName(), is("STRING"));
@@ -729,7 +702,6 @@ public class EntityUtilTest {
             assertThat(string.getJdbcType(), CoreMatchers.<Class<?>>equalTo(String.class));
             assertThat(string.getGenerationType(), is(nullValue()));
             assertThat(string.getGeneratorName(), is(nullValue()));
-            assertThat(string.getSqlType(), is(nullValue()));
         }
 
     }
@@ -741,11 +713,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -815,11 +782,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -1189,11 +1151,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {
@@ -1603,34 +1560,6 @@ public class EntityUtilTest {
         public ExpectedException exception = ExpectedException.none();
 
         @Test
-        public void listType() {
-            SqlRow row = createEmptySqlRow();
-            row.put("LIST_TYPE", null);
-
-            exception.expect(IllegalStateException.class);
-            exception.expectMessage("Data types incompatible with List. column name = [LIST_TYPE]");
-            exception.expectCause(CoreMatchers.<Throwable>allOf(
-                    instanceOf(IllegalStateException.class),
-                    hasProperty("message", is("This dialect does not support [List] type."))
-            ));
-            EntityUtil.createEntity(Hoge.class, row);
-        }
-
-        @Test
-        public void intArray() {
-            SqlRow row = createEmptySqlRow();
-            row.put("intArray", null);
-
-            exception.expect(IllegalStateException.class);
-            exception.expectMessage("Data types incompatible with int[]. column name = [INT_ARRAY]");
-            exception.expectCause(CoreMatchers.<Throwable>allOf(
-                    instanceOf(IllegalStateException.class),
-                    hasProperty("message", is("This dialect does not support [int[]] type."))
-            ));
-            EntityUtil.createEntity(Hoge.class, row);
-        }
-
-        @Test
         public void noSetter() {
             SqlRow row = createEmptySqlRow();
             row.put("noSetter", "hoge");
@@ -1647,7 +1576,6 @@ public class EntityUtilTest {
         @Test
         public void noConstructor() {
             exception.expect(BeansException.class);
-            exception.expectCause(Matchers.<Throwable>instanceOf(NoSuchMethodException.class));
             EntityUtil.createEntity(NoConstructorClass.class, createEmptySqlRow());
         }
 
@@ -1663,17 +1591,16 @@ public class EntityUtilTest {
             EntityUtil.createEntity(AbstractEntity.class, createEmptySqlRow());
         }
 
-        public static class ExceptionConstractorClass {
-            public ExceptionConstractorClass() throws Exception {
+        public static class ExceptionConstructorClass {
+            public ExceptionConstructorClass() throws Exception {
                 throw new Exception();
             }
         }
 
         @Test
-        public void exceptionConstractor() {
+        public void exceptionConstructor() {
             exception.expect(BeansException.class);
-            exception.expectCause(Matchers.<Throwable>instanceOf(InvocationTargetException.class));
-            EntityUtil.createEntity(ExceptionConstractorClass.class, createEmptySqlRow());
+            EntityUtil.createEntity(ExceptionConstructorClass.class, createEmptySqlRow());
         }
 
         public static class ExceptionSetterClass {
@@ -1705,14 +1632,6 @@ public class EntityUtilTest {
             assertThat(entity.getStringType(), is("fuga"));
         }
 
-        @Test
-        public void originalType() {
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>(), new DummyDialect());
-            row.put("ORIGINAL_TYPE", "hoge");
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getOriginalType(), is(new OriginalType("fuga")));
-        }
-
         private static SqlRow createEmptySqlRow() {
             return new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>());
         }
@@ -1733,11 +1652,6 @@ public class EntityUtilTest {
 
         @ClassRule
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-        @Before
-        public void setUp() throws Exception {
-            repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-        }
 
         @After
         public void tearDown() throws Exception {

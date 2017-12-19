@@ -34,18 +34,6 @@ public final class DatabaseUtil {
     }
 
     /**
-     * カラムのSQL型を取得する。
-     * スキーマ名を指定しない場合、デフォルトスキーマが対象となる。
-     *
-     * @param schemaName スキーマ名
-     * @param tableName テーブル名
-     * @return カラムのSQL型(キー:カラム名、値:SQL型)
-     */
-    public static Map<String, Integer> getSqlTypeMap(String schemaName, String tableName) {
-        return getDatabaseMetaDataExtractor().getSqlTypeMap(schemaName, tableName);
-    }
-
-    /**
      * 識別子をデータベースメタ情報の定義を元に変換する。
      *
      * @param identifiers 識別子

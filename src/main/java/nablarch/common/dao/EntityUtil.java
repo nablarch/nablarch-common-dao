@@ -1,8 +1,8 @@
 package nablarch.common.dao;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +80,8 @@ public final class EntityUtil {
 
     /**
      * エンティティからIDカラムの情報と、その値を全て取得する。
+     * <p/>
+     * 値は{@link ColumnMeta#getJdbcType()}の型に変換されて返される。
      *
      * @param <T> エンティティクラスの型
      * @param entity エンティティオブジェクト
@@ -89,7 +91,7 @@ public final class EntityUtil {
         assert (entity != null);
         final Map<ColumnMeta, Object> idColumns = new LinkedHashMap<ColumnMeta, Object>();
         for (ColumnMeta meta : findEntityMeta(entity.getClass()).getIdColumns()) {
-            idColumns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), null));
+            idColumns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), meta.getJdbcType()));
         }
         return idColumns;
     }
@@ -106,6 +108,8 @@ public final class EntityUtil {
 
     /**
      * エンティティから全カラムの情報と、その値を取得する。
+     * <p/>
+     * 値は{@link ColumnMeta#getJdbcType()}の型に変換されて返される。
      *
      * @param <T> エンティティクラスの型
      * @param entity エンティティ
@@ -116,7 +120,7 @@ public final class EntityUtil {
         final Map<ColumnMeta, Object> columns = new LinkedHashMap<ColumnMeta, Object>();
 
         for (ColumnMeta meta : findEntityMeta(entity.getClass()).getAllColumns()) {
-            columns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), null));
+            columns.put(meta, BeanUtil.getProperty(entity, meta.getPropertyName(), meta.getJdbcType()));
         }
         return columns;
     }
@@ -169,61 +173,55 @@ public final class EntityUtil {
      * @param entityClass 生成するエンティティのクラス
      * @param row 検索結果の1レコード
      * @return エンティティオブジェクト
-     * @throws IllegalStateException エンティティクラスのプロパティにサポート外の型が定義されている場合
-     * @throws BeansException エンティティオブジェクトの生成に失敗した場合, セッターが正常に呼び出せなかった場合
+     * @throws RuntimeException エンティティクラスのプロパティにサポート外の型が定義されている場合
+     * @throws BeansException エンティティオブジェクトの生成に失敗した場合
      */
     public static <T> T createEntity(final Class<T> entityClass, final SqlRow row) {
-        T entity = createInstance(entityClass);
+        final T entity;
+        try {
+            entity = entityClass.newInstance();
+        } catch (Exception e) {
+            throw new BeansException(e);
+        }
         final EntityMeta entityMeta = findEntityMeta(entityClass);
         for (ColumnMeta meta : entityMeta.getAllColumns()) {
             if (!row.containsKey(meta.getName())) {
                 continue;
             }
 
-            Object value = row.getObject(meta.getName(), meta.getPropertyType());
-            setProperty(entity, meta.getPropertyName(), value);
+            final Class<?> type = meta.getPropertyType();
+            if (type.equals(String.class)) {
+                BeanUtil.setProperty(entity, meta.getPropertyName(), row.getString(meta.getName()));
+            } else if (type.equals(Short.class) || type.equals(short.class)) {
+                final BigDecimal d = row.getBigDecimal(meta.getName());
+                BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.shortValue() : null);
+            } else if (type.equals(Integer.class) || type.equals(int.class)) {
+                final BigDecimal d = row.getBigDecimal(meta.getName());
+                BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.intValue() : null);
+            } else if (type.equals(Long.class) || type.equals(long.class)) {
+                final BigDecimal d = row.getBigDecimal(meta.getName());
+                BeanUtil.setProperty(entity, meta.getPropertyName(), d != null ? d.longValue() : null);
+            } else if (type.equals(BigDecimal.class)) {
+                BeanUtil.setProperty(entity, meta.getPropertyName(), row.getBigDecimal(meta.getName()));
+            } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+                final Boolean b = row.getBoolean(meta.getName());
+                BeanUtil.setProperty(entity, meta.getPropertyName(), b);
+            } else if (type.equals(Date.class)) {
+                if (meta.getJdbcType() == Timestamp.class) {
+                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
+                } else {
+                    BeanUtil.setProperty(entity, meta.getPropertyName(), row.getDate(meta.getName()));
+                }
+            } else if (type.equals(Timestamp.class)) {
+                BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
+            } else if (type.isArray() && type.getComponentType()
+                                             .equals(byte.class)) {
+                BeanUtil.setProperty(entity, meta.getPropertyName(), row.getBytes(meta.getName()));
+            } else {
+                throw new RuntimeException("Unknown type " + type + " at " + meta.getName());
+            }
         }
         return entity;
-    }
-
-    /**
-     * {@link Constructor} を使用してエンティティのインスタンスを生成する。<br>
-     *  生成時に例外が発生した場合は {@link BeansException} にラップして送出する。
-     *
-     * @param entityClass 生成するエンティティのクラス
-     * @param <T> 生成するエンティティの型
-     * @return 生成したエンティティ
-     * @throws BeansException エンティティの生成に失敗した場合
-     */
-    private static <T> T createInstance(final Class<T> entityClass) {
-        try {
-            Constructor<T> constructor = entityClass.getConstructor();
-            return constructor.newInstance();
-        } catch (Exception e) {
-            throw new BeansException(e);
-        }
-    }
-
-    /**
-     * エンティティのプロパティに値をセットする。
-     *
-     * @param entity 対象のエンティティ
-     * @param propertyName 値をセットするプロパティ名
-     * @param value セットする値
-     * @throws BeansException セッターが正常に呼び出せなかった場合
-     */
-    public static void setProperty(Object entity, final String propertyName, final Object value) {
-        PropertyDescriptor descriptor = BeanUtil.getPropertyDescriptor(entity.getClass(), propertyName);
-        Method setter = descriptor.getWriteMethod();
-        if (setter == null) {
-            return ;
-        }
-
-        try {
-            setter.invoke(entity, value);
-        } catch (Exception e) {
-            throw new BeansException(e);
-        }
     }
 
     /**

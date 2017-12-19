@@ -1,24 +1,22 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.any;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.text.IsEqualIgnoringCase.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-import nablarch.test.support.db.helper.TargetDb;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.hamcrest.collection.IsMapContaining;
-import org.hamcrest.text.IsEqualIgnoringCase;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
@@ -40,11 +38,6 @@ import org.junit.runner.RunWith;
 
 import mockit.Expectations;
 import mockit.Mocked;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 /**
  * {@link DatabaseUtil}のテストクラス。
@@ -92,147 +85,6 @@ public class DatabaseUtilTest {
         Map<String, Short> primaryKeys = DatabaseUtil.getPrimaryKey("DAO_USERS");
         assertThat("主キーは1つ", primaryKeys.size(), is(1));
         assertThat(primaryKeys.get("USER_ID"), is(Short.valueOf("1")));
-    }
-
-    /**
-     * SQL型の取得テスト：デフォルトスキーマ。
-     * Oracle用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = TargetDb.Db.ORACLE)
-    @Test
-    public void getSqlType_defaultSchema_Oracle() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("USER_ID"), is(Types.DECIMAL));
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        assertThat(actual.get("BIRTHDAY"), is(Types.TIMESTAMP));
-        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
-        assertThat(actual.get("VERSION"), is(Types.DECIMAL));
-        assertThat(actual.get("ACTIVE"), is(Types.DECIMAL));
-    }
-
-    /**
-     * SQL型の取得テスト：デフォルトスキーマ。
-     * SQLServer用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = TargetDb.Db.SQL_SERVER)
-    @Test
-    public void getSqlType_defaultSchema_SqlServer() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("USER_ID"), is(Types.NUMERIC));
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        assertThat(actual.get("BIRTHDAY"), is(Types.TIMESTAMP));
-        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
-        assertThat(actual.get("VERSION"), is(Types.NUMERIC));
-        assertThat(actual.get("ACTIVE"), is(Types.BIT));
-    }
-
-    /**
-     * SQL型の取得テスト：デフォルトスキーマ。
-     * PostgreSQL用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = TargetDb.Db.POSTGRE_SQL)
-    @Test
-    public void getSqlType_defaultSchema_PostgreSQL() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("USER_ID"), is(Types.BIGINT));
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        assertThat(actual.get("BIRTHDAY"), is(Types.DATE));
-        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
-        assertThat(actual.get("VERSION"), is(Types.BIGINT));
-        assertThat(actual.get("ACTIVE"), is(Types.BIT));
-    }
-
-    /**
-     * SQL型の取得テスト：デフォルトスキーマ。
-     * H2用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = TargetDb.Db.H2)
-    @Test
-    public void getSqlType_defaultSchema_H2() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("USER_ID"), is(Types.BIGINT));
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        assertThat(actual.get("BIRTHDAY"), is(Types.DATE));
-        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
-        assertThat(actual.get("VERSION"), is(Types.BIGINT));
-        assertThat(actual.get("ACTIVE"), is(Types.BOOLEAN));
-    }
-
-    /**
-     * SQL型の取得テスト：デフォルトスキーマ。
-     * DB2用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = TargetDb.Db.DB2)
-    @Test
-    public void getSqlType_defaultSchema_DB2() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("USER_ID"), is(Types.BIGINT));
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        assertThat(actual.get("BIRTHDAY"), is(Types.DATE));
-        assertThat(actual.get("INSERT_DATE"), is(Types.TIMESTAMP));
-        assertThat(actual.get("VERSION"), is(Types.BIGINT));
-        assertThat(actual.get("ACTIVE"), is(Types.SMALLINT));
-    }
-
-    /**
-     * SQL型の取得テスト：スキーマを指定。
-     * Oracle用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = TargetDb.Db.ORACLE)
-    @Test
-    public void getSqlType_otherSchema_Oracle() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        actual = DatabaseUtil.getSqlTypeMap("test_schema", "TEST_SCHEMA_USERS");
-        assertThat(actual.get("NAME"), is(Types.DECIMAL));
-    }
-
-    /**
-     * SQL型の取得テスト：スキーマを指定。
-     * SQLServer, PostgreSQL, H2, DB2用。
-     *
-     * @throws Exception
-     */
-    @TargetDb(include = {TargetDb.Db.SQL_SERVER, TargetDb.Db.POSTGRE_SQL, TargetDb.Db.H2, TargetDb.Db.DB2})
-    @Test
-    public void getSqlType_otherSchema_SqlServer_PostgreSQL_H2_DB2() throws Exception {
-        Map<String, Integer> actual = DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        assertThat(actual.get("NAME"), is(Types.VARCHAR));
-        actual = DatabaseUtil.getSqlTypeMap("test_schema", "TEST_SCHEMA_USERS");
-        assertThat(actual.get("NAME"), is(Types.INTEGER));
-    }
-
-    /**
-     * SQL型の取得テスト：SQL型取得時にSQLエラーが発生した場合は、RuntimeExceptionが送出される。
-     *
-     * @throws Exception
-     */
-    @Test
-    public void getSqlType_SQLException() throws Exception {
-        new Expectations(DbConnectionContext.class) {{
-            DbConnectionContext.getConnection();
-            result = new SQLException("sql error");
-        }};
-
-        RuntimeException exception = null;
-        try {
-            DatabaseUtil.getSqlTypeMap(null, "DAO_USERS");
-        } catch (RuntimeException e) {
-            exception = e;
-        }
-        assertThat(exception.getCause(), is(instanceOf(SQLException.class)));
     }
 
     /**

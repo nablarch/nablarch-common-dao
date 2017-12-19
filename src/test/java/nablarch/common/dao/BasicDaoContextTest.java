@@ -1,16 +1,11 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,7 +19,7 @@ import java.util.Map;
 
 import javax.persistence.GenerationType;
 import javax.persistence.OptimisticLockException;
-import nablarch.core.db.statement.BasicSqlPStatement;
+
 import org.hamcrest.CoreMatchers;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -33,7 +28,6 @@ import nablarch.common.dao.DaoTestHelper.IdentityGenUsers;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.DaoTestHelper.Users2;
 import nablarch.common.dao.DaoTestHelper.Users3;
-import nablarch.common.dao.DaoTestHelper.IllegalEntity;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbAccessException;
 import nablarch.core.db.connection.ConnectionFactory;
@@ -175,22 +169,6 @@ public class BasicDaoContextTest {
     @Test(expected = IllegalArgumentException.class)
     public void findByIdMismatchIdColumnCount() {
         sut.findById(Users.class);
-    }
-
-    /**
-     * SQL型が取得できない場合、例外を送出すること。
-     */
-    @Test
-    public void findByIdIllegalEntity() throws Exception {
-        new Expectations(connection) {{
-            connection.prepareStatement(anyString);
-            result = new BasicSqlPStatement(null, null);
-        }};
-        sut.setDbConnection(connection);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to get SQL type from DB.");
-        sut.findById(IllegalEntity.class, 1);
     }
 
     /**
@@ -815,26 +793,6 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * SQL型が取得できない場合、例外を送出すること。
-     */
-    @Test
-    public void updateIllegalEntity() throws Exception {
-        final IllegalEntity illegalEntity = new IllegalEntity();
-        illegalEntity.setId(1);
-        illegalEntity.setString("str");
-
-        new Expectations(connection) {{
-            connection.prepareStatement(anyString);
-            result = new BasicSqlPStatement(null, null);
-        }};
-        sut.setDbConnection(connection);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to get SQL type from DB.");
-        sut.update(illegalEntity);
-    }
-
-    /**
      * {@link BasicDaoContext#batchUpdate(java.util.List)}のテスト。
      */
     @Test
@@ -886,28 +844,6 @@ public class BasicDaoContextTest {
 
         final List<Users> users = VariousDbTestHelper.findAll(Users.class);
         assertThat("値が変更されていないこと", users, contains(user1));
-    }
-
-    /**
-     * SQL型が取得できない場合、例外を送出すること。
-     */
-    @Test
-    public void batchUpdateIllegalEntity() throws Exception {
-        final IllegalEntity illegalEntity = new IllegalEntity();
-        illegalEntity.setId(1);
-        illegalEntity.setString("str");
-        ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
-        illegalEntities.add(illegalEntity);
-
-        new Expectations(connection) {{
-            connection.prepareStatement(anyString);
-            result = new BasicSqlPStatement(null, null);
-        }};
-        sut.setDbConnection(connection);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to get SQL type from DB.");
-        sut.batchUpdate(illegalEntities);
     }
 
     /**
@@ -1267,26 +1203,6 @@ public class BasicDaoContextTest {
         assertThat(actual.getName(), is(users.getName()));
         assertThat(actual.getBirthday(), is(users.getBirthday()));
         assertThat(actual.getInsertDate(), is(users.getInsertDate()));
-    }
-
-    /**
-     * SQL型が取得できない場合、例外を送出すること。
-     */
-    @Test
-    public void insertIllegalEntity() throws Exception {
-        final IllegalEntity illegalEntity = new IllegalEntity();
-        illegalEntity.setId(1);
-        illegalEntity.setString("str");
-
-        new Expectations(connection) {{
-            connection.prepareStatement(anyString);
-            result = new BasicSqlPStatement(null, null);
-        }};
-        sut.setDbConnection(connection);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to get SQL type from DB.");
-        sut.insert(illegalEntity);
     }
 
     /**
@@ -1764,28 +1680,6 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * SQL型が取得できない場合、例外を送出すること。
-     */
-    @Test
-    public void batchInsertIllegalEntity() throws Exception {
-        final IllegalEntity illegalEntity = new IllegalEntity();
-        illegalEntity.setId(1);
-        illegalEntity.setString("str");
-        ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
-        illegalEntities.add(illegalEntity);
-
-        new Expectations(connection) {{
-            connection.prepareStatement(anyString);
-            result = new BasicSqlPStatement(null, null);
-        }};
-        sut.setDbConnection(connection);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to get SQL type from DB.");
-        sut.batchInsert(illegalEntities);
-    }
-
-    /**
      * {@link BasicDaoContext#delete(Object)}のテスト。
      *
      * @throws Exception
@@ -1921,28 +1815,6 @@ public class BasicDaoContextTest {
 
         final List<Users> users = VariousDbTestHelper.findAll(Users.class, "id");
         assertThat("削除されていないこと", users, contains(user1, user2));
-    }
-
-    /**
-     * SQL型が取得できない場合、例外を送出すること。
-     */
-    @Test
-    public void batchDeleteIllegalEntity() throws Exception {
-        final IllegalEntity illegalEntity = new IllegalEntity();
-        illegalEntity.setId(1);
-        illegalEntity.setString("str");
-        ArrayList<IllegalEntity> illegalEntities = new ArrayList<IllegalEntity>();
-        illegalEntities.add(illegalEntity);
-
-        new Expectations(connection) {{
-            connection.prepareStatement(anyString);
-            result = new BasicSqlPStatement(null, null);
-        }};
-        sut.setDbConnection(connection);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to get SQL type from DB.");
-        sut.batchDelete(illegalEntities);
     }
 
     /**
