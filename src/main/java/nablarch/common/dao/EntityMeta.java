@@ -68,12 +68,11 @@ public class EntityMeta implements Serializable {
 
         ColumnMeta tempVersionColumn = null;
         ColumnMeta tempGeneratedValueColumn = null;
-        Map<String, Integer> sqlTypeMap = DatabaseUtil.getSqlTypeMap(schemaName, tableName);
         for (PropertyDescriptor pd : propertyDescriptors) {
             if (isJoinColumn(pd)) {
                 continue;
             }
-            final ColumnMeta meta = new ColumnMeta(this, pd, sqlTypeMap);
+            final ColumnMeta meta = new ColumnMeta(this, pd);
             if (!meta.isTransient()) {
                 columnMetaList.add(meta);
             }

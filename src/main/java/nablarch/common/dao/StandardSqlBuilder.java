@@ -74,12 +74,11 @@ public class StandardSqlBuilder {
         final Map<ColumnMeta, Object> columns = EntityUtil.findAllColumns(entity);
         final List<Object> params = new ArrayList<Object>();
 
-        List<ColumnMeta> columnList = sqlWithColumns.getColumns();
-        for (ColumnMeta column : columnList) {
+        for (ColumnMeta column : sqlWithColumns.getColumns()) {
             params.add(columns.get(column));
         }
 
-        return new SqlWithParams(sqlWithColumns.getSql(), params, columnList);
+        return new SqlWithParams(sqlWithColumns.getSql(), params);
     }
 
     /**
@@ -151,11 +150,10 @@ public class StandardSqlBuilder {
         final Map<ColumnMeta, Object> columns = EntityUtil.findIdColumns(entity);
 
         final List<Object> params = new ArrayList<Object>();
-        List<ColumnMeta> columnList = sqlWithColumns.getColumns();
-        for (ColumnMeta column : columnList) {
+        for (ColumnMeta column : sqlWithColumns.getColumns()) {
             params.add(columns.get(column));
         }
-        return new SqlWithParams(sqlWithColumns.getSql(), params, columnList);
+        return new SqlWithParams(sqlWithColumns.getSql(), params);
     }
 
     /**
@@ -227,11 +225,10 @@ public class StandardSqlBuilder {
 
         final Map<ColumnMeta, Object> columnsWithParam = EntityUtil.findAllColumns(entity);
         final List<Object> params = new ArrayList<Object>();
-        List<ColumnMeta> columnsList = sqlWithColumns.getColumns();
-        for (ColumnMeta column : columnsList) {
+        for (ColumnMeta column : sqlWithColumns.getColumns()) {
             params.add(columnsWithParam.get(column));
         }
-        return new SqlWithParams(sqlWithColumns.getSql(), params, columnsList);
+        return new SqlWithParams(sqlWithColumns.getSql(), params);
     }
 
     /**

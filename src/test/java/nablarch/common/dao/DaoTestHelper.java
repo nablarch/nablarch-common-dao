@@ -1,12 +1,9 @@
 package nablarch.common.dao;
 
 import java.math.BigDecimal;
-import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -579,33 +576,5 @@ public class DaoTestHelper {
             // NOP
         }
         return null;
-    }
-
-    public static class MockExtractor extends DatabaseMetaDataExtractor {
-
-        private Map<String, Integer> sqlTypeMap = new HashMap<String, Integer>() {
-            @Override
-            public Integer get(Object key) {
-                return Types.VARCHAR;
-            }
-        };
-
-        public MockExtractor() {
-
-        }
-
-        public MockExtractor(Map<String, Integer> sqlTypeMap) {
-            this.sqlTypeMap = sqlTypeMap;
-        }
-
-        @Override
-        public Map<String, Short> getPrimaryKeys(String tableName) {
-            return new HashMap<String, Short>();
-        }
-
-        @Override
-        public Map<String, Integer> getSqlTypeMap(String schemaName, String tableName) {
-            return sqlTypeMap;
-        }
     }
 }

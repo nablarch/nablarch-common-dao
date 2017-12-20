@@ -1,16 +1,12 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-
-import nablarch.core.db.connection.DbConnectionContext;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 import nablarch.test.support.SystemRepositoryResource;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
 import org.junit.ClassRule;
+import org.junit.Test;
 
 /**
  * {@link EntityMeta}のテストクラス。
@@ -22,16 +18,6 @@ public class EntityMetaTest {
 
     @ClassRule
     public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-
-    @Before
-    public void setUp() throws Exception {
-        repositoryResource.addComponent("databaseMetaDataExtractor", new DaoTestHelper.MockExtractor());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        DbConnectionContext.removeConnection();
-    }
 
     @Test
     public void testEquals() throws Exception {
