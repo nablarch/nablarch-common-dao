@@ -1,21 +1,16 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
+import nablarch.test.support.SystemRepositoryResource;
+import nablarch.test.support.db.helper.DatabaseTestRunner;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.persistence.Id;
 import javax.persistence.Version;
 
-import nablarch.core.db.connection.DbConnectionContext;
-import nablarch.test.support.SystemRepositoryResource;
-import nablarch.test.support.db.helper.DatabaseTestRunner;
-import nablarch.test.support.db.helper.VariousDbTestHelper;
-
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(DatabaseTestRunner.class)
 public class ColumnMetaTest {
