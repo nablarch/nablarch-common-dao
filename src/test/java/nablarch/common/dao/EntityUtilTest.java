@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.AttributeConverter;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -44,7 +43,6 @@ import nablarch.core.db.connection.AppDbConnection;
 import nablarch.core.db.connection.ConnectionFactory;
 import nablarch.core.db.connection.DbConnectionContext;
 import nablarch.core.db.connection.TransactionManagerConnection;
-import nablarch.core.db.dialect.DefaultDialect;
 import nablarch.core.db.statement.SqlRow;
 import nablarch.core.db.transaction.JdbcTransactionFactory;
 import nablarch.core.transaction.Transaction;
