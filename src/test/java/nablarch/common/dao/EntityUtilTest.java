@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.AttributeConverter;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -44,7 +45,6 @@ import nablarch.core.db.connection.ConnectionFactory;
 import nablarch.core.db.connection.DbConnectionContext;
 import nablarch.core.db.connection.TransactionManagerConnection;
 import nablarch.core.db.dialect.DefaultDialect;
-import nablarch.core.db.dialect.converter.AttributeConverter;
 import nablarch.core.db.statement.SqlRow;
 import nablarch.core.db.transaction.JdbcTransactionFactory;
 import nablarch.core.transaction.Transaction;
@@ -1353,47 +1353,6 @@ public class EntityUtilTest {
             }
         }
 
-        public static class HogeFugaConverter implements AttributeConverter<String> {
-
-            @Override
-            public <DB> DB convertToDatabase(String javaAttribute, Class<DB> databaseType) {
-                return databaseType.cast("hoge");
-            }
-
-            @Override
-            public String convertFromDatabase(Object databaseAttribute) {
-                return "fuga";
-            }
-        }
-
-        public static class OriginalTypeConverter implements AttributeConverter<OriginalType> {
-
-            @Override
-            public <DB> DB convertToDatabase(OriginalType javaAttribute, Class<DB> databaseType) {
-                return databaseType.cast("hoge");
-            }
-
-            @Override
-            public OriginalType convertFromDatabase(Object databaseAttribute) {
-                return new OriginalType("fuga");
-            }
-        }
-
-        public static class DummyDialect extends DefaultDialect {
-            private Map<Class<?>, AttributeConverter<?>> converters;
-
-            public DummyDialect() {
-                converters = new HashMap<Class<?>, AttributeConverter<?>>();
-                converters.put(String.class, new HogeFugaConverter());
-                converters.put(OriginalType.class, new OriginalTypeConverter());
-            }
-
-            @Override
-            protected <T> AttributeConverter<T> getAttributeConverter(Class<T> javaType) {
-                return (AttributeConverter<T>) converters.get(javaType);
-            }
-        }
-
         @Test
         public void stringType() {
             SqlRow row = createEmptySqlRow();
@@ -1622,14 +1581,6 @@ public class EntityUtilTest {
             exception.expect(BeansException.class);
             exception.expectCause(CoreMatchers.<Throwable>instanceOf(InvocationTargetException.class));
             EntityUtil.createEntity(ExceptionSetterClass.class, row);
-        }
-
-        @Test
-        public void otherDialect() {
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>(), new DummyDialect());
-            row.put("STRING_TYPE", "hoge");
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getStringType(), is("fuga"));
         }
 
         private static SqlRow createEmptySqlRow() {
