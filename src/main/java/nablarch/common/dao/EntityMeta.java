@@ -2,18 +2,14 @@ package nablarch.common.dao;
 
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Table;
 
 import nablarch.core.beans.BeanUtil;
@@ -57,6 +53,14 @@ public class EntityMeta implements Serializable {
      */
     public EntityMeta(final Class<?> entityClass) {
 
+        final Access access = entityClass.getAnnotation(Access.class);
+        final ColumnDefinitionFactory columnDefinitionFactory;
+        if (access != null && access.value() == AccessType.FIELD) {
+            columnDefinitionFactory = new FieldBasedColumnDefinitionFactory();
+        } else {
+            columnDefinitionFactory = new GetterBasedColumnDefinitionFactory();
+        }
+
         tableName = findTableName(entityClass);
 
         schemaName = findSchemaName(entityClass);
@@ -69,10 +73,12 @@ public class EntityMeta implements Serializable {
         ColumnMeta tempVersionColumn = null;
         ColumnMeta tempGeneratedValueColumn = null;
         for (PropertyDescriptor pd : propertyDescriptors) {
-            if (isJoinColumn(pd)) {
+            final ColumnDefinition columnDefinition = columnDefinitionFactory.create(tableName, pd);
+            if (columnDefinition.isJoinColumn()) {
                 continue;
             }
-            final ColumnMeta meta = new ColumnMeta(this, pd);
+            
+            final ColumnMeta meta = new ColumnMeta(this, columnDefinition);
             if (!meta.isTransient()) {
                 columnMetaList.add(meta);
             }
@@ -139,21 +145,6 @@ public class EntityMeta implements Serializable {
         }
         final String schema = table.schema();
         return StringUtil.isNullOrEmpty(schema) ? null : schema;
-    }
-
-    /**
-     * Joinカラムかどうか判定する。
-     *
-     * @param pd 属性のプロパティディスクリプタ
-     * @return Joinカラムであればtrue
-     */
-    private static boolean isJoinColumn(final PropertyDescriptor pd) {
-        final Method getter = pd.getReadMethod();
-        return getter.getAnnotation(JoinColumn.class) != null
-                || getter.getAnnotation(OneToMany.class) != null
-                || getter.getAnnotation(ManyToOne.class) != null
-                || getter.getAnnotation(ManyToMany.class) != null
-                || getter.getAnnotation(OneToOne.class) != null;
     }
 
     /**
