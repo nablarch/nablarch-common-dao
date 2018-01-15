@@ -1189,7 +1189,7 @@ public class EntityUtilTest {
 
             private int[] intArray;
 
-            private OriginalType originalType;
+            private char invalid;
 
             private String noSetter;
 
@@ -1322,12 +1322,12 @@ public class EntityUtilTest {
                 this.intArray = intArray;
             }
 
-            public OriginalType getOriginalType() {
-                return originalType;
+            public char getInvalid() {
+                return invalid;
             }
 
-            public void setOriginalType(OriginalType originalType) {
-                this.originalType = originalType;
+            public void setInvalid(char invalid) {
+                this.invalid = invalid;
             }
 
             public String getNoSetter() {
@@ -1335,21 +1335,6 @@ public class EntityUtilTest {
             }
         }
 
-        public static class OriginalType {
-            private String str;
-
-            public OriginalType(String str) {
-                this.str = str;
-            }
-
-            @Override
-            public boolean equals(Object other) {
-                if (other instanceof OriginalType) {
-                    return str.equals(((OriginalType) other).str);
-                }
-                return false;
-            }
-        }
 
         @Test
         public void stringType() {
@@ -1511,6 +1496,19 @@ public class EntityUtilTest {
             row.put("BYTE_ARRAY", bytes);
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
             assertThat(entity.getByteArray(), is(bytes));
+        }
+
+        @Test
+        public void invalidType() {
+            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            typeMap.put("INVALID", Types.CHAR);
+
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            row.put("INVALID", 'A');
+
+            exception.expect(RuntimeException.class);
+            exception.expectMessage("INVALID");
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
         }
 
         @Rule
