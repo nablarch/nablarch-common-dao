@@ -19,10 +19,15 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hamcrest.Matchers;
+import org.hamcrest.beans.HasPropertyWithValue;
+
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.UniversalDao.Transaction;
+import nablarch.common.dao.entity.DatePkTable;
+import nablarch.common.dao.entity.TimestampPkTable;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
 import nablarch.core.db.connection.BasicDbConnection;
@@ -940,6 +945,94 @@ public class UniversalDaoTest {
         assertThat(actual, hasSize(1));
         assertThat(actual.get(0).text, is(entity.text));
 
+    }
+
+    @Test
+    public void DATEが主キーのテーブルの削除ができること() {
+        // setup
+        VariousDbTestHelper.createTable(DatePkTable.class);
+
+        final Date date = new Date();
+        final DatePkTable entity = new DatePkTable(date, "name");
+        UniversalDao.insert(entity);
+        connection.commit();
+        final List<DatePkTable> setupData = UniversalDao.findAll(DatePkTable.class);
+        assertThat("セットアップ確認", setupData, Matchers.<DatePkTable>hasSize(1));
+
+        // execute
+        entity.dateCol = DaoTestHelper.trimTime(date);
+        final int deleteCount = UniversalDao.delete(entity);
+        connection.commit();
+
+        // assert
+        assertThat(deleteCount, is(1));
+        assertThat(UniversalDao.findAll(DatePkTable.class), Matchers.<DatePkTable>empty());
+    }
+
+    @Test
+    public void DATEが主キーのテーブルの更新と検索ができること() {
+        // setup
+        VariousDbTestHelper.createTable(DatePkTable.class);
+        final Date date = new Date();
+
+        final DatePkTable entity = new DatePkTable(date, "name");
+        UniversalDao.insert(entity);
+        connection.commit();
+        final List<DatePkTable> setupData = UniversalDao.findAll(DatePkTable.class);
+        assertThat("セットアップ確認", setupData, Matchers.<DatePkTable>hasSize(1));
+
+        // execute
+        entity.dateCol = DaoTestHelper.trimTime(date);
+        entity.name = "なまえ";
+        final int updateCount = UniversalDao.update(entity);
+        connection.commit();
+
+        // assert
+        assertThat("1レコード更新されること", updateCount, is(1));
+        final DatePkTable actual = UniversalDao.findById(DatePkTable.class, DaoTestHelper.trimTime(date));
+        assertThat("主キー検索で更新ごのレコードが取得できること", actual,
+                HasPropertyWithValue.<DatePkTable>hasProperty("name", is("なまえ")));
+    }
+
+    @Test
+    public void TIMESTAMPが主キーのテーブルの削除ができること() {
+        // setup
+        VariousDbTestHelper.createTable(TimestampPkTable.class);
+
+        final Date date = new Date();
+        final TimestampPkTable entity = new TimestampPkTable(date, "name");
+        UniversalDao.insert(entity);
+        connection.commit();
+        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
+
+        // execute
+        final int deleteCount = UniversalDao.delete(entity);
+        connection.commit();
+        
+        // assert
+        assertThat("1レコード削除されること", deleteCount, is(1));
+        assertThat(UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>empty());
+    }
+
+    @Test
+    public void TIMESTAMP型が主キーのテーブルの更新ができること() {
+        // setup
+        VariousDbTestHelper.createTable(TimestampPkTable.class);
+
+        final Date date = new Date();
+        final TimestampPkTable entity = new TimestampPkTable(date, "name");
+        UniversalDao.insert(entity);
+        connection.commit();
+        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
+        
+        // execute
+        entity.name = "名前を変更";
+        final int updateCount = UniversalDao.update(entity);
+        
+        // assert
+        assertThat("1レコード更新されること", updateCount, is(1));
+        assertThat(UniversalDao.findById(TimestampPkTable.class, entity.timestampCol),
+                HasPropertyWithValue.<TimestampPkTable>hasProperty("name", is("名前を変更")));
     }
 
     /**
