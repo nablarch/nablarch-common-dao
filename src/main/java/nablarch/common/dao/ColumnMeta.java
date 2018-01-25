@@ -18,7 +18,7 @@ public class ColumnMeta implements Serializable {
     /** エンティティメタ情報 */
     private final EntityMeta entityMeta;
 
-
+    /** アノテーションの設定 */
     private final JpaAnnotationParam jpaAnnotationParam;
 
     /**

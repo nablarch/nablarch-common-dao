@@ -14,7 +14,7 @@ interface JpaAnnotationParamFactory {
      * ColumnDefinitionを生成する。
      * @param tableName テーブル名
      * @param propertyDescriptor プロパティの情報
-     * @param entityClass
+     * @param entityClass エンティティクラス
      * @return JpaAnnotationParam
      */
     JpaAnnotationParam create(String tableName, final PropertyDescriptor propertyDescriptor, Class<?> entityClass);
