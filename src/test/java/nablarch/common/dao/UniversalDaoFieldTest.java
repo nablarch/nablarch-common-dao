@@ -111,6 +111,17 @@ public class UniversalDaoFieldTest {
         }
     }
 
+    @Entity
+    @Table(name = "ILLEGAL_PROPERTY_USERS")
+    public static class IllegalPropertyUsers {
+
+        public String name;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         ConnectionFactory connectionFactory = repositoryResource.getComponent("connectionFactory");
@@ -201,6 +212,12 @@ public class UniversalDaoFieldTest {
     public void プロパティ名に対応するフィールドが無い場合に例外が送出されること() {
         expectedException.expect(IllegalArgumentException.class);
         UniversalDao.findById(IllegalFieldUsers.class, 3L);
+    }
+
+    @Test
+    public void フィールドに対応するgetterが無い場合に例外が送出されること() {
+        expectedException.expect(IllegalArgumentException.class);
+        UniversalDao.findById(IllegalPropertyUsers.class, 3L);
     }
 
     private Date trimTime(Date date) {

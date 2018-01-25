@@ -18,53 +18,17 @@ public class ColumnMeta implements Serializable {
     /** エンティティメタ情報 */
     private final EntityMeta entityMeta;
 
-    /** カラム名 */
-    private final String name;
 
-    /** プロパティ名 */
-    private final String propertyName;
-
-    /** JDBCの型 */
-    private final Class<?> jdbcType;
-
-    /** プロパティの型 */
-    private final Class<?> propertyType;
-
-    /** 永続化対象外のプロパティを表す(対象外の場合true) */
-    private final boolean isTransient;
-
-    /** IDカラムであることを表す(IDカラムの場合true) */
-    private final boolean isIdColumn;
-
-    /** バージョンカラムであることを表す(バージョンカラムの場合true) */
-    private final boolean isVersion;
-
-    /** IDの生成タイプ */
-    private final GenerationType generationType;
-
-    /** ID生成オブジェクトを識別する名称 */
-    private final String generatorName;
+    private final JpaAnnotationParam jpaAnnotationParam;
 
     /**
      * コンストラクタ。
-     *  @param entityMeta エンティティ定義のメタデータ
-     * @param columnDefinition プロパティ情報
+     * @param entityMeta エンティティ定義のメタデータ
+     * @param jpaAnnotationParam プロパティ情報
      */
-    public ColumnMeta(final EntityMeta entityMeta, final ColumnDefinition columnDefinition) {
+    public ColumnMeta(final EntityMeta entityMeta, final JpaAnnotationParam jpaAnnotationParam) {
         this.entityMeta = entityMeta;
-
-        propertyName = columnDefinition.getName();
-        propertyType = columnDefinition.getPropertyType();
-        name = columnDefinition.getColumnName();
-
-        isTransient = columnDefinition.isTransient();
-        isIdColumn = columnDefinition.isIdColumn();
-        isVersion = columnDefinition.isVersionColumn();
-        jdbcType = columnDefinition.getJdbcType();
-
-        generationType = columnDefinition.getGenerationType();
-        generatorName = columnDefinition.getGeneratorName();
-
+        this.jpaAnnotationParam = jpaAnnotationParam;
     }
 
     /**
@@ -73,7 +37,7 @@ public class ColumnMeta implements Serializable {
      * @return カラム名
      */
     public String getName() {
-        return name;
+        return jpaAnnotationParam.getColumnName();
     }
 
     /**
@@ -82,7 +46,7 @@ public class ColumnMeta implements Serializable {
      * @return プロパティ名
      */
     public String getPropertyName() {
-        return propertyName;
+        return jpaAnnotationParam.getName();
     }
 
     /**
@@ -91,7 +55,7 @@ public class ColumnMeta implements Serializable {
      * @return JDBCでバインドするときの型
      */
     public Class<?> getJdbcType() {
-        return jdbcType;
+        return jpaAnnotationParam.getJdbcType();
     }
 
     /**
@@ -100,7 +64,7 @@ public class ColumnMeta implements Serializable {
      * @return プロパティの型
      */
     public Class<?> getPropertyType() {
-        return propertyType;
+        return jpaAnnotationParam.getPropertyType();
     }
 
     /**
@@ -109,7 +73,7 @@ public class ColumnMeta implements Serializable {
      * @return 揮発性ならばtrue
      */
     protected boolean isTransient() {
-        return isTransient;
+        return jpaAnnotationParam.isTransient();
     }
 
     /**
@@ -118,7 +82,7 @@ public class ColumnMeta implements Serializable {
      * @return プライマリーキーを構成すればtrue
      */
     public boolean isIdColumn() {
-        return isIdColumn;
+        return jpaAnnotationParam.isIdColumn();
     }
 
     /**
@@ -127,7 +91,7 @@ public class ColumnMeta implements Serializable {
      * @return バージョンを表せばtrue
      */
     public boolean isVersion() {
-        return isVersion;
+        return jpaAnnotationParam.isVersionColumn();
     }
 
     /**
@@ -136,7 +100,7 @@ public class ColumnMeta implements Serializable {
      * @return 生成タイプがnullでないならばtrue
      */
     public boolean isGeneratedValue() {
-        return generationType != null;
+        return jpaAnnotationParam.getGenerationType() != null;
     }
 
     /**
@@ -145,7 +109,7 @@ public class ColumnMeta implements Serializable {
      * @return IDジェネレータのタイプ
      */
     public GenerationType getGenerationType() {
-        return generationType;
+        return jpaAnnotationParam.getGenerationType();
     }
 
     /**
@@ -154,7 +118,7 @@ public class ColumnMeta implements Serializable {
      * @return IDジェネレータの名前 (シーケンスならシーケンス名 / 発番テーブルなら発番テーブルのキー名)
      */
     public String getGeneratorName() {
-        return generatorName;
+        return jpaAnnotationParam.getGeneratorName();
     }
 
     @Override
@@ -163,13 +127,13 @@ public class ColumnMeta implements Serializable {
             return false;
         }
         final ColumnMeta anotherMeta = ColumnMeta.class.cast(another);
-        return this.name.equals(anotherMeta.getName())
+        return this.jpaAnnotationParam.getColumnName().equals(anotherMeta.getName())
                 && entityMeta.equals(anotherMeta.entityMeta);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() + entityMeta.hashCode();
+        return this.jpaAnnotationParam.getColumnName().hashCode() + entityMeta.hashCode();
     }
 
 }

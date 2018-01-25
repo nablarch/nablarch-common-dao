@@ -2,7 +2,6 @@ package nablarch.common.dao;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -29,11 +28,12 @@ import javax.persistence.Version;
 import nablarch.core.util.StringUtil;
 
 /**
- * 属性の定義を表すクラス。
+ * アノテーションの設定を取得して保持するクラス。
  *
  * @author sioiri
+ * @author Ryota Yoshinouchi
  */
-public class ColumnDefinition {
+class JpaAnnotationParam {
 
     /** 他Entityへの参照を保持することを表すアノテーションのリスト */
     @SuppressWarnings("unchecked")
@@ -65,7 +65,7 @@ public class ColumnDefinition {
      * @param propertyDescriptor プロパティの情報
      * @param annotations アノテーションのリスト
      */
-    protected ColumnDefinition(final String tableName, final PropertyDescriptor propertyDescriptor, final Annotation[] annotations) {
+    JpaAnnotationParam(final String tableName, final PropertyDescriptor propertyDescriptor, final Annotation[] annotations) {
         this.propertyDescriptor = propertyDescriptor;
         this.annotations = annotations;
         final GeneratedValue generatedValue = getAnnotation(GeneratedValue.class);
@@ -81,7 +81,7 @@ public class ColumnDefinition {
      *
      * @return 他Entityへの参照を保持するカラムの場合はtrue
      */
-    public boolean isJoinColumn() {
+    boolean isJoinColumn() {
         for (final Annotation annotation : annotations) {
             if (JOIN_COLUMN_ANNOTATIONS.contains(annotation.annotationType())) {
                 return true;
@@ -95,7 +95,7 @@ public class ColumnDefinition {
      *
      * @return プロパティ名
      */
-    public String getName() {
+    String getName() {
         return propertyDescriptor.getName();
     }
 
@@ -104,7 +104,7 @@ public class ColumnDefinition {
      *
      * @return プロパティのタイプ
      */
-    public Class<?> getPropertyType() {
+    Class<?> getPropertyType() {
         return propertyDescriptor.getPropertyType();
     }
 
@@ -117,7 +117,7 @@ public class ColumnDefinition {
      *
      * @return JDBCタイプ。
      */
-    public Class<?> getJdbcType() {
+    Class<?> getJdbcType() {
         final Temporal temporal = getAnnotation(Temporal.class);
         if (temporal == null) {
             return getPropertyType();
@@ -131,7 +131,7 @@ public class ColumnDefinition {
      *
      * @return カラム名
      */
-    public String getColumnName() {
+    String getColumnName() {
         final Column column = getAnnotation(Column.class);
         if (column != null && StringUtil.hasValue(column.name())) {
             return column.name();
@@ -145,7 +145,7 @@ public class ColumnDefinition {
      *
      * @return 永続化対象外のカラムの場合{@code true}
      */
-    public boolean isTransient() {
+    boolean isTransient() {
         return getAnnotation(Transient.class) != null;
     }
 
@@ -154,7 +154,7 @@ public class ColumnDefinition {
      *
      * @return IDカラムの場合{@code true}
      */
-    public boolean isIdColumn() {
+    boolean isIdColumn() {
         return getAnnotation(Id.class) != null;
     }
 
@@ -163,7 +163,7 @@ public class ColumnDefinition {
      *
      * @return バージョンカラムの場合{@code true}
      */
-    public boolean isVersionColumn() {
+    boolean isVersionColumn() {
         return getAnnotation(Version.class) != null;
     }
 
@@ -190,7 +190,7 @@ public class ColumnDefinition {
      *
      * @return IDジェネレータの名前 (シーケンスならシーケンス名 / 発番テーブルなら発番テーブルのキー名)。指定されていない場合はnullを返す。
      */
-    public String getGeneratorName() {
+    String getGeneratorName() {
         return generatedValueMetaData != null ? generatedValueMetaData.generatorName : null;
     }
 
@@ -199,7 +199,7 @@ public class ColumnDefinition {
      *
      * @return IDジェネレータのタイプ。指定されていない場合はnullを返す。
      */
-    public GenerationType getGenerationType() {
+    GenerationType getGenerationType() {
         return generatedValueMetaData != null ? generatedValueMetaData.generationType : null;
     }
 
@@ -260,7 +260,7 @@ public class ColumnDefinition {
                             tableName, columnName, findTableGenerator(generator));
                     break;
                 default:
-                    throw new RuntimeException();
+                    throw new IllegalArgumentException("unexpected value: " + generatedValue);
             }
         }
 

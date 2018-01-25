@@ -54,11 +54,11 @@ public class EntityMeta implements Serializable {
     public EntityMeta(final Class<?> entityClass) {
 
         final Access access = entityClass.getAnnotation(Access.class);
-        final ColumnDefinitionFactory columnDefinitionFactory;
+        final JpaAnnotationParamFactory jpaAnnotationParamFactory;
         if (access != null && access.value() == AccessType.FIELD) {
-            columnDefinitionFactory = new FieldBasedColumnDefinitionFactory();
+            jpaAnnotationParamFactory = new FieldBasedJpaAnnotationParamFactory();
         } else {
-            columnDefinitionFactory = new GetterBasedColumnDefinitionFactory();
+            jpaAnnotationParamFactory = new GetterBasedJpaAnnotationParamFactory();
         }
 
         tableName = findTableName(entityClass);
@@ -73,12 +73,12 @@ public class EntityMeta implements Serializable {
         ColumnMeta tempVersionColumn = null;
         ColumnMeta tempGeneratedValueColumn = null;
         for (PropertyDescriptor pd : propertyDescriptors) {
-            final ColumnDefinition columnDefinition = columnDefinitionFactory.create(tableName, pd);
-            if (columnDefinition.isJoinColumn()) {
+            final JpaAnnotationParam jpaAnnotationParam = jpaAnnotationParamFactory.create(tableName, pd, entityClass);
+            if (jpaAnnotationParam.isJoinColumn()) {
                 continue;
             }
             
-            final ColumnMeta meta = new ColumnMeta(this, columnDefinition);
+            final ColumnMeta meta = new ColumnMeta(this, jpaAnnotationParam);
             if (!meta.isTransient()) {
                 columnMetaList.add(meta);
             }
