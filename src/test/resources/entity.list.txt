@@ -4,5 +4,6 @@ nablarch.common.dao.DaoTestHelper$UsersExcludeOracle
 nablarch.common.dao.DaoTestHelper$Users2
 nablarch.common.dao.UniversalDaoTest$ClobColumn
 nablarch.common.dao.UniversalDaoTest$TextColumn
+nablarch.common.dao.UniversalDaoFieldTest$Users
 nablarch.common.dao.entity.DatePkTable
-nablarch.common.dao.entity.TimestampPkTable
+nablarch.common.dao.entity.TimestampPkTablele

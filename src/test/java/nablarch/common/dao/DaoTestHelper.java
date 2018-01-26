@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -428,6 +430,7 @@ public class DaoTestHelper {
     /** USER_ADDRESSに対応したエンティティ */
     @Table(name = "USER_ADDRESS")
     @Entity
+    @Access(AccessType.PROPERTY)
     public static class Address {
 
         @Id
