@@ -3,6 +3,7 @@ package nablarch.common.dao;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * {@link JpaAnnotationParam}を生成するインターフェース。
@@ -49,12 +50,11 @@ class GetterBasedJpaAnnotationParamFactory implements JpaAnnotationParamFactory 
 
     @Override
     public JpaAnnotationParam create(final String tableName, final PropertyDescriptor propertyDescriptor, final Class<?> entityClass) {
-        final Annotation[] annotations;
-        try{
-            annotations = propertyDescriptor.getReadMethod().getAnnotations();
-        } catch(NullPointerException e) {
-            throw new IllegalArgumentException("no getter that corresponds to the property. entity class: " + entityClass.getName() + ", property name: " + propertyDescriptor.getName(), e);
+        Method readMethod = propertyDescriptor.getReadMethod();
+        if (readMethod == null) {
+            throw new IllegalArgumentException("no getter that corresponds to the property. entity class: " + entityClass.getName() + ", property name: " + propertyDescriptor.getName());
         }
+        final Annotation[] annotations = readMethod.getAnnotations();
         return new JpaAnnotationParam(tableName, propertyDescriptor, annotations);
     }
 }
