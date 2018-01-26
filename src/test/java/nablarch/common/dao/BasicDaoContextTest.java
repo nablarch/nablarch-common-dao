@@ -248,13 +248,13 @@ public class BasicDaoContextTest {
     public void findAllBySqlFile_NotPaginate() throws Exception {
         VariousDbTestHelper.setUpTable(
                 new Users(1L, "なまえ_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456")),
-                new Users(2L, "なまえ_2", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456")),
+                new Users(2L, "なまえ_2\uD840\uDC0B", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456")),
                 new Users(3L, "なまえ_3", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"))
         );
         Object配列を条件に:
         {
             EntityList<Users> users = sut.findAllBySqlFile(Users.class, "FIND_USERS",
-                    new Object[] {"なまえ_2", 2});
+                    new Object[] {"なまえ_2\uD840\uDC0B", 2});
             assertThat("遅延ロードではないので、DeferredEntityListではないこと",
                     users, is(not(instanceOf(DeferredEntityList.class))));
 
@@ -266,7 +266,7 @@ public class BasicDaoContextTest {
         Entityを条件に:
         {
             Users cond = new Users();
-            cond.setName("なまえ_2");
+            cond.setName("なまえ_2\uD840\uDC0B");
             cond.setId(2L);
             EntityList<Users> users = sut.findAllBySqlFile(Users.class,
                     "FIND_USERS_WHERE_ENTITY", cond);
@@ -281,7 +281,7 @@ public class BasicDaoContextTest {
         Mapを条件に:
         {
             Map<String, Object> cond = new HashMap<String, Object>();
-            cond.put("name", "なまえ_2");
+            cond.put("name", "なまえ_2\uD840\uDC0B");
             cond.put("id", 2);
             EntityList<Users> users = sut.findAllBySqlFile(Users.class,
                     "FIND_USERS_WHERE_ENTITY", cond);
@@ -312,7 +312,7 @@ public class BasicDaoContextTest {
         Entityを条件に結果をSqlRowで取得:
         {
             Users cond = new Users();
-            cond.setName("なまえ_2");
+            cond.setName("なまえ_2\uD840\uDC0B");
             cond.setId(2L);
             EntityList<SqlRow> users = sut.findAllBySqlFile(
                     SqlRow.class, "nablarch.common.dao.Result_SqlRow#FIND_USERS_WHERE_ENTITY", cond);
@@ -572,7 +572,7 @@ public class BasicDaoContextTest {
         for (int i = 0; i < 10; i++) {
             long index = i + 1;
             VariousDbTestHelper.insert(
-                    new Users(index, "なまえ_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
+                    new Users(index, "なまえ\uD840\uDC0B_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
                             DaoTestHelper.getDate("20150401123456"))
             );
         }
@@ -582,7 +582,7 @@ public class BasicDaoContextTest {
             Users user = sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ARRAY",
                     new Object[] {7L});
             assertThat(user.getId(), is(7L));
-            assertThat(user.getName(), is("なまえ_7"));
+            assertThat(user.getName(), is("なまえ\uD840\uDC0B_7"));
         }
 
         Entityを条件に:
@@ -592,7 +592,7 @@ public class BasicDaoContextTest {
             Users user = sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
 
             assertThat(user.getId(), is(5L));
-            assertThat(user.getName(), is("なまえ_5"));
+            assertThat(user.getName(), is("なまえ\uD840\uDC0B_5"));
         }
 
         Mapを条件に:
@@ -602,7 +602,7 @@ public class BasicDaoContextTest {
             Users user = sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
 
             assertThat(user.getId(), is(3L));
-            assertThat(user.getName(), is("なまえ_3"));
+            assertThat(user.getName(), is("なまえ\uD840\uDC0B_3"));
         }
 
         Entityを条件にSqlRowを取得:
@@ -613,7 +613,7 @@ public class BasicDaoContextTest {
                     cond);
 
             assertThat(user.getLong("userId"), is(5L));
-            assertThat(user.getString("name"), is("なまえ_5"));
+            assertThat(user.getString("name"), is("なまえ\uD840\uDC0B_5"));
         }
     }
 
@@ -722,7 +722,7 @@ public class BasicDaoContextTest {
 
         Users user = new Users();
         user.setId(2L);
-        user.setName("名前を更新");
+        user.setName("名前を更新\uD840\uDC0B");
         user.setBirthday(DateUtil.getDate("20000101"));
         user.setInsertDate(DaoTestHelper.getDate("20151231235959"));
         user.setVersion(99L);
@@ -732,7 +732,7 @@ public class BasicDaoContextTest {
 
         Users actual = sut.findById(Users.class, 2L);
         assertThat(actual.getId(), is(2L));
-        assertThat(actual.getName(), is("名前を更新"));
+        assertThat(actual.getName(), is("名前を更新\uD840\uDC0B"));
         assertThat(actual.getBirthday(), is(DateUtil.getDate("20000101")));
         assertThat(actual.getInsertDate(), is(DaoTestHelper.getDate("20151231235959")));
         assertThat(actual.getVersion(), is(100L));
@@ -799,13 +799,13 @@ public class BasicDaoContextTest {
     public void batchUpdate() throws Exception {
         VariousDbTestHelper.setUpTable(
                 new Users(1L, "name_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456"), 98L),
-                new Users(2L, "name_2", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456"), 99L),
+                new Users(2L, "name_2\uD840\uDC0B", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456"), 99L),
                 new Users(3L, "name_3", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"), 100L));
 
         sut.batchUpdate(
                 Arrays.asList(
                         new Users(3L, "名前を更新_3", DateUtil.getDate("20000101"), DaoTestHelper.getDate("20151231235959"), 100L),
-                        new Users(2L, "名前を更新_2", DateUtil.getDate("20000102"), DaoTestHelper.getDate("20161231235959"), 99L),
+                        new Users(2L, "名前を更新_2\uD840\uDC0B", DateUtil.getDate("20000102"), DaoTestHelper.getDate("20161231235959"), 99L),
                         new Users(1L, "名前を更新_1", DateUtil.getDate("20000102"), DaoTestHelper.getDate("20161231235959"), 97L)        // バージョン番号不一致で更新されない
                 ));
 
@@ -815,7 +815,7 @@ public class BasicDaoContextTest {
         // -------------------------------------------------- ユーザ２：更新されていること
         Users user2 = sut.findById(Users.class, 2L);
         assertThat(user2.getId(), is(2L));
-        assertThat(user2.getName(), is("名前を更新_2"));
+        assertThat(user2.getName(), is("名前を更新_2\uD840\uDC0B"));
         assertThat(user2.getBirthday(), is(DateUtil.getDate("20000102")));
         assertThat(user2.getInsertDate(), is(DaoTestHelper.getDate("20161231235959")));
         assertThat(user2.getVersion(), is(100L));
@@ -874,14 +874,14 @@ public class BasicDaoContextTest {
         バージョンカラムが存在しているテーブル:
         {
             Users user = new Users();
-            user.setName("なまえ");
+            user.setName("なまえ\uD840\uDC0B");
             user.setBirthday(DateUtil.getDate("19900101"));
             user.setInsertDate(DaoTestHelper.getDate("20000101010101"));
             sut.insert(user);
 
             Users actual = sut.findById(Users.class, 1L);
             assertThat(actual.getId(), is(1L));
-            assertThat(actual.getName(), is("なまえ"));
+            assertThat(actual.getName(), is("なまえ\uD840\uDC0B"));
             assertThat(actual.getBirthday(), is(DateUtil.getDate("19900101")));
             assertThat(actual.getInsertDate(), is(DaoTestHelper.getDate("20000101010101")));
             assertThat(actual.getVersion(), is(0L));
@@ -1238,7 +1238,7 @@ public class BasicDaoContextTest {
             user1.setInsertDate(DaoTestHelper.getDate("20000101010101"));
 
             Users user2 = new Users();
-            user2.setName("なまえ２");
+            user2.setName("なまえ２\uD840\uDC0B");
             user2.setBirthday(DateUtil.getDate("19900102"));
             user2.setInsertDate(DaoTestHelper.getDate("20000101010102"));
 
@@ -1260,7 +1260,7 @@ public class BasicDaoContextTest {
 
             Users actual2 = sut.findById(Users.class, 3L);
             assertThat(actual2.getId(), is(3L));
-            assertThat(actual2.getName(), is("なまえ２"));
+            assertThat(actual2.getName(), is("なまえ２\uD840\uDC0B"));
             assertThat(actual2.getBirthday(), is(DateUtil.getDate("19900102")));
             assertThat(actual2.getInsertDate(), is(DaoTestHelper.getDate("20000101010102")));
             assertThat(actual2.getVersion(), is(0L));
