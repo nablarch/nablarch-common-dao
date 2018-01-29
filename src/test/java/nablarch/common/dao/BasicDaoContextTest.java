@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.persistence.GenerationType;
 import javax.persistence.OptimisticLockException;
 
+import nablarch.test.support.db.helper.TargetDb;
 import org.hamcrest.CoreMatchers;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -246,6 +247,93 @@ public class BasicDaoContextTest {
      */
     @Test
     public void findAllBySqlFile_NotPaginate() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "なまえ_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456")),
+                new Users(2L, "なまえ_2", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456")),
+                new Users(3L, "なまえ_3", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"))
+        );
+        Object配列を条件に:
+        {
+            EntityList<Users> users = sut.findAllBySqlFile(Users.class, "FIND_USERS",
+                    new Object[] {"なまえ_2", 2});
+            assertThat("遅延ロードではないので、DeferredEntityListではないこと",
+                    users, is(not(instanceOf(DeferredEntityList.class))));
+
+            assertThat("データが取得できること", users.size(), is(1));
+            assertThat(users.get(0)
+                    .getId(), is(2L));
+        }
+
+        Entityを条件に:
+        {
+            Users cond = new Users();
+            cond.setName("なまえ_2");
+            cond.setId(2L);
+            EntityList<Users> users = sut.findAllBySqlFile(Users.class,
+                    "FIND_USERS_WHERE_ENTITY", cond);
+            assertThat("遅延ロードではないので、DeferredEntityListではないこと",
+                    users, is(not(instanceOf(DeferredEntityList.class))));
+
+            assertThat("データが取得できること", users.size(), is(1));
+            assertThat(users.get(0)
+                    .getId(), is(2L));
+        }
+
+        Mapを条件に:
+        {
+            Map<String, Object> cond = new HashMap<String, Object>();
+            cond.put("name", "なまえ_2");
+            cond.put("id", 2);
+            EntityList<Users> users = sut.findAllBySqlFile(Users.class,
+                    "FIND_USERS_WHERE_ENTITY", cond);
+            assertThat("遅延ロードではないので、DeferredEntityListではないこと",
+                    users, is(not(instanceOf(DeferredEntityList.class))));
+
+            assertThat("データが取得できること", users.size(), is(1));
+            assertThat(users.get(0)
+                    .getId(), is(2L));
+        }
+
+        条件なし:
+        {
+            EntityList<Users> users = sut.findAllBySqlFile(Users.class,
+                    "FIND_USERS_ALL_NOT_COND");
+            assertThat("遅延ロードではないので、DeferredEntityListではないこと",
+                    users, is(not(instanceOf(DeferredEntityList.class))));
+
+            assertThat("データが取得できること", users.size(), is(3));
+            assertThat(users.get(0)
+                    .getId(), is(1L));
+            assertThat(users.get(1)
+                    .getId(), is(2L));
+            assertThat(users.get(2)
+                    .getId(), is(3L));
+        }
+
+        Entityを条件に結果をSqlRowで取得:
+        {
+            Users cond = new Users();
+            cond.setName("なまえ_2");
+            cond.setId(2L);
+            EntityList<SqlRow> users = sut.findAllBySqlFile(
+                    SqlRow.class, "nablarch.common.dao.Result_SqlRow#FIND_USERS_WHERE_ENTITY", cond);
+
+            assertThat("遅延ロードではないので、DeferredEntityListではないこと",
+                    users, is(not(instanceOf(DeferredEntityList.class))));
+
+            assertThat("データが取得できること", users.size(), is(1));
+            assertThat(users.get(0)
+                    .getLong("USER_ID"), is(2L));
+        }
+    }
+
+
+    /**
+     * {@link BasicDaoContext#findAllBySqlFile(Class, String, Object)}、{@link BasicDaoContext#findAllBySqlFile(Class, String)}でページング設定なしかつ、サロゲートペア有りのケース。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void findAllBySqlFile_NotPaginate_surrogatePair() throws Exception {
         VariousDbTestHelper.setUpTable(
                 new Users(1L, "なまえ_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456")),
                 new Users(2L, "なまえ_2\uD840\uDC0B", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456")),
@@ -572,6 +660,63 @@ public class BasicDaoContextTest {
         for (int i = 0; i < 10; i++) {
             long index = i + 1;
             VariousDbTestHelper.insert(
+                    new Users(index, "なまえ_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
+                            DaoTestHelper.getDate("20150401123456"))
+            );
+        }
+
+        Object配列を条件に:
+        {
+            Users user = sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ARRAY",
+                    new Object[] {7L});
+            assertThat(user.getId(), is(7L));
+            assertThat(user.getName(), is("なまえ_7"));
+        }
+
+        Entityを条件に:
+        {
+            Users cond = new Users();
+            cond.setId(5L);
+            Users user = sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+            assertThat(user.getId(), is(5L));
+            assertThat(user.getName(), is("なまえ_5"));
+        }
+
+        Mapを条件に:
+        {
+            HashMap<String, Object> cond = new HashMap<String, Object>();
+            cond.put("id", 3);
+            Users user = sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+            assertThat(user.getId(), is(3L));
+            assertThat(user.getName(), is("なまえ_3"));
+        }
+
+        Entityを条件にSqlRowを取得:
+        {
+            Users cond = new Users();
+            cond.setId(5L);
+            SqlRow user = sut.findBySqlFile(SqlRow.class, "nablarch.common.dao.Result_SqlRow#FIND_BY_ID_WHERE_ENTITY",
+                    cond);
+
+            assertThat(user.getLong("userId"), is(5L));
+            assertThat(user.getString("name"), is("なまえ_5"));
+        }
+    }
+
+    /**
+     * {@link BasicDaoContext#findBySqlFile(Class, String, Object)}のサロゲートペア有のテスト。
+     *
+     * @throws Exception
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void findBySqlFile_surrogatePair() throws Exception {
+        VariousDbTestHelper.delete(Users.class);
+        for (int i = 0; i < 10; i++) {
+            long index = i + 1;
+            VariousDbTestHelper.insert(
                     new Users(index, "なまえ\uD840\uDC0B_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
                             DaoTestHelper.getDate("20150401123456"))
             );
@@ -722,6 +867,35 @@ public class BasicDaoContextTest {
 
         Users user = new Users();
         user.setId(2L);
+        user.setName("名前を更新");
+        user.setBirthday(DateUtil.getDate("20000101"));
+        user.setInsertDate(DaoTestHelper.getDate("20151231235959"));
+        user.setVersion(99L);
+
+        int updatedCount = sut.update(user);
+        assertThat("更新件数は、1", updatedCount, is(1));
+
+        Users actual = sut.findById(Users.class, 2L);
+        assertThat(actual.getId(), is(2L));
+        assertThat(actual.getName(), is("名前を更新"));
+        assertThat(actual.getBirthday(), is(DateUtil.getDate("20000101")));
+        assertThat(actual.getInsertDate(), is(DaoTestHelper.getDate("20151231235959")));
+        assertThat(actual.getVersion(), is(100L));
+    }
+
+    /**
+     * {@link BasicDaoContext#update(Object)}のサロゲートペア有のテスト。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void update_surrogatePair() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "name_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456"), 99L),
+                new Users(2L, "name_2", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456"), 99L),
+                new Users(3L, "name_3", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"), 99L));
+
+        Users user = new Users();
+        user.setId(2L);
         user.setName("名前を更新\uD840\uDC0B");
         user.setBirthday(DateUtil.getDate("20000101"));
         user.setInsertDate(DaoTestHelper.getDate("20151231235959"));
@@ -799,6 +973,44 @@ public class BasicDaoContextTest {
     public void batchUpdate() throws Exception {
         VariousDbTestHelper.setUpTable(
                 new Users(1L, "name_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456"), 98L),
+                new Users(2L, "name_2", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456"), 99L),
+                new Users(3L, "name_3", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"), 100L));
+
+        sut.batchUpdate(
+                Arrays.asList(
+                        new Users(3L, "名前を更新_3", DateUtil.getDate("20000101"), DaoTestHelper.getDate("20151231235959"), 100L),
+                        new Users(2L, "名前を更新_2", DateUtil.getDate("20000102"), DaoTestHelper.getDate("20161231235959"), 99L),
+                        new Users(1L, "名前を更新_1", DateUtil.getDate("20000102"), DaoTestHelper.getDate("20161231235959"), 97L)        // バージョン番号不一致で更新されない
+                ));
+
+        final Users user1 = sut.findById(Users.class, 1L);
+        assertThat("更新されていないこと", user1.getVersion(), is(98L));
+
+        // -------------------------------------------------- ユーザ２：更新されていること
+        Users user2 = sut.findById(Users.class, 2L);
+        assertThat(user2.getId(), is(2L));
+        assertThat(user2.getName(), is("名前を更新_2"));
+        assertThat(user2.getBirthday(), is(DateUtil.getDate("20000102")));
+        assertThat(user2.getInsertDate(), is(DaoTestHelper.getDate("20161231235959")));
+        assertThat(user2.getVersion(), is(100L));
+
+        // -------------------------------------------------- ユーザ２：更新されていること
+        final Users user3 = sut.findById(Users.class, 3L);
+        assertThat(user3.getId(), is(3L));
+        assertThat(user3.getName(), is("名前を更新_3"));
+        assertThat(user3.getBirthday(), is(DateUtil.getDate("20000101")));
+        assertThat(user3.getInsertDate(), is(DaoTestHelper.getDate("20151231235959")));
+        assertThat(user3.getVersion(), is(101L));
+    }
+
+    /**
+     * {@link BasicDaoContext#batchUpdate(java.util.List)}のサロゲートペア有テスト。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void batchUpdate_surrogatePair() throws Exception {
+        VariousDbTestHelper.setUpTable(
+                new Users(1L, "name_1", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456"), 98L),
                 new Users(2L, "name_2\uD840\uDC0B", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456"), 99L),
                 new Users(3L, "name_3", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"), 100L));
 
@@ -874,14 +1086,14 @@ public class BasicDaoContextTest {
         バージョンカラムが存在しているテーブル:
         {
             Users user = new Users();
-            user.setName("なまえ\uD840\uDC0B");
+            user.setName("なまえ");
             user.setBirthday(DateUtil.getDate("19900101"));
             user.setInsertDate(DaoTestHelper.getDate("20000101010101"));
             sut.insert(user);
 
             Users actual = sut.findById(Users.class, 1L);
             assertThat(actual.getId(), is(1L));
-            assertThat(actual.getName(), is("なまえ\uD840\uDC0B"));
+            assertThat(actual.getName(), is("なまえ"));
             assertThat(actual.getBirthday(), is(DateUtil.getDate("19900101")));
             assertThat(actual.getInsertDate(), is(DaoTestHelper.getDate("20000101010101")));
             assertThat(actual.getVersion(), is(0L));
@@ -931,6 +1143,47 @@ public class BasicDaoContextTest {
             Users3 actual = sut.findById(Users3.class, 1);
             assertThat(actual.getId(), is(1));
             assertThat(actual.getVersion(), is(0));
+        }
+    }
+
+    /**
+     * {@link BasicDaoContext#insert(Object)}のテスト。
+     *
+     * @throws Exception
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void insert_surrogatePair() throws Exception {
+
+        sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect() {
+            @Override
+            public boolean supportsSequence() {
+                return true;
+            }
+        });
+        sut.setDbConnection(connection);
+        sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
+        sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
+
+        new Expectations() {{
+            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
+            returns("1", "1");
+        }};
+
+        バージョンカラムが存在しているテーブル:
+        {
+            Users user = new Users();
+            user.setName("なまえ\uD840\uDC0B");
+            user.setBirthday(DateUtil.getDate("19900101"));
+            user.setInsertDate(DaoTestHelper.getDate("20000101010101"));
+            sut.insert(user);
+
+            Users actual = sut.findById(Users.class, 1L);
+            assertThat(actual.getId(), is(1L));
+            assertThat(actual.getName(), is("なまえ\uD840\uDC0B"));
+            assertThat(actual.getBirthday(), is(DateUtil.getDate("19900101")));
+            assertThat(actual.getInsertDate(), is(DaoTestHelper.getDate("20000101010101")));
+            assertThat(actual.getVersion(), is(0L));
         }
     }
 
@@ -1336,6 +1589,74 @@ public class BasicDaoContextTest {
             assertThat(actual2.getBirthday(), is(DateUtil.getDate("19001213")));
             assertThat(actual2.getInsertDate(), is(DaoTestHelper.getDate("20001231010102")));
             assertThat(actual2.getVersion(), is("999"));
+        }
+    }
+
+    /**
+     * {@link BasicDaoContext#batchInsert(java.util.List)}のサロゲートペア有のテスト。
+     *
+     * @throws Exception
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void batchInsert_surrogatePair() throws Exception {
+
+        sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect() {
+            @Override
+            public boolean supportsSequence() {
+                return true;
+            }
+        });
+        sut.setDbConnection(connection);
+        sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
+        sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
+
+        new Expectations() {{
+            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
+            returns("1", "3", "5");
+        }};
+
+        バージョンカラムが存在しているテーブル:
+        {
+            Users user1 = new Users();
+            user1.setName("なまえ１");
+            user1.setBirthday(DateUtil.getDate("19900101"));
+            user1.setInsertDate(DaoTestHelper.getDate("20000101010101"));
+
+            Users user2 = new Users();
+            user2.setName("なまえ２\uD840\uDC0B");
+            user2.setBirthday(DateUtil.getDate("19900102"));
+            user2.setInsertDate(DaoTestHelper.getDate("20000101010102"));
+
+            Users user3 = new Users();
+            user3.setName("なまえ３");
+            user3.setBirthday(DateUtil.getDate("19900103"));
+            user3.setInsertDate(DaoTestHelper.getDate("20000101010103"));
+
+            sut.batchInsert(Arrays.asList(user1, user2, user3));
+
+            assertThat("3レコード登録されていること", sut.findAll(Users.class).size(), is(3));
+
+            Users actual1 = sut.findById(Users.class, 1L);
+            assertThat(actual1.getId(), is(1L));
+            assertThat(actual1.getName(), is("なまえ１"));
+            assertThat(actual1.getBirthday(), is(DateUtil.getDate("19900101")));
+            assertThat(actual1.getInsertDate(), is(DaoTestHelper.getDate("20000101010101")));
+            assertThat(actual1.getVersion(), is(0L));
+
+            Users actual2 = sut.findById(Users.class, 3L);
+            assertThat(actual2.getId(), is(3L));
+            assertThat(actual2.getName(), is("なまえ２\uD840\uDC0B"));
+            assertThat(actual2.getBirthday(), is(DateUtil.getDate("19900102")));
+            assertThat(actual2.getInsertDate(), is(DaoTestHelper.getDate("20000101010102")));
+            assertThat(actual2.getVersion(), is(0L));
+
+            Users actual3 = sut.findById(Users.class, 5L);
+            assertThat(actual3.getId(), is(5L));
+            assertThat(actual3.getName(), is("なまえ３"));
+            assertThat(actual3.getBirthday(), is(DateUtil.getDate("19900103")));
+            assertThat(actual3.getInsertDate(), is(DaoTestHelper.getDate("20000101010103")));
+            assertThat(actual3.getVersion(), is(0L));
         }
     }
 
