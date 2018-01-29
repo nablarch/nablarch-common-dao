@@ -1491,7 +1491,7 @@ public class BasicDaoContextTest {
             user1.setInsertDate(DaoTestHelper.getDate("20000101010101"));
 
             Users user2 = new Users();
-            user2.setName("なまえ２\uD840\uDC0B");
+            user2.setName("なまえ２");
             user2.setBirthday(DateUtil.getDate("19900102"));
             user2.setInsertDate(DaoTestHelper.getDate("20000101010102"));
 
@@ -1513,7 +1513,7 @@ public class BasicDaoContextTest {
 
             Users actual2 = sut.findById(Users.class, 3L);
             assertThat(actual2.getId(), is(3L));
-            assertThat(actual2.getName(), is("なまえ２\uD840\uDC0B"));
+            assertThat(actual2.getName(), is("なまえ２"));
             assertThat(actual2.getBirthday(), is(DateUtil.getDate("19900102")));
             assertThat(actual2.getInsertDate(), is(DaoTestHelper.getDate("20000101010102")));
             assertThat(actual2.getVersion(), is(0L));
