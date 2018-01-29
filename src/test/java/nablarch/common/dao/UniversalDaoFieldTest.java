@@ -44,7 +44,7 @@ public class UniversalDaoFieldTest {
     @Entity
     @Table(name = "USERS")
     @Access(AccessType.FIELD)
-    public static class Users {
+    public static class PublicFieldUsers {
 
         @Id
         @Column(name = "USER_ID", length = 15)
@@ -56,6 +56,47 @@ public class UniversalDaoFieldTest {
         @Column(name = "BIRTHDAY")
         @Temporal(TemporalType.DATE)
         public Date birthday;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Date getBirthday() {
+            return birthday;
+        }
+
+        public void setBirthday(Date birthday) {
+            this.birthday = birthday;
+        }
+    }
+
+    @Entity
+    @Table(name = "USERS")
+    @Access(AccessType.FIELD)
+    public static class Users {
+
+        @Id
+        @Column(name = "USER_ID", length = 15)
+        private Long id;
+
+        @Column(name = "NAME", length = 100)
+        private String name;
+
+        @Column(name = "BIRTHDAY")
+        @Temporal(TemporalType.DATE)
+        private Date birthday;
 
         public Users() {
         }
@@ -127,7 +168,7 @@ public class UniversalDaoFieldTest {
         ConnectionFactory connectionFactory = repositoryResource.getComponent("connectionFactory");
         TransactionManagerConnection connection = connectionFactory.getConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
         DbConnectionContext.setConnection(connection);
-        VariousDbTestHelper.createTable(Users.class);
+        VariousDbTestHelper.createTable(PublicFieldUsers.class);
     }
 
     @After
