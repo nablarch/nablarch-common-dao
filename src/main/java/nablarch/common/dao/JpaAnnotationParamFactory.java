@@ -33,7 +33,7 @@ class FieldBasedJpaAnnotationParamFactory implements JpaAnnotationParamFactory {
         final String name = propertyDescriptor.getName();
         final Field field;
         try {
-            field = entityClass.getField(name);
+            field = entityClass.getDeclaredField(name);
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException("no field that corresponds to the property name. entity class: " + entityClass.getName() + ", property name: " + name, e);
         }
