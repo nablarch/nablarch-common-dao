@@ -193,7 +193,7 @@ public class UniversalDaoFieldTest {
 
         DbConnectionContext.getTransactionManagerConnection().commit();
 
-        final Users actual = VariousDbTestHelper.findById(Users.class, 1L);
+        final Users actual = UniversalDao.findById(Users.class, 1L);
 
         assertThat(actual.getId(), is(user.getId()));
         assertThat(actual.getName(), is(user.getName()));
@@ -202,11 +202,9 @@ public class UniversalDaoFieldTest {
 
     @Test
     public void フィールドの情報を元にアップデートできる事() {
-        VariousDbTestHelper.setUpTable(
-                new Users(1L, "name_1", new Date()),
-                new Users(2L, "name_2", new Date()),
-                new Users(3L, "name_3", new Date())
-        );
+        UniversalDao.insert(new Users(1L, "name_1", new Date()));
+        UniversalDao.insert(new Users(2L, "name_2", new Date()));
+        UniversalDao.insert(new Users(3L, "name_3", new Date()));
 
         final Users user = UniversalDao.findById(Users.class, 2L);
         user.setName("なまえに更新");
@@ -225,7 +223,7 @@ public class UniversalDaoFieldTest {
     public void フィールドの情報を元に削除できる事() {
         VariousDbTestHelper.delete(Users.class);
         for (int i = 0; i < 10; i++) {
-            VariousDbTestHelper.insert(new Users((long) (i + 1)));
+            UniversalDao.insert(new Users((long) (i + 1)));
         }
 
         assertThat("削除対象が存在していること", UniversalDao.findById(Users.class, 3L), notNullValue());
@@ -237,11 +235,9 @@ public class UniversalDaoFieldTest {
 
     @Test
     public void フィールドの情報を元にIDを指定して取得できる事() {
-        VariousDbTestHelper.setUpTable(
-                new Users(1L, "name_1", new Date()),
-                new Users(2L, "name_2", new Date()),
-                new Users(3L, "name_3", new Date())
-        );
+        UniversalDao.insert(new Users(1L, "name_1", new Date()));
+        UniversalDao.insert(new Users(2L, "name_2", new Date()));
+        UniversalDao.insert(new Users(3L, "name_3", new Date()));
 
         Users user = UniversalDao.findById(Users.class, 2L);
         assertThat(user.getId(), is(2L));
