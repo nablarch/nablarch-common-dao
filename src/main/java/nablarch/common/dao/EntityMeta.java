@@ -1,7 +1,6 @@
 package nablarch.common.dao;
 
 import java.beans.PropertyDescriptor;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,7 +22,7 @@ import nablarch.core.util.annotation.Published;
  * @author Hisaaki Shioiri
  */
 @Published(tag = "architect")
-public class EntityMeta implements Serializable {
+public class EntityMeta {
 
     /** テーブル名 */
     private final String tableName;

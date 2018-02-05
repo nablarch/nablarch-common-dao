@@ -1,7 +1,5 @@
 package nablarch.common.dao;
 
-import java.io.Serializable;
-
 import javax.persistence.GenerationType;
 
 import nablarch.core.util.annotation.Published;
@@ -13,7 +11,7 @@ import nablarch.core.util.annotation.Published;
  * @author Hisaaki Shioiri
  */
 @Published(tag = "architect")
-public class ColumnMeta implements Serializable {
+public class ColumnMeta {
 
     /** エンティティメタ情報 */
     private final EntityMeta entityMeta;
