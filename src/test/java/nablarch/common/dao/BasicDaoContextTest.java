@@ -6,7 +6,6 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.security.cert.TrustAnchor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -21,9 +20,7 @@ import java.util.Map;
 import javax.persistence.GenerationType;
 import javax.persistence.OptimisticLockException;
 
-import nablarch.test.support.db.helper.TargetDb;
 import org.hamcrest.CoreMatchers;
-import sun.font.TrueTypeFont;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.AutoGenUsers;
@@ -45,6 +42,7 @@ import nablarch.core.transaction.TransactionContext;
 import nablarch.core.util.DateUtil;
 import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
+import nablarch.test.support.db.helper.TargetDb;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 
 import org.junit.After;
