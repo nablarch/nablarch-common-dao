@@ -537,7 +537,7 @@ public class UniversalDaoTest {
         }, connection);
         
         expectedException.expect(UnsupportedOperationException.class);
-        expectedException.expectMessage("batch insert to tables with IDENTITY columns are not supported.");
+        expectedException.expectMessage("batch insert to table with IDENTITY column is not supported.");
         UniversalDao.batchInsert(Collections.singletonList(new IdentityColumnEntity()));
     }
 
