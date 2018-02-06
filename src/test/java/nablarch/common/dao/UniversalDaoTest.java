@@ -529,7 +529,12 @@ public class UniversalDaoTest {
 
     @Test
     public void IDENTITYカラムを持つテーブルへのbatchInsertでIDENTITYがサポートされていない場合例外が送出されること() {
-        setDialect(new DefaultDialect(), connection);
+        setDialect(new DefaultDialect() {
+            @Override
+            public boolean supportsIdentity() {
+                return true;
+            }
+        }, connection);
         
         expectedException.expect(UnsupportedOperationException.class);
         expectedException.expectMessage("batch insert to tables with IDENTITY columns are not supported.");

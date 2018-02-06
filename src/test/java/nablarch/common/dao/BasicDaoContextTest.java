@@ -6,6 +6,7 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.security.cert.TrustAnchor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import javax.persistence.OptimisticLockException;
 
 import nablarch.test.support.db.helper.TargetDb;
 import org.hamcrest.CoreMatchers;
+import sun.font.TrueTypeFont;
 
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.AutoGenUsers;
@@ -1757,6 +1759,11 @@ public class BasicDaoContextTest {
             public boolean supportsIdentity() {
                 return true;
             }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
+                return true;
+            }
         });
 
         new Expectations(connection) {{
@@ -1793,6 +1800,11 @@ public class BasicDaoContextTest {
             public boolean supportsIdentity() {
                 return true;
             }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
+                return true;
+            }
         });
 
         new Expectations(connection) {{
@@ -1822,6 +1834,11 @@ public class BasicDaoContextTest {
         sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect() {
             @Override
             public boolean supportsIdentity() {
+                return true;
+            }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
                 return true;
             }
         });
@@ -1854,6 +1871,11 @@ public class BasicDaoContextTest {
         sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect() {
             @Override
             public boolean supportsIdentity() {
+                return true;
+            }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
                 return true;
             }
         });
