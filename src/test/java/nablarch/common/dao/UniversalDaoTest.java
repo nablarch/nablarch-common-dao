@@ -27,6 +27,7 @@ import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.UniversalDao.Transaction;
 import nablarch.common.dao.entity.DatePkTable;
+import nablarch.common.dao.entity.IdentityColumnEntity;
 import nablarch.common.dao.entity.TimestampPkTable;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
@@ -50,6 +51,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import mockit.Deencapsulation;
@@ -64,6 +66,9 @@ public class UniversalDaoTest {
 
     @Rule
     public SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+    
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     /** テスト用データベース接続 */
     private TransactionManagerConnection connection;
@@ -494,6 +499,11 @@ public class UniversalDaoTest {
             public boolean supportsSequence() {
                 return true;
             }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
+                return true;
+            }
         }, connection);
         daoContextFactory.setSequenceIdGenerator(mockGenerator);
         repositoryResource.addComponent("daoContextFactory", daoContextFactory);
@@ -514,6 +524,16 @@ public class UniversalDaoTest {
         assertThat(actual2.getBirthday(), is(user2.getBirthday()));
         assertThat(actual2.getInsertDate(), is(user2.getInsertDate()));
         assertThat(actual2.getVersion(), is(user2.getVersion()));
+    }
+    
+
+    @Test
+    public void IDENTITYカラムを持つテーブルへのbatchInsertでIDENTITYがサポートされていない場合例外が送出されること() {
+        setDialect(new DefaultDialect(), connection);
+        
+        expectedException.expect(UnsupportedOperationException.class);
+        expectedException.expectMessage("batch insert to tables with IDENTITY columns are not supported.");
+        UniversalDao.batchInsert(Collections.singletonList(new IdentityColumnEntity()));
     }
 
     /**
