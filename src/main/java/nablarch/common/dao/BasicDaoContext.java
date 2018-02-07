@@ -393,6 +393,10 @@ public class BasicDaoContext implements DaoContext {
 
         final ColumnMeta generatedValueColumn = EntityUtil.findGeneratedValueColumn(entityClass);
         final GenerationType generationType = findGeneratedType(generatedValueColumn);
+        if (!dialect.supportsIdentityWithBatchInsert() && generationType == GenerationType.IDENTITY) {
+            throw new UnsupportedOperationException(
+                    "batch insert to table with IDENTITY column is not supported.");
+        }
 
         final BatchSqlWithColumns sqlWithColumns;
         final SqlPStatement stmt;

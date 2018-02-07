@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.persistence.GenerationType;
 import javax.persistence.OptimisticLockException;
 
-import nablarch.test.support.db.helper.TargetDb;
 import org.hamcrest.CoreMatchers;
 
 import nablarch.common.dao.DaoTestHelper.Address;
@@ -43,6 +42,7 @@ import nablarch.core.transaction.TransactionContext;
 import nablarch.core.util.DateUtil;
 import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
+import nablarch.test.support.db.helper.TargetDb;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 
 import org.junit.After;
@@ -1757,6 +1757,11 @@ public class BasicDaoContextTest {
             public boolean supportsIdentity() {
                 return true;
             }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
+                return true;
+            }
         });
 
         new Expectations(connection) {{
@@ -1793,6 +1798,11 @@ public class BasicDaoContextTest {
             public boolean supportsIdentity() {
                 return true;
             }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
+                return true;
+            }
         });
 
         new Expectations(connection) {{
@@ -1822,6 +1832,11 @@ public class BasicDaoContextTest {
         sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect() {
             @Override
             public boolean supportsIdentity() {
+                return true;
+            }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
                 return true;
             }
         });
@@ -1854,6 +1869,11 @@ public class BasicDaoContextTest {
         sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect() {
             @Override
             public boolean supportsIdentity() {
+                return true;
+            }
+
+            @Override
+            public boolean supportsIdentityWithBatchInsert() {
                 return true;
             }
         });
