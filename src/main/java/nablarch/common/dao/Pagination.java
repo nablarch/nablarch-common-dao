@@ -21,13 +21,10 @@ public class Pagination extends ListSearchInfo {
     }
 
     /**
-     * {@inheritDoc}
-     * <p/>
      * 本実装では、サポートしない。
      *
-     * @throws UnsupportedOperationException
+     * 呼び出した場合{@link UnsupportedOperationException}を送出する。
      */
-    @Deprecated
     @Override
     public String[] getSearchConditionProps() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("getSearchConditionProps");

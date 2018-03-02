@@ -98,26 +98,42 @@ public class EntityList<E> extends ArrayList<E> {
         }
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public void add(final int index, final E element) {
         throw new UnsupportedOperationException("add");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean addAll(final int index, final Collection<? extends E> c) {
         throw new UnsupportedOperationException("addAll");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public E remove(final int index) {
         throw new UnsupportedOperationException("remove");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public E set(final int index, final E element) {
         throw new UnsupportedOperationException("set");
     }
