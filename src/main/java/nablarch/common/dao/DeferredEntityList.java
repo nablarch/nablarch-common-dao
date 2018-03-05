@@ -94,128 +94,212 @@ public class DeferredEntityList<E> extends EntityList<E> implements Closeable {
         resourceHolder.dispose();
     }
 
+    /**
+     * 本メソッドは利用できない。
+     * 
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public ListIterator<E> listIterator() {
         throw new UnsupportedOperationException("listIterator");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public ListIterator<E> listIterator(int index) {
         throw new UnsupportedOperationException("listIterator");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean add(E e) {
         throw new UnsupportedOperationException("add");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean addAll(Collection<? extends E> c) {
         throw new UnsupportedOperationException("addAll");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public void clear() {
         throw new UnsupportedOperationException("clear");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean contains(Object o) {
         throw new UnsupportedOperationException("contains");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public void ensureCapacity(int minCapacity) {
         throw new UnsupportedOperationException("ensureCapacity");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public E get(int index) {
         throw new UnsupportedOperationException("get");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public int indexOf(Object o) {
         throw new UnsupportedOperationException("indexOf");
     }
 
-    @Deprecated
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
     public boolean isEmpty() {
         throw new UnsupportedOperationException("isEmpty");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public int lastIndexOf(Object o) {
         throw new UnsupportedOperationException("lastIndexOf");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean remove(Object o) {
         throw new UnsupportedOperationException("remove");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     protected void removeRange(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException("removeRange");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public int size() {
         throw new UnsupportedOperationException("size");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public Object[] toArray() {
         throw new UnsupportedOperationException("toArray");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public <T> T[] toArray(T[] a) {
         throw new UnsupportedOperationException("toArray");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public void trimToSize() {
         throw new UnsupportedOperationException("trimToSize");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public List<E> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException("subList");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean containsAll(Collection<?> c) {
         throw new UnsupportedOperationException("containsAll");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException("removeAll");
     }
 
+    /**
+     * 本メソッドは利用できない。
+     *
+     * 呼び出した場合、{@link UnsupportedOperationException}を送出する。
+     */
     @Override
-    @Deprecated
     public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException("retainAll");
     }
