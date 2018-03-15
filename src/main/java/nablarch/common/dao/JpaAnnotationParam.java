@@ -50,13 +50,32 @@ class JpaAnnotationParam {
         TEMPORAL_TYPE_MAP.put(TemporalType.TIMESTAMP, Timestamp.class);
     }
 
-
-    /** カラムに対応したプロパティの情報 */
-    private final PropertyDescriptor propertyDescriptor;
-    /** その属性に設定されたアノテーションのリスト */
-    private final Annotation[] annotations;
     /** 採番カラムの情報 */
     private final GeneratedValueMetaData generatedValueMetaData;
+
+    /** プロパティ名 */
+    private final String name;
+
+    /** 他Entityへの参照を保持するプロパティかどうか */
+    private final boolean isJoinColumn;
+
+    /** プロパティのタイプ */
+    private final Class<?> propertyType;
+
+    /** JDBCタイプ */
+    private final Class<?> jdbcType;
+
+    /** カラム名 */
+    private final String columnName;
+
+    /** 永続化対象カラムかどうか */
+    private final boolean isTransientColumn;
+
+    /** 主キーカラムかどうか */
+    private final boolean isIdColumn;
+
+    /** バージョンカラムかどうか */
+    private final boolean isVersionColumn;
 
     /**
      * コンストラクタ。
@@ -66,22 +85,27 @@ class JpaAnnotationParam {
      * @param annotations アノテーションのリスト
      */
     JpaAnnotationParam(final String tableName, final PropertyDescriptor propertyDescriptor, final Annotation[] annotations) {
-        this.propertyDescriptor = propertyDescriptor;
-        this.annotations = annotations;
-        final GeneratedValue generatedValue = getAnnotation(GeneratedValue.class);
-        if (generatedValue != null) {
-            generatedValueMetaData = new GeneratedValueMetaData(tableName, generatedValue);
-        } else {
-            generatedValueMetaData = null;
-        }
+        name = propertyDescriptor.getName();
+        isJoinColumn = isJoinColumn(annotations);
+        propertyType = propertyDescriptor.getPropertyType();
+        jdbcType = getJdbcType(annotations, propertyDescriptor);
+        columnName = getColumnName(annotations, propertyDescriptor);
+        isTransientColumn = getAnnotation(annotations, Transient.class) != null;
+        isIdColumn = getAnnotation(annotations, Id.class) != null;
+        isVersionColumn = getAnnotation(annotations, Version.class) != null;
+        generatedValueMetaData = createGeneratedValueMetaData(tableName, annotations);
     }
 
     /**
-     * 他Entityへの参照を保持するためのカラムか否か。
+     * 他Entityへの参照を保持するカラムかどうかをアノテーションを元に判定する。
+     * <p>
+     * アノテーション情報に{@link #JOIN_COLUMN_ANNOTATIONS}のアノテーションが1つでも含まれる場合は、
+     * 他Entityへの参照を保持するカラムと判断する。
      *
-     * @return 他Entityへの参照を保持するカラムの場合はtrue
+     * @param annotations アノテーション情報
+     * @return 他Entityへの参照を保持するカラムの場合{@code true}
      */
-    boolean isJoinColumn() {
+    private static boolean isJoinColumn(final Annotation... annotations) {
         for (final Annotation annotation : annotations) {
             if (JOIN_COLUMN_ANNOTATIONS.contains(annotation.annotationType())) {
                 return true;
@@ -91,12 +115,21 @@ class JpaAnnotationParam {
     }
 
     /**
+     * 他Entityへの参照を保持するためのカラムか否か。
+     *
+     * @return 他Entityへの参照を保持するカラムの場合はtrue
+     */
+    boolean isJoinColumn() {
+        return isJoinColumn;
+    }
+
+    /**
      * プロパティ名を返す。
      *
      * @return プロパティ名
      */
     String getName() {
-        return propertyDescriptor.getName();
+        return name;
     }
 
     /**
@@ -105,34 +138,48 @@ class JpaAnnotationParam {
      * @return プロパティのタイプ
      */
     Class<?> getPropertyType() {
-        return propertyDescriptor.getPropertyType();
+        return propertyType;
     }
 
     /**
      * JDBCタイプを返す。
      * <p>
-     * {@link Temporal}アノテーションが設定されている場合は、
-     * {@link Temporal#value()}に対応した型を返す。
-     * それ以外の場合は、{@link #getPropertyType()} を返す。
+     * {@link Temporal}アノテーションが設定されている場合は、{@link Temporal#value()}に対応した型を返す。
+     * それ以外の場合は{@link PropertyDescriptor#getPropertyType()} を返す。
      *
-     * @return JDBCタイプ。
+     * @param annotations アノテーション情報
+     * @param propertyDescriptor PropertyDescriptor
+     * @return JDBCタイプ
      */
-    Class<?> getJdbcType() {
-        final Temporal temporal = getAnnotation(Temporal.class);
+    private static Class<?> getJdbcType(final Annotation[] annotations, final PropertyDescriptor propertyDescriptor) {
+        final Temporal temporal = getAnnotation(annotations, Temporal.class);
         if (temporal == null) {
-            return getPropertyType();
+            return propertyDescriptor.getPropertyType();
         }
         return TEMPORAL_TYPE_MAP.get(temporal.value());
     }
 
+    /**
+     * JDBCタイプを返す。
+     *
+     * @return JDBCタイプ。
+     */
+    Class<?> getJdbcType() {
+        return jdbcType;
+    }
 
     /**
      * カラム名を返す。
+     * <p>
+     * {@link Column}アノテーションが存在する場合は、{@link Column#name()}をカラム名とする。
+     * 存在しない場合は、{@link PropertyDescriptor#getPropertyType() プロパティ名}を元にカラム名を導出する。
      *
+     * @param annotations アノテーション情報
+     * @param propertyDescriptor PropertyDescriptor
      * @return カラム名
      */
-    String getColumnName() {
-        final Column column = getAnnotation(Column.class);
+    private static String getColumnName(final Annotation[] annotations, final PropertyDescriptor propertyDescriptor) {
+        final Column column = getAnnotation(annotations, Column.class);
         if (column != null && StringUtil.hasValue(column.name())) {
             return column.name();
         } else {
@@ -141,12 +188,21 @@ class JpaAnnotationParam {
     }
 
     /**
+     * カラム名を返す。
+     *
+     * @return カラム名
+     */
+    String getColumnName() {
+        return columnName;
+    }
+    
+    /**
      * 永続化対象外のカラムか否かを返す。
      *
      * @return 永続化対象外のカラムの場合{@code true}
      */
     boolean isTransient() {
-        return getAnnotation(Transient.class) != null;
+        return isTransientColumn;
     }
 
     /**
@@ -155,7 +211,7 @@ class JpaAnnotationParam {
      * @return IDカラムの場合{@code true}
      */
     boolean isIdColumn() {
-        return getAnnotation(Id.class) != null;
+        return isIdColumn;
     }
 
     /**
@@ -164,18 +220,20 @@ class JpaAnnotationParam {
      * @return バージョンカラムの場合{@code true}
      */
     boolean isVersionColumn() {
-        return getAnnotation(Version.class) != null;
+        return isVersionColumn;
     }
 
     /**
      * 指定されたアノテーションクラスを返す。
      *
-     * @param annotationClassName アノテーションクラス
      * @param <T> アノテーションの型
+     * @param annotations アノテーション情報
+     * @param annotationClassName アノテーションクラス
      * @return アノテーションクラス。指定されたアノテーションクラスが存在しない場合はnull
      */
     @SuppressWarnings("unchecked")
-    private <T extends Annotation> T getAnnotation(final Class<T> annotationClassName) {
+    private static <T extends Annotation> T getAnnotation(final Annotation[] annotations,
+            final Class<T> annotationClassName) {
         for (final Annotation annotation : annotations) {
             if (annotation.annotationType()
                           .equals(annotationClassName)) {
@@ -203,6 +261,24 @@ class JpaAnnotationParam {
         return generatedValueMetaData != null ? generatedValueMetaData.generationType : null;
     }
 
+    /**
+     * {@link GeneratedValueMetaData}を生成する。
+     *
+     * @param tableName テーブル名
+     * @param annotations アノテーション情報
+     * @return GeneratedValueMetaData
+     */
+    private GeneratedValueMetaData createGeneratedValueMetaData(
+            final String tableName, final Annotation[] annotations) {
+
+        final GeneratedValue generatedValue = getAnnotation(annotations, GeneratedValue.class);
+        if (generatedValue != null) {
+            return new GeneratedValueMetaData(tableName, generatedValue, annotations);
+        } else {
+            return null;
+        }
+    }
+
 
     /**
      * 採番カラムの情報。
@@ -222,23 +298,24 @@ class JpaAnnotationParam {
          *
          * @param tableName テーブル名
          * @param generatedValue GeneratedValue
+         * @param annotations アノテーション情報
          */
         private GeneratedValueMetaData(
                 final String tableName,
-                final GeneratedValue generatedValue) {
+                final GeneratedValue generatedValue, final Annotation[] annotations) {
 
             final String generator = generatedValue.generator();
             final String columnName = getColumnName();
             switch (generatedValue.strategy()) {
                 case AUTO:
-                    if (getSequenceGenerator(generator) != null) {
+                    if (getSequenceGenerator(annotations, generator) != null) {
                         generationType = GenerationType.SEQUENCE;
                         generatorName = buildSequenceName(
-                                tableName, columnName, getSequenceGenerator(generator));
-                    } else if (findTableGenerator(generator) != null) {
+                                tableName, columnName, getSequenceGenerator(annotations, generator));
+                    } else if (findTableGenerator(annotations, generator) != null) {
                         generationType = GenerationType.TABLE;
                         generatorName = buildTableGeneratorName(
-                                tableName, columnName, findTableGenerator(generator));
+                                tableName, columnName, findTableGenerator(annotations, generator));
                     } else {
                         generationType = GenerationType.AUTO;
                         generatorName = tableName + '_' + columnName;
@@ -251,13 +328,13 @@ class JpaAnnotationParam {
                 case SEQUENCE:
                     generationType = GenerationType.SEQUENCE;
                     generatorName = buildSequenceName(
-                            tableName, columnName, getSequenceGenerator(generator));
+                            tableName, columnName, getSequenceGenerator(annotations, generator));
 
                     break;
                 case TABLE:
                     generationType = GenerationType.TABLE;
                     generatorName = buildTableGeneratorName(
-                            tableName, columnName, findTableGenerator(generator));
+                            tableName, columnName, findTableGenerator(annotations, generator));
                     break;
                 default:
                     throw new IllegalArgumentException("unexpected value: " + generatedValue);
@@ -267,11 +344,14 @@ class JpaAnnotationParam {
         /**
          * シーケンス採番を取得する。
          *
+         *
+         * @param annotations アノテーション情報
          * @param generator 採番名称
          * @return シーケンス採番
          */
-        private SequenceGenerator getSequenceGenerator(final String generator) {
-            final SequenceGenerator sequenceGenerator = getAnnotation(SequenceGenerator.class);
+        private SequenceGenerator getSequenceGenerator(final Annotation[] annotations,
+                final String generator) {
+            final SequenceGenerator sequenceGenerator = getAnnotation(annotations, SequenceGenerator.class);
             if (sequenceGenerator == null) {
                 return null;
             }
@@ -281,11 +361,13 @@ class JpaAnnotationParam {
         /**
          * テーブル採番を取得する。
          *
+         * @param annotations アノテーション情報
          * @param generator 採番名称
          * @return テーブル採番
          */
-        private TableGenerator findTableGenerator(final String generator) {
-            final TableGenerator tableGenerator = getAnnotation(TableGenerator.class);
+        private TableGenerator findTableGenerator(final Annotation[] annotations,
+                final String generator) {
+            final TableGenerator tableGenerator = getAnnotation(annotations, TableGenerator.class);
             if (tableGenerator == null) {
                 return null;
             }
