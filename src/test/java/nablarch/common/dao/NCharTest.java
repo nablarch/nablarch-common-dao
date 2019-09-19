@@ -59,11 +59,20 @@ public class NCharTest {
         table.ncharColumn = "槗桺婷琨刘吴翟";
         table.nvarcharColumn = "槗桺婷琨刘吴翟";
         VariousDbTestHelper.delete(NCharTable.class);
-        VariousDbTestHelper.setUpTable(table);
 
-        NCharTable entity = UniversalDao.findById(NCharTable.class, 1L);
-        assertThat(entity.ncharColumn, is("槗桺婷琨刘吴翟"));
-        assertThat(entity.nvarcharColumn, is("槗桺婷琨刘吴翟"));
+        UniversalDao.insert(table);
+        connection.commit();
+
+        {
+            NCharTable entity = UniversalDao.findById(NCharTable.class, 1L);
+            assertThat(entity.ncharColumn, is("槗桺婷琨刘吴翟"));
+            assertThat(entity.nvarcharColumn, is("槗桺婷琨刘吴翟"));
+        }
+        {
+            NCharTable entity = VariousDbTestHelper.findById(NCharTable.class, 1L);
+            assertThat(entity.ncharColumn, is("槗桺婷琨刘吴翟"));
+            assertThat(entity.nvarcharColumn, is("槗桺婷琨刘吴翟"));
+        }
     }
 
     @Entity
