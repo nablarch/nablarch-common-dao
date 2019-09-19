@@ -7,3 +7,4 @@ nablarch.common.dao.UniversalDaoTest$TextColumn
 nablarch.common.dao.UniversalDaoFieldTest$Users
 nablarch.common.dao.entity.DatePkTable
 nablarch.common.dao.entity.TimestampPkTablele
+nablarch.common.dao.NCharTest$NCharTable
