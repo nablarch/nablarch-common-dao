@@ -17,8 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.GenerationType;
-import javax.persistence.OptimisticLockException;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.OptimisticLockException;
 
 import org.hamcrest.CoreMatchers;
 
