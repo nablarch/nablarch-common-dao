@@ -140,7 +140,7 @@ public final class EntityUtil {
     }
 
     /**
-     * エンティティから{@link javax.persistence.GeneratedValue}が設定されたカラムを取得する。
+     * エンティティから{@link jakarta.persistence.GeneratedValue}が設定されたカラムを取得する。
      * <p/>
      * 採番対象のカラムが定義されていない場合は{@code null}を返す。
      *
@@ -154,7 +154,7 @@ public final class EntityUtil {
     }
 
     /**
-     * エンティティクラスから{@link javax.persistence.GeneratedValue}が設定されたカラムを取得する。
+     * エンティティクラスから{@link jakarta.persistence.GeneratedValue}が設定されたカラムを取得する。
      * <p/>
      * 採番対象のカラムが定義されていない場合は{@code null}を返す。
      *

@@ -2,7 +2,7 @@ package nablarch.common.dao;
 
 import java.util.List;
 
-import javax.persistence.OptimisticLockException;
+import jakarta.persistence.OptimisticLockException;
 
 import nablarch.core.util.annotation.Published;
 

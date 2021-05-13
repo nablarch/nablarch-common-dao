@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;

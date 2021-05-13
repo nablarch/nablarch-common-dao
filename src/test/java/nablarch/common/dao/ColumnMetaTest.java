@@ -6,8 +6,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.persistence.Id;
-import javax.persistence.Version;
+import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
