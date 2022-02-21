@@ -73,7 +73,6 @@ public class EntityMetaTest {
      * @param param セットする値
      */
     private void setSystemRepositoryParamShowInternalErrorLog(final boolean param) {
-        //fieldアクセス
         SystemRepository.load(new ObjectLoader() {
             @Override
             public Map<String, Object> load() {
