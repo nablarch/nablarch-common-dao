@@ -112,7 +112,7 @@ public class EntityMeta {
             sortIdColumns();
         } catch (RuntimeException e) {
             if (SystemRepository.getBoolean("nablarch.entityMeta.showInternalErrorLog")) {
-                if ( LOGGER.isErrorEnabled()) {
+                if (LOGGER.isErrorEnabled()) {
                     LOGGER.logError("Failed to process sortIdColumns.", e);
                 }
             }

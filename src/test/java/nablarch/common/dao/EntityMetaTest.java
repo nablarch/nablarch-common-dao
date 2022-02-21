@@ -41,14 +41,13 @@ public class EntityMetaTest {
     }
         
     @Test
-    public void testShowInternalErrorLog() throws Exception{
+    public void testShowInternalErrorLog() throws Exception {
         System.setProperty("nablarch.log.filePath", "classpath:nablarch/core/log/log-mock.properties");
         setSystemRepositoryParamShowInternalErrorLog(true);
         clearLog();
-        
-        //内部でエラーが発生し、エラーログが出力される
-        new EntityMeta(EntityMetaTest.class); 
-        
+
+        new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
+
         assertLog("ERROR Failed to process sortIdColumns.",
                 "Stack Trace Information : ",
                 "java.lang.IllegalArgumentException: specified database connection name is not register in thread local. connection name = [transaction]");
@@ -57,17 +56,16 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void testNotShowInternalErrorLog() throws Exception{
-        
+    public void testNotShowInternalErrorLog() throws Exception {
+
         setSystemRepositoryParamShowInternalErrorLog(false);
         clearLog();
-        
-        //内部でエラーが発生するが、エラーログは出力されない
-        new EntityMeta(EntityMetaTest.class); 
-        
+
+        new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
+
         assertNotLog("Exception");
         clearLog();
-        
+
     }
 
     /**
@@ -79,13 +77,13 @@ public class EntityMetaTest {
         SystemRepository.load(new ObjectLoader() {
             @Override
             public Map<String, Object> load() {
-                final Map<String, Object> map = new HashMap<String,Object>();
+                final Map<String, Object> map = new HashMap<String, Object>();
                 map.put("nablarch.entityMeta.showInternalErrorLog", String.valueOf(param));
                 return map;
             }
         });
     }
-    
+
     /**
      * 期待する文言が全てログ出力されていることを確認する。
      *
@@ -94,7 +92,7 @@ public class EntityMetaTest {
     private void assertLog(String... expected) {
         OnMemoryLogWriter.assertLogContains(WRITER_NAME, expected);
     }
-    
+
     /**
      * 指定した文言がログに出力されていないことを確認する。
      * @param notExpected 出力されてはいけない文言
