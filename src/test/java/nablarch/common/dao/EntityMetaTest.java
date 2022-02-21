@@ -65,7 +65,6 @@ public class EntityMetaTest {
 
         assertNotLog("Exception");
         clearLog();
-
     }
 
     /**
@@ -112,5 +111,4 @@ public class EntityMetaTest {
     private void clearLog() {
         OnMemoryLogWriter.clear();
     }
-
 }
