@@ -12,6 +12,9 @@ import javax.persistence.AccessType;
 import javax.persistence.Table;
 
 import nablarch.core.beans.BeanUtil;
+import nablarch.core.log.Logger;
+import nablarch.core.log.LoggerManager;
+import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
@@ -23,6 +26,9 @@ import nablarch.core.util.annotation.Published;
  */
 @Published(tag = "architect")
 public class EntityMeta {
+
+    /** ロガー */
+    private static final Logger LOGGER = LoggerManager.get(EntityMeta.class);
 
     /** テーブル名 */
     private final String tableName;
@@ -105,6 +111,11 @@ public class EntityMeta {
         try {
             sortIdColumns();
         } catch (RuntimeException e) {
+            if (SystemRepository.getBoolean("nablarch.entityMeta.showInternalErrorLog")) {
+                if ( LOGGER.isErrorEnabled()) {
+                    LOGGER.logError("Failed to process sortIdColumns.", e);
+                }
+            }
             enableFindById = false;
         }
     }
@@ -236,4 +247,3 @@ public class EntityMeta {
     }
 
 }
-
