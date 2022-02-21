@@ -48,7 +48,7 @@ public class EntityMetaTest {
 
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
 
-        assertLog("ERROR Failed to process sortIdColumns.",
+        assertLog("WARN Failed to process sortIdColumns.",
                 "Stack Trace Information : ",
                 "java.lang.IllegalArgumentException: specified database connection name is not register in thread local. connection name = [transaction]");
         setSystemRepositoryParamShowInternalErrorLog(false); //デフォルトの状態=falseに戻す
