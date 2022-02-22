@@ -65,7 +65,6 @@ public class EntityMetaTest {
 
     @Test
     public void testShowInternalErrorLog() throws Exception {
-        System.setProperty("nablarch.log.filePath", "classpath:nablarch/core/log/log-mock.properties");
         setSystemRepositoryParamShowInternalErrorLog(true);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
         assertLog("WARN Failed to process sortIdColumns.",
