@@ -19,6 +19,9 @@ import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import mockit.Mock;
+import mockit.MockUp;
+
 /**
  * {@link EntityMeta}のテストクラス。
  * <p/>
@@ -36,6 +39,12 @@ public class EntityMetaTest {
     @Before
     public void setUp() throws Exception {
         clearLog();
+        new MockUp<EntityMeta>() {
+            @Mock
+            public void sortIdColumns() {
+                throw new RuntimeException("Dummy exception by mock");
+            }
+        };
     }
 
     @After
@@ -61,7 +70,7 @@ public class EntityMetaTest {
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
         assertLog("WARN Failed to process sortIdColumns.",
                 "Stack Trace Information : ",
-                "java.lang.IllegalArgumentException: specified database connection name is not register in thread local. connection name = [transaction]");
+                "java.lang.RuntimeException: Dummy exception by mock");
     }
 
     @Test
