@@ -49,7 +49,7 @@ public class EntityMetaTest {
 
     @After
     public void tearDown() throws Exception {
-        setSystemRepositoryParamShowInternalErrorLog(false); //デフォルトの状態=falseに戻す
+        setSystemRepositoryParamShowCauseExceptionLog(false); //デフォルトの状態=falseに戻す
         clearLog();
     }
 
@@ -64,8 +64,8 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void testShowInternalErrorLog() throws Exception {
-        setSystemRepositoryParamShowInternalErrorLog(true);
+    public void testShowCauseExceptionLog() throws Exception {
+        setSystemRepositoryParamShowCauseExceptionLog(true);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
         assertLog("WARN Failed to process sortIdColumns.",
                 "Stack Trace Information : ",
@@ -73,22 +73,22 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void testNotShowInternalErrorLog() throws Exception {
-        setSystemRepositoryParamShowInternalErrorLog(false);
+    public void testNotCauseExceptionLog() throws Exception {
+        setSystemRepositoryParamShowCauseExceptionLog(false);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
         assertNotLog("Exception");
     }
 
     /**
-     * システムリポジトリのパラメータnablarch.entityMeta.showInternalErrorLogにparamで指定した値をセットする
+     * システムリポジトリのパラメータnablarch.entityMeta.showCauseExceptionLogにparamで指定した値をセットする
      * @param param セットする値
      */
-    private void setSystemRepositoryParamShowInternalErrorLog(final boolean param) {
+    private void setSystemRepositoryParamShowCauseExceptionLog(final boolean param) {
         SystemRepository.load(new ObjectLoader() {
             @Override
             public Map<String, Object> load() {
                 final Map<String, Object> map = new HashMap<String, Object>();
-                map.put("nablarch.entityMeta.showInternalErrorLog", String.valueOf(param));
+                map.put("nablarch.entityMeta.showCauseExceptionLog", String.valueOf(param));
                 return map;
             }
         });
