@@ -111,7 +111,7 @@ public class EntityMeta {
         try {
             sortIdColumns();
         } catch (RuntimeException e) {
-            if (SystemRepository.getBoolean("nablarch.entityMeta.showCauseExceptionLog")) {
+            if (!SystemRepository.getBoolean("nablarch.entityMeta.hideCauseExceptionLog")) {
                 LOGGER.logWarn("Failed to process sortIdColumns.", e);
             }
             enableFindById = false;

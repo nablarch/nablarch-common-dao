@@ -49,7 +49,7 @@ public class EntityMetaTest {
 
     @After
     public void tearDown() throws Exception {
-        setSystemRepositoryParamShowCauseExceptionLog(false); //デフォルトの状態=falseに戻す
+        setSystemRepositoryParamHideCauseExceptionLog(false);
         clearLog();
     }
 
@@ -65,7 +65,7 @@ public class EntityMetaTest {
 
     @Test
     public void testShowCauseExceptionLog() throws Exception {
-        setSystemRepositoryParamShowCauseExceptionLog(true);
+        setSystemRepositoryParamHideCauseExceptionLog(false);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
         OnMemoryLogWriter.assertLogContains(WRITER_NAME, new String[] {
                 "WARN Failed to process sortIdColumns.",
@@ -74,28 +74,27 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void testNotCauseExceptionLog() throws Exception {
-        setSystemRepositoryParamShowCauseExceptionLog(false);
+    public void testHideCauseExceptionLog() throws Exception {
+        setSystemRepositoryParamHideCauseExceptionLog(true);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
         List<String> actualLogs = OnMemoryLogWriter.getMessages(WRITER_NAME);
         assertThat("ログが出力されていないこと",actualLogs.size(),is(0));
     }
 
     /**
-     * システムリポジトリのパラメータnablarch.entityMeta.showCauseExceptionLogにparamで指定した値をセットする
+     * システムリポジトリのパラメータnablarch.entityMeta.hideCauseExceptionLogにparamで指定した値をセットする
      * @param param セットする値
      */
-    private void setSystemRepositoryParamShowCauseExceptionLog(final boolean param) {
+    private void setSystemRepositoryParamHideCauseExceptionLog(final boolean param) {
         SystemRepository.load(new ObjectLoader() {
             @Override
             public Map<String, Object> load() {
                 final Map<String, Object> map = new HashMap<String, Object>();
-                map.put("nablarch.entityMeta.showCauseExceptionLog", String.valueOf(param));
+                map.put("nablarch.entityMeta.hideCauseExceptionLog", String.valueOf(param));
                 return map;
             }
         });
     }
-
 
     /** ログを明示的にクリアする。 */
     private void clearLog() {
