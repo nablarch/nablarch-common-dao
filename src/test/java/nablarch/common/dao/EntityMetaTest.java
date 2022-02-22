@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+
 import nablarch.core.repository.ObjectLoader;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.Builder;
@@ -30,6 +33,17 @@ public class EntityMetaTest {
     @ClassRule
     public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
+    @Before
+    public void setUp() throws Exception {
+        clearLog();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        setSystemRepositoryParamShowInternalErrorLog(false); //デフォルトの状態=falseに戻す
+        clearLog();
+    }
+
     @Test
     public void testEquals() throws Exception {
         EntityMeta entityMeta = new EntityMeta(EntityMetaTest.class);
@@ -39,32 +53,22 @@ public class EntityMetaTest {
         assertThat(entityMeta.equals(entityMeta), is(true));
         assertThat(entityMeta.equals(entityMeta), is(true));
     }
-        
+
     @Test
     public void testShowInternalErrorLog() throws Exception {
         System.setProperty("nablarch.log.filePath", "classpath:nablarch/core/log/log-mock.properties");
         setSystemRepositoryParamShowInternalErrorLog(true);
-        clearLog();
-
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
-
         assertLog("WARN Failed to process sortIdColumns.",
                 "Stack Trace Information : ",
                 "java.lang.IllegalArgumentException: specified database connection name is not register in thread local. connection name = [transaction]");
-        setSystemRepositoryParamShowInternalErrorLog(false); //デフォルトの状態=falseに戻す
-        clearLog();
     }
 
     @Test
     public void testNotShowInternalErrorLog() throws Exception {
-
         setSystemRepositoryParamShowInternalErrorLog(false);
-        clearLog();
-
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
-
         assertNotLog("Exception");
-        clearLog();
     }
 
     /**
