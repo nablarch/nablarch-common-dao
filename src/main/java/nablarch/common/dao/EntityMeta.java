@@ -111,6 +111,9 @@ public class EntityMeta {
         try {
             sortIdColumns();
         } catch (RuntimeException e) {
+            // 5u21からsortIdColumns内部で例外が発生したときに、エラーログを出力するように変更した。
+            // このエラーログの出力を無効化したい場合は環境設定ファイルに、以下の記述を追加すること。
+            // nablarch.entityMeta.hideCauseExceptionLog=true
             if (!SystemRepository.getBoolean("nablarch.entityMeta.hideCauseExceptionLog")) {
                 LOGGER.logWarn("Failed to process sortIdColumns.", e);
             }
