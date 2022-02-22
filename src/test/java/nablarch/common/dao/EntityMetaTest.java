@@ -1,7 +1,7 @@
 package nablarch.common.dao;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,16 +67,18 @@ public class EntityMetaTest {
     public void testShowCauseExceptionLog() throws Exception {
         setSystemRepositoryParamShowCauseExceptionLog(true);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
-        assertLog("WARN Failed to process sortIdColumns.",
+        OnMemoryLogWriter.assertLogContains(WRITER_NAME, new String[] {
+                "WARN Failed to process sortIdColumns.",
                 "Stack Trace Information : ",
-                "java.lang.RuntimeException: Dummy exception by mock");
+                "java.lang.RuntimeException: Dummy exception by mock" });
     }
 
     @Test
     public void testNotCauseExceptionLog() throws Exception {
         setSystemRepositoryParamShowCauseExceptionLog(false);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
-        assertNotLog("Exception");
+        List<String> actualLogs = OnMemoryLogWriter.getMessages(WRITER_NAME);
+        assertThat("ログが出力されていないこと",actualLogs.size(),is(0));
     }
 
     /**
@@ -94,30 +96,6 @@ public class EntityMetaTest {
         });
     }
 
-    /**
-     * 期待する文言が全てログ出力されていることを確認する。
-     *
-     * @param expected 期待する文言（複数指定可）
-     */
-    private void assertLog(String... expected) {
-        OnMemoryLogWriter.assertLogContains(WRITER_NAME, expected);
-    }
-
-    /**
-     * 指定した文言がログに出力されていないことを確認する。
-     * @param notExpected 出力されてはいけない文言
-     */
-    private void assertNotLog(String notExpected) {
-        List<String> actualLogs = OnMemoryLogWriter.getMessages(WRITER_NAME);
-        for (String actualLog : actualLogs) {
-            if (actualLog.contains(notExpected)) {
-                throw new AssertionError(Builder.concat(
-                        "not expected log found. \n",
-                        "don`t include = ", notExpected.toString(), "\n",
-                        "actual = ", actualLogs.toString()));
-            }
-        }
-    }
 
     /** ログを明示的にクリアする。 */
     private void clearLog() {
