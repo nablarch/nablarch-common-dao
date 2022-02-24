@@ -12,6 +12,9 @@ import javax.persistence.AccessType;
 import javax.persistence.Table;
 
 import nablarch.core.beans.BeanUtil;
+import nablarch.core.log.Logger;
+import nablarch.core.log.LoggerManager;
+import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
@@ -23,6 +26,9 @@ import nablarch.core.util.annotation.Published;
  */
 @Published(tag = "architect")
 public class EntityMeta {
+
+    /** ロガー */
+    private static final Logger LOGGER = LoggerManager.get(EntityMeta.class);
 
     /** テーブル名 */
     private final String tableName;
@@ -76,7 +82,7 @@ public class EntityMeta {
             if (jpaAnnotationParam.isJoinColumn()) {
                 continue;
             }
-            
+
             final ColumnMeta meta = new ColumnMeta(this, jpaAnnotationParam);
             if (!meta.isTransient()) {
                 columnMetaList.add(meta);
@@ -105,8 +111,26 @@ public class EntityMeta {
         try {
             sortIdColumns();
         } catch (RuntimeException e) {
+            // 5u21からsortIdColumns内部で例外が発生したときに、ログを出力するように変更した。
+            // このログの出力を無効化したい場合は環境設定ファイルに、以下の記述を追加すること。
+            // nablarch.entityMeta.hideCauseExceptionLog=true
+            if (isShowCauseExceptionLog()) {
+                LOGGER.logWarn("Failed to process sortIdColumns.", e);
+            }
             enableFindById = false;
         }
+    }
+
+    /**
+     * 原因となった例外をログに出力するかどうか判定する。
+     * <p/>
+     * デフォルトではログを出力しない。</br>
+     * プロパティnablarch.entityMeta.hideCauseExceptionLogにtrueが設定されていた場合はログ出力を抑制する。
+     *
+     * @return ログを出力するなら true
+     */
+    private boolean isShowCauseExceptionLog() {
+        return !SystemRepository.getBoolean("nablarch.entityMeta.hideCauseExceptionLog");
     }
 
     /**
@@ -236,4 +260,3 @@ public class EntityMeta {
     }
 
 }
-
