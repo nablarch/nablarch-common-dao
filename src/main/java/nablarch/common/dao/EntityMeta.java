@@ -114,11 +114,22 @@ public class EntityMeta {
             // 5u21からsortIdColumns内部で例外が発生したときに、ログを出力するように変更した。
             // このログの出力を無効化したい場合は環境設定ファイルに、以下の記述を追加すること。
             // nablarch.entityMeta.hideCauseExceptionLog=true
-            if (!SystemRepository.getBoolean("nablarch.entityMeta.hideCauseExceptionLog")) {
+            if (isShowCauseExceptionLog()) {
                 LOGGER.logWarn("Failed to process sortIdColumns.", e);
             }
             enableFindById = false;
         }
+    }
+
+    /**
+     * プロパティnablarch.entityMeta.hideCauseExceptionLogを評価し、ログを出力するかどうかを判定する
+     * <p/>
+     * ログの出力を抑制したいときだけ環境設定ファイル上でnablarch.entityMeta.hideCauseExceptionLogにtrueを設定する仕様である。この処理では未設定時、false指定時はログを出力する(=true)と判定する。
+     *
+     * @return ログを出力するなら true
+     */
+    private boolean isShowCauseExceptionLog() {
+        return !SystemRepository.getBoolean("nablarch.entityMeta.hideCauseExceptionLog");
     }
 
     /**
