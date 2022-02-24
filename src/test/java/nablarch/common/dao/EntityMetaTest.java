@@ -12,10 +12,8 @@ import org.junit.After;
 
 import nablarch.core.repository.ObjectLoader;
 import nablarch.core.repository.SystemRepository;
-import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import mockit.Mock;
@@ -33,13 +31,13 @@ public class EntityMetaTest {
     private static final String WRITER_NAME = "writer.memory";
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         setSystemRepositoryParamHideCauseExceptionLog(false);
         clearLog();
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         EntityMeta entityMeta = new EntityMeta(TestEntity.class);
         EntityMeta another = new EntityMeta(TestEntityAnother.class);
         EntityMeta sameEntityMeta = new EntityMeta(TestEntity.class);
@@ -59,7 +57,7 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void testShowCauseExceptionLog() throws Exception {
+    public void testShowCauseExceptionLog() {
         new MockUp<EntityMeta>() {
             @Mock
             public void sortIdColumns() {
@@ -74,7 +72,7 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void testHideCauseExceptionLog() throws Exception {
+    public void testHideCauseExceptionLog() {
         new MockUp<EntityMeta>() {
             @Mock
             public void sortIdColumns() {
