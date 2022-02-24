@@ -8,11 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
-import org.junit.Before;
 
 import nablarch.core.repository.ObjectLoader;
 import nablarch.core.repository.SystemRepository;
-import nablarch.core.util.Builder;
 import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 
@@ -36,17 +34,6 @@ public class EntityMetaTest {
     @ClassRule
     public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
-    @Before
-    public void setUp() throws Exception {
-        clearLog();
-        new MockUp<EntityMeta>() {
-            @Mock
-            public void sortIdColumns() {
-                throw new RuntimeException("Dummy exception by mock");
-            }
-        };
-    }
-
     @After
     public void tearDown() throws Exception {
         setSystemRepositoryParamHideCauseExceptionLog(false);
@@ -65,20 +52,32 @@ public class EntityMetaTest {
 
     @Test
     public void testShowCauseExceptionLog() throws Exception {
+        new MockUp<EntityMeta>() {
+            @Mock
+            public void sortIdColumns() {
+                throw new RuntimeException("Dummy exception by mock");
+            }
+        };
         setSystemRepositoryParamHideCauseExceptionLog(false);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
-        OnMemoryLogWriter.assertLogContains(WRITER_NAME, new String[] {
+        OnMemoryLogWriter.assertLogContains(WRITER_NAME,
                 "WARN Failed to process sortIdColumns.",
-                "Stack Trace Information : ",
-                "java.lang.RuntimeException: Dummy exception by mock" });
+                "java.lang.RuntimeException: Dummy exception by mock");
     }
 
     @Test
     public void testHideCauseExceptionLog() throws Exception {
+        new MockUp<EntityMeta>() {
+            @Mock
+            public void sortIdColumns() {
+                throw new RuntimeException("Dummy exception by mock");
+            }
+        };
         setSystemRepositoryParamHideCauseExceptionLog(true);
         new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
-        List<String> actualLogs = OnMemoryLogWriter.getMessages(WRITER_NAME);
-        assertThat("ログが出力されていないこと",actualLogs.size(),is(0));
+        assertNotLogContains(WRITER_NAME,
+                "WARN Failed to process sortIdColumns.",
+                "java.lang.RuntimeException: Dummy exception by mock");
     }
 
     /**
@@ -94,6 +93,20 @@ public class EntityMetaTest {
                 return map;
             }
         });
+    }
+
+    /**
+     * 指定した文言がログに出力されていないことを確認する。
+     * @param name ログ名
+     * @param notContainsLogs 出力されてはいけない文言
+     */
+    private void assertNotLogContains(String name, String... notContainsLogs) {
+        List<String> actualLogs = OnMemoryLogWriter.getMessages(name);
+        for (String notContainsLog : notContainsLogs) {
+            for (String actualLog : actualLogs) {
+                assertThat(actualLog, not(containsString(notContainsLog)));
+            }
+        }
     }
 
     /** ログを明示的にクリアする。 */
