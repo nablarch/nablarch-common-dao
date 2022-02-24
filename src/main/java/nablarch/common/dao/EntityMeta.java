@@ -122,9 +122,10 @@ public class EntityMeta {
     }
 
     /**
-     * プロパティnablarch.entityMeta.hideCauseExceptionLogを評価し、ログを出力するかどうかを判定する
+     * 原因となった例外をログに出力するかどうか判定する。
      * <p/>
-     * ログの出力を抑制したいときだけ環境設定ファイル上でnablarch.entityMeta.hideCauseExceptionLogにtrueを設定する仕様である。この処理では未設定時、false指定時はログを出力する(=true)と判定する。
+     * デフォルトではログを出力しない。</br>
+     * プロパティnablarch.entityMeta.hideCauseExceptionLogにtrueが設定されていた場合はログ出力を抑制する。
      *
      * @return ログを出力するなら true
      */
