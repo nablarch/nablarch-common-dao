@@ -1,3 +1,1 @@
 # nablarch-common-dao 
-
-test
