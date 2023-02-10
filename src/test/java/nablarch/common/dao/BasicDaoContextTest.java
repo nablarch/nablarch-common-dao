@@ -206,7 +206,7 @@ public class BasicDaoContextTest {
     @Test
     public void findByIdOrNullDataNotFound() {
         Users user = sut.findByIdOrNull(Users.class, 100);
-        assertThat(user,nullValue());
+        assertThat(user, nullValue());
     }
 
     /**
@@ -779,7 +779,7 @@ public class BasicDaoContextTest {
         Object配列を条件に:
         {
             Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ARRAY",
-                    new Object[] {7L});
+                    new Object[] { 7L });
             assertThat(user.getId(), is(7L));
             assertThat(user.getName(), is("なまえ_7"));
         }
@@ -891,7 +891,7 @@ public class BasicDaoContextTest {
         Object配列を条件に:
         {
             Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ARRAY",
-                    new Object[] {7L});
+                    new Object[] { 7L });
             assertThat(user.getId(), is(7L));
             assertThat(user.getName(), is("なまえ\uD840\uDC0B_7"));
         }
@@ -969,7 +969,7 @@ public class BasicDaoContextTest {
         cond.setId(6L);
         Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
 
-        assertThat(user,nullValue());
+        assertThat(user, nullValue());
     }
 
     /**
