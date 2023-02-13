@@ -84,8 +84,8 @@ public class BasicDaoContext implements DaoContext {
      */
     @Override
     public <T> T findById(final Class<T> entityClass, final Object... id) {
-        T result = findByIdOrNull(entityClass,id);
-        if (result==null) {
+        T result = findByIdOrNull(entityClass, id);
+        if (result == null) {
             throw new NoDataException();
         }
 
@@ -217,8 +217,7 @@ public class BasicDaoContext implements DaoContext {
      */
     private <T> T createResultInstance(final Class<T> entityClass, final SqlRow row) {
         if (entityClass.equals(SqlRow.class)) {
-            @SuppressWarnings("unchecked")
-            final T t = (T) row;
+            @SuppressWarnings("unchecked") final T t = (T) row;
             return t;
         } else {
             return EntityUtil.createEntity(entityClass, row);
@@ -271,12 +270,12 @@ public class BasicDaoContext implements DaoContext {
      */
     @Override
     public <T> T findBySqlFile(final Class<T> entityClass, final String sqlId, final Object params) {
-        T t = findBySqlFileOrNull(entityClass,sqlId,params);
-        if (t == null){
+        T t = findBySqlFileOrNull(entityClass, sqlId, params);
+        if (t == null) {
             throw new NoDataException();
         }
 
-        return  t;
+        return t;
     }
 
     /**
@@ -348,7 +347,7 @@ public class BasicDaoContext implements DaoContext {
         long count;
         try {
             if (rs.next()) {
-                count =  rs.getLong(1);
+                count = rs.getLong(1);
             } else {
                 throw new IllegalStateException("Count query didn't return result.");
             }
@@ -403,8 +402,8 @@ public class BasicDaoContext implements DaoContext {
         final SqlPStatement stmt;
         if (generationType == GenerationType.IDENTITY) {
             sqlWithParams = sqlBuilder.buildInsertWithIdentityColumnSql(entity);
-            stmt = dbConnection.prepareStatement(sqlWithParams.getSql(), new String[]{
-                    DatabaseUtil.convertIdentifiers(generatedValueColumn.getName())});
+            stmt = dbConnection.prepareStatement(sqlWithParams.getSql(), new String[] {
+                    DatabaseUtil.convertIdentifiers(generatedValueColumn.getName()) });
         } else {
             sqlWithParams = sqlBuilder.buildInsertSql(entity);
             stmt = dbConnection.prepareStatement(sqlWithParams.getSql());
@@ -427,8 +426,7 @@ public class BasicDaoContext implements DaoContext {
             return;
         }
 
-        @SuppressWarnings("unchecked")
-        final Class<T> entityClass = (Class<T>) entities.get(0).getClass();
+        @SuppressWarnings("unchecked") final Class<T> entityClass = (Class<T>) entities.get(0).getClass();
 
         final ColumnMeta generatedValueColumn = EntityUtil.findGeneratedValueColumn(entityClass);
         final GenerationType generationType = findGeneratedType(generatedValueColumn);
@@ -442,7 +440,7 @@ public class BasicDaoContext implements DaoContext {
         if (generationType == GenerationType.IDENTITY) {
             sqlWithColumns = sqlBuilder.buildBatchInsertWithIdentityColumnSql(entityClass);
             stmt = dbConnection.prepareStatement(sqlWithColumns.getSql(),
-                    new String[] {DatabaseUtil.convertIdentifiers(generatedValueColumn.getName())});
+                    new String[] { DatabaseUtil.convertIdentifiers(generatedValueColumn.getName()) });
         } else {
             sqlWithColumns = sqlBuilder.buildBatchInsertSql(entityClass);
             stmt = dbConnection.prepareStatement(sqlWithColumns.getSql());
@@ -638,7 +636,6 @@ public class BasicDaoContext implements DaoContext {
             }
         }
     }
-
 
     @Override
     public <T> int delete(final T entity) {

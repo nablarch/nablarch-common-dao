@@ -66,7 +66,7 @@ public class UniversalDaoTest {
 
     @Rule
     public SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
-    
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -260,7 +260,7 @@ public class UniversalDaoTest {
             id++;
         }
     }
-    
+
     /**
      * {@link UniversalDao#findAllBySqlFile(Class, String, Object)}のテストケース
      *
@@ -281,7 +281,6 @@ public class UniversalDaoTest {
                 "FIND_USERS_ALL_WHERE_ENTITY", cond);
         assertThat(users.size(), is(2));
     }
-
 
     /**
      * {@link UniversalDao#findAllBySqlFile(Class, String)}のテストケース
@@ -325,7 +324,7 @@ public class UniversalDaoTest {
             id++;
         }
     }
-    
+
     /**
      * {@link UniversalDao#findBySqlFile(Class, String, Object)}のテストケース
      *
@@ -371,7 +370,7 @@ public class UniversalDaoTest {
         assertThat(user.getBirthday(), is(DateUtil.getDate("20110103")));
         assertThat(user.getVersion(), is(999L));
     }
-    
+
     /**
      * {@link UniversalDao#countBySqlFile(Class, String)}のテストケース
      *
@@ -549,11 +548,11 @@ public class UniversalDaoTest {
         repositoryResource.addComponent("daoContextFactory", daoContextFactory);
 
         UniversalDao.insert(user);
-        
+
         connection.commit();
-        
+
         Users actual = VariousDbTestHelper.findById(Users.class, 1L);
-        
+
         assertThat(actual.getId(), is(user.getId()));
         assertThat(actual.getName(), is(user.getName()));
         assertThat(actual.getBirthday(), is(user.getBirthday()));
@@ -612,7 +611,6 @@ public class UniversalDaoTest {
         assertThat(actual2.getInsertDate(), is(user2.getInsertDate()));
         assertThat(actual2.getVersion(), is(user2.getVersion()));
     }
-    
 
     @Test
     public void IDENTITYカラムを持つテーブルへのbatchInsertでIDENTITYがサポートされていない場合例外が送出されること() {
@@ -622,7 +620,7 @@ public class UniversalDaoTest {
                 return true;
             }
         }, connection);
-        
+
         expectedException.expect(UnsupportedOperationException.class);
         expectedException.expectMessage("batch insert to table with IDENTITY column is not supported.");
         UniversalDao.batchInsert(Collections.singletonList(new IdentityColumnEntity()));
@@ -852,7 +850,7 @@ public class UniversalDaoTest {
         List<SqlFunctionResult> actual = UniversalDao.findAllBySqlFile(SqlFunctionResult.class, "USE_FUNCTION_LONG");
         assertThat(actual.get(0).getLongCol(), is(1000000000000000000L)); //19桁
     }
-    
+
     @Entity
     @Table(name = "clob_column")
     public static class ClobColumn {
@@ -914,7 +912,7 @@ public class UniversalDaoTest {
      * CLOB型のカラムにデータを登録できること
      */
     @Test
-    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
     public void test_insertClobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -931,7 +929,7 @@ public class UniversalDaoTest {
      * TEXT型のカラムにデータを登録できること
      */
     @Test
-    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    @TargetDb(exclude = { TargetDb.Db.ORACLE, TargetDb.Db.DB2 })
     public void test_insertTextColumn() throws Exception {
         VariousDbTestHelper.createTable(TextColumn.class);
         final TextColumn entity = new TextColumn();
@@ -943,24 +941,23 @@ public class UniversalDaoTest {
         final TextColumn actual = VariousDbTestHelper.findById(TextColumn.class, entity.id);
         assertThat(actual.text, is(entity.text));
     }
-    
 
     /**
      * CLOB型のカラムのデータを更新できること
      */
     @Test
-    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
     public void test_updateClobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
         entity.id = 12345L;
         entity.clob = "変更前";
         VariousDbTestHelper.insert(entity);
-        
+
         entity.clob = "updateを使って更新";
         UniversalDao.update(entity);
         connection.commit();
-        
+
         final ClobColumn actual = VariousDbTestHelper.findById(ClobColumn.class, entity.id);
         assertThat(actual.clob, is(entity.clob));
     }
@@ -969,7 +966,7 @@ public class UniversalDaoTest {
      * TEXT型のカラムのデータを更新できること
      */
     @Test
-    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    @TargetDb(exclude = { TargetDb.Db.ORACLE, TargetDb.Db.DB2 })
     public void test_updateTextColumn() throws Exception {
         VariousDbTestHelper.createTable(TextColumn.class);
         final TextColumn entity = new TextColumn();
@@ -990,7 +987,7 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
     public void test_findById_clobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -1007,7 +1004,7 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
     public void test_findByIdOrNull_clobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -1025,7 +1022,7 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    @TargetDb(exclude = { TargetDb.Db.ORACLE, TargetDb.Db.DB2 })
     public void test_findById_textColumn() throws Exception {
         VariousDbTestHelper.createTable(TextColumn.class);
         final TextColumn entity = new TextColumn();
@@ -1043,7 +1040,7 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    @TargetDb(exclude = { TargetDb.Db.ORACLE, TargetDb.Db.DB2 })
     public void test_findByIdOrNull_textColumn() throws Exception {
         VariousDbTestHelper.createTable(TextColumn.class);
         final TextColumn entity = new TextColumn();
@@ -1059,7 +1056,7 @@ public class UniversalDaoTest {
      * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用してCLOBカラムの値が取得できること。
      */
     @Test
-    @TargetDb(include = {TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2})
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
     public void test_findAllBySqlFile_clobColumn() throws Exception {
         VariousDbTestHelper.createTable(ClobColumn.class);
         final ClobColumn entity = new ClobColumn();
@@ -1067,7 +1064,7 @@ public class UniversalDaoTest {
         entity.clob = "CLOBに格納するデータ";
         VariousDbTestHelper.insert(entity);
 
-        final EntityList<ClobColumn> actual = UniversalDao.findAllBySqlFile(ClobColumn.class, "find", new Object[] {entity.id});
+        final EntityList<ClobColumn> actual = UniversalDao.findAllBySqlFile(ClobColumn.class, "find", new Object[] { entity.id });
 
         assertThat(actual, hasSize(1));
         assertThat(actual.get(0).clob, is(entity.clob));
@@ -1078,7 +1075,7 @@ public class UniversalDaoTest {
      * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用してTEXTカラムの値が取得できること。
      */
     @Test
-    @TargetDb(exclude = {TargetDb.Db.ORACLE, TargetDb.Db.DB2})
+    @TargetDb(exclude = { TargetDb.Db.ORACLE, TargetDb.Db.DB2 })
     public void test_findAllBySqlFile_textColumn() throws Exception {
         VariousDbTestHelper.createTable(TextColumn.class);
         final TextColumn entity = new TextColumn();
@@ -1087,7 +1084,7 @@ public class UniversalDaoTest {
         VariousDbTestHelper.insert(entity);
 
         final EntityList<TextColumn> actual = UniversalDao.findAllBySqlFile(TextColumn.class, "find",
-                new Object[] {entity.id});
+                new Object[] { entity.id });
 
         assertThat(actual, hasSize(1));
         assertThat(actual.get(0).text, is(entity.text));
@@ -1155,7 +1152,7 @@ public class UniversalDaoTest {
         // execute
         final int deleteCount = UniversalDao.delete(entity);
         connection.commit();
-        
+
         // assert
         assertThat("1レコード削除されること", deleteCount, is(1));
         assertThat(UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>empty());
@@ -1171,11 +1168,11 @@ public class UniversalDaoTest {
         UniversalDao.insert(entity);
         connection.commit();
         assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
-        
+
         // execute
         entity.name = "名前を変更";
         final int updateCount = UniversalDao.update(entity);
-        
+
         // assert
         assertThat("1レコード更新されること", updateCount, is(1));
         assertThat(UniversalDao.findById(TimestampPkTable.class, entity.timestampCol),
@@ -1204,7 +1201,7 @@ public class UniversalDaoTest {
      * @param connection
      */
     private void setDialect(DefaultDialect dialect, TransactionManagerConnection connection) {
-        if (connection  instanceof BasicDbConnection) {
+        if (connection instanceof BasicDbConnection) {
             DbExecutionContext context = new DbExecutionContext(connection, dialect, TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
             BasicDbConnection.class.cast(connection).setContext(context);
             return;
