@@ -78,10 +78,29 @@ public class BasicDaoContext implements DaoContext {
      * {@inheritDoc}
      * <p/>
      * この実装では、プライマリーキーのメタデータを{@link java.sql.DatabaseMetaData}から取得する。
-     * それに失敗した場合にこのメソッドを呼ぶと、{@link IllegalStateException}を送出する。
+     * @return エンティティオブジェクト
+     * @throws IllegalArgumentException (主キーの数と指定した条件数が一致しない場合)
+     * @throws NoDataException (検索条件に該当するレコードが存在しない場合)
      */
     @Override
     public <T> T findById(final Class<T> entityClass, final Object... id) {
+        T result = findByIdOrNull(entityClass,id);
+        if (result==null) {
+            throw new NoDataException();
+        }
+
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * この実装では、プライマリーキーのメタデータを{@link java.sql.DatabaseMetaData}から取得する。
+     * @return エンティティオブジェクト。0件の場合はnull。
+     * @throws IllegalArgumentException (主キーの数と指定した条件数が一致しない場合)
+     */
+    @Override
+    public <T> T findByIdOrNull(final Class<T> entityClass, final Object... id) {
         final List<ColumnMeta> idColumns = EntityUtil.findIdColumns(entityClass);
         if (id.length != idColumns.size()) {
             throw new IllegalArgumentException("Mismatch the counts of id columns. expected=" + idColumns.size());
@@ -94,7 +113,7 @@ public class BasicDaoContext implements DaoContext {
         }
         final ResultSetIterator rsIter = stmt.executeQuery();
         if (!rsIter.next()) {
-            throw new NoDataException();
+            return null;
         }
 
         final SqlRow row = rsIter.getRow();
@@ -247,10 +266,30 @@ public class BasicDaoContext implements DaoContext {
      * @param entityClass エンティティクラス
      * @param sqlId SQL_ID
      * @param params バインド変数
-     * @return 1件のEntity。見つからない場合はNoDataExceptionを送出する。
+     * @return 1件のEntity。
+     * @throws NoDataException (検索条件に該当するレコードが存在しない場合)
      */
     @Override
     public <T> T findBySqlFile(final Class<T> entityClass, final String sqlId, final Object params) {
+        T t = findBySqlFileOrNull(entityClass,sqlId,params);
+        if (t == null){
+            throw new NoDataException();
+        }
+
+        return  t;
+    }
+
+    /**
+     * SQL_IDをもとに検索処理を行いEntityを取得する。
+     *
+     * @param <T> 総称型
+     * @param entityClass エンティティクラス
+     * @param sqlId SQL_ID
+     * @param params バインド変数
+     * @return 1件のEntity。0件の場合はnull。
+     */
+    @Override
+    public <T> T findBySqlFileOrNull(final Class<T> entityClass, final String sqlId, final Object params) {
         final SqlResourceHolder holder = executeQuery(normalizeSqlId(sqlId, entityClass), params, new SelectOption(0, 0));
         try {
             ResultSetIterator rows = holder.getResultSetIterator();
@@ -264,7 +303,7 @@ public class BasicDaoContext implements DaoContext {
                     return EntityUtil.createEntity(entityClass, row);
                 }
             } else {
-                throw new NoDataException();
+                return null;
             }
         } finally {
             holder.dispose();
