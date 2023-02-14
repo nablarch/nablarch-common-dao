@@ -186,19 +186,9 @@ public final class UniversalDao {
 
     /**
      * SQL_IDをもとにバインド変数を展開して検索し、結果を格納したBeanを一件取得する。0件の場合はnullを返す。
-     * <pre>
-     * {@code
-     * // 検索条件を引き渡すためのBeanを設定する
-     * // FIND_BY_IDにBookエンティティのIDカラムがバインド変数として記述されている場合を想定
-     * Book condition = new Book();
-     * condition.setId(1L);
-     *
-     * Book book = UniversalDao.findBySqlFileOrNull(Book.class, "FIND_BY_ID", condition);
-     * }</pre>
      * <p/>
-     * 検索条件に該当するレコードが複数存在する場合、例外の送出は行わず、検索結果の先頭行を取得して返却する。
-     * 0件の場合はnullを返す。
-     * <p/>
+     * 検索結果が0件の場合に{@link NoDataException}ではなくnull返す以外については、{@link #findBySqlFile(Class, String, Object)}
+     * と同じである。
      *
      * @param <T> 検索結果をマッピングするBeanクラス
      * @param entityClass 検索結果をマッピングするBeanクラスオブジェクト
