@@ -78,7 +78,6 @@ public class BasicDaoContext implements DaoContext {
      * {@inheritDoc}
      * <p/>
      * この実装では、プライマリーキーのメタデータを{@link java.sql.DatabaseMetaData}から取得する。
-     * @return エンティティオブジェクト
      * @throws IllegalArgumentException (主キーの数と指定した条件数が一致しない場合)
      * @throws NoDataException (検索条件に該当するレコードが存在しない場合)
      */
@@ -259,13 +258,7 @@ public class BasicDaoContext implements DaoContext {
     }
 
     /**
-     * SQL_IDをもとに検索処理を行いEntityを取得する。
-     *
-     * @param <T> 総称型
-     * @param entityClass エンティティクラス
-     * @param sqlId SQL_ID
-     * @param params バインド変数
-     * @return 1件のEntity。
+     * {@inheritDoc}
      * @throws NoDataException (検索条件に該当するレコードが存在しない場合)
      */
     @Override
@@ -279,13 +272,7 @@ public class BasicDaoContext implements DaoContext {
     }
 
     /**
-     * SQL_IDをもとに検索処理を行いEntityを取得する。
-     *
-     * @param <T> 総称型
-     * @param entityClass エンティティクラス
-     * @param sqlId SQL_ID
-     * @param params バインド変数
-     * @return 1件のEntity。0件の場合はnull。
+     * {@inheritDoc}
      */
     @Override
     public <T> T findBySqlFileOrNull(final Class<T> entityClass, final String sqlId, final Object params) {
