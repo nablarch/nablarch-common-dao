@@ -95,7 +95,6 @@ public class BasicDaoContext implements DaoContext {
      * {@inheritDoc}
      * <p/>
      * この実装では、プライマリーキーのメタデータを{@link java.sql.DatabaseMetaData}から取得する。
-     * @return エンティティオブジェクト。0件の場合はnull。
      * @throws IllegalArgumentException (主キーのカラム数と指定した条件数が一致しない場合)
      */
     @Override
