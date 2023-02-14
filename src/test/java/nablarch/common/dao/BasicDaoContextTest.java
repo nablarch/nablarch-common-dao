@@ -210,7 +210,7 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * {@link BasicDaoContext#findById(Class, Object...)}で主キーの数と指定した条件数が一致しない場合のケース
+     * {@link BasicDaoContext#findById(Class, Object...)}で主キーのカラム数と指定した条件数が一致しない場合のケース
      * <p/>
      * {@link IllegalArgumentException}が送出されること。
      */
@@ -220,7 +220,7 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * {@link BasicDaoContext#findByIdOrNull(Class, Object...)}で主キーの数と指定した条件数が一致しない場合のケース
+     * {@link BasicDaoContext#findByIdOrNull(Class, Object...)}で主キーのカラム数と指定した条件数が一致しない場合のケース
      * <p/>
      * {@link IllegalArgumentException}が送出されること。
      */

@@ -77,7 +77,7 @@ public final class UniversalDao {
      * @param id 条件項目(複数のキーを使う場合は、対象テーブルでのキーの定義順に引き渡す)
      * @return 取得したエンティティ
      * @throws NoDataException 検索条件に該当するレコードが存在しない場合
-     * @throws IllegalArgumentException 主キーの数と指定した条件数が一致しない場合
+     * @throws IllegalArgumentException 主キーのカラム数と指定した条件数が一致しない場合
      * @throws IllegalStateException 対象テーブルから主キーの定義順を取得できなかった場合
      */
     public static <T> T findById(final Class<T> entityClass, final Object... id) {
@@ -95,7 +95,7 @@ public final class UniversalDao {
      * @param entityClass エンティティクラスオブジェクト
      * @param id 条件項目(複数のキーを使う場合は、対象テーブルでのキーの定義順に引き渡す)
      * @return 取得したエンティティ。0件の場合はnull。
-     * @throws IllegalArgumentException 主キーの数と指定した条件数が一致しない場合
+     * @throws IllegalArgumentException 主キーのカラム数と指定した条件数が一致しない場合
      * @throws IllegalStateException 対象テーブルから主キーの定義順を取得できなかった場合
      */
     public static <T> T findByIdOrNull(final Class<T> entityClass, final Object... id) {
