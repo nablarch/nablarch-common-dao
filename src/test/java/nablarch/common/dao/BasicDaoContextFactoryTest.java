@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 import java.util.Map;
 
-import javax.persistence.GenerationType;
+import jakarta.persistence.GenerationType;
 
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.connection.DbConnectionContext;

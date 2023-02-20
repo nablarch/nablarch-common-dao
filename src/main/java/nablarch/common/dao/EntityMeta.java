@@ -7,9 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Table;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Table;
 
 import nablarch.core.beans.BeanUtil;
 import nablarch.core.log.Logger;
