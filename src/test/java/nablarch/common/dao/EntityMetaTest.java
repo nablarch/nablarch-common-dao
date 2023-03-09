@@ -14,6 +14,7 @@ import nablarch.core.repository.ObjectLoader;
 import nablarch.core.repository.SystemRepository;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import mockit.Mock;
@@ -57,6 +58,7 @@ public class EntityMetaTest {
     }
 
     @Test
+    @Ignore("jacoco と jmockit が競合してエラーになるため")
     public void testShowCauseExceptionLog() {
         new MockUp<EntityMeta>() {
             @Mock
@@ -72,6 +74,7 @@ public class EntityMetaTest {
     }
 
     @Test
+    @Ignore("jacoco と jmockit が競合してエラーになるため")
     public void testHideCauseExceptionLog() {
         new MockUp<EntityMeta>() {
             @Mock
