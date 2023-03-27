@@ -29,6 +29,16 @@ public interface DaoContext {
     <T> T findById(Class<T> entityClass, Object... id);
 
     /**
+     * プライマリーキーによる検索を行う。
+     *
+     * @param <T> エンティティクラスの型
+     * @param entityClass エンティティクラス
+     * @param id プライマリーキー (複合キーの場合は定義順)
+     * @return エンティティオブジェクト。0件の場合はnull。
+     */
+    <T> T findByIdOrNull(Class<T> entityClass, Object... id);
+
+    /**
      * 全件の検索を行う。
      *
      * @param <T> エンティティクラスの型
@@ -71,6 +81,17 @@ public interface DaoContext {
      * @return エンティティオブジェクト
      */
     <T> T findBySqlFile(Class<T> entityClass, String sqlId, Object params);
+
+    /**
+     * SQL_IDをもとに1件検索を行う。
+     *
+     * @param <T> 検索結果をマッピングするBeanクラスの型
+     * @param entityClass 検索結果をマッピングするBeanクラス
+     * @param sqlId SQL_ID
+     * @param params バインド変数
+     * @return エンティティオブジェクト。0件の場合はnull。
+     */
+    <T> T findBySqlFileOrNull(Class<T> entityClass, String sqlId, Object params);
 
     /**
      * SQL_IDをもとに結果件数を取得する。

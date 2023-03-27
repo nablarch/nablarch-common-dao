@@ -77,6 +77,7 @@ public final class UniversalDao {
      * @param id 条件項目(複数のキーを使う場合は、対象テーブルでのキーの定義順に引き渡す)
      * @return 取得したエンティティ
      * @throws NoDataException 検索条件に該当するレコードが存在しない場合
+     * @throws IllegalArgumentException 主キーのカラム数と指定した条件数が一致しない場合
      * @throws IllegalStateException 対象テーブルから主キーの定義順を取得できなかった場合
      */
     public static <T> T findById(final Class<T> entityClass, final Object... id) {
@@ -84,6 +85,24 @@ public final class UniversalDao {
             return daoContext().findById(entityClass, id);
         } else {
             throw new IllegalStateException("For findById, enable to get the orders of primary keys.");
+        }
+    }
+
+    /**
+     * 主キーを指定して、1件だけエンティティを取得する。0件の場合はnullを返す。
+     *
+     * @param <T> エンティティクラス(戻り値の型)
+     * @param entityClass エンティティクラスオブジェクト
+     * @param id 条件項目(複数のキーを使う場合は、対象テーブルでのキーの定義順に引き渡す)
+     * @return 取得したエンティティ。0件の場合はnull。
+     * @throws IllegalArgumentException 主キーのカラム数と指定した条件数が一致しない場合
+     * @throws IllegalStateException 対象テーブルから主キーの定義順を取得できなかった場合
+     */
+    public static <T> T findByIdOrNull(final Class<T> entityClass, final Object... id) {
+        if (id.length == 1 || EntityUtil.findEntityMeta(entityClass).canFindById()) {
+            return daoContext().findByIdOrNull(entityClass, id);
+        } else {
+            throw new IllegalStateException("For findByIdOrNull, enable to get the orders of primary keys.");
         }
     }
 
@@ -163,6 +182,22 @@ public final class UniversalDao {
      */
     public static <T> T findBySqlFile(final Class<T> entityClass, final String sqlId, final Object params) {
         return daoContext().findBySqlFile(entityClass, sqlId, params);
+    }
+
+    /**
+     * SQL_IDをもとにバインド変数を展開して検索し、結果を格納したBeanを一件取得する。0件の場合はnullを返す。
+     * <p/>
+     * 検索結果が0件の場合に{@link NoDataException}ではなくnull返す以外については、{@link #findBySqlFile(Class, String, Object)}
+     * と同じである。
+     *
+     * @param <T> 検索結果をマッピングするBeanクラス
+     * @param entityClass 検索結果をマッピングするBeanクラスオブジェクト
+     * @param sqlId SQL_ID
+     * @param params バインド変数
+     * @return 1件のBean。0件の場合はnull。
+     */
+    public static <T> T findBySqlFileOrNull(final Class<T> entityClass, final String sqlId, final Object params) {
+        return daoContext().findBySqlFileOrNull(entityClass, sqlId, params);
     }
 
     /**

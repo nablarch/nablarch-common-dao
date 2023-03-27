@@ -78,10 +78,27 @@ public class BasicDaoContext implements DaoContext {
      * {@inheritDoc}
      * <p/>
      * この実装では、プライマリーキーのメタデータを{@link java.sql.DatabaseMetaData}から取得する。
-     * それに失敗した場合にこのメソッドを呼ぶと、{@link IllegalStateException}を送出する。
+     * @throws IllegalArgumentException (主キーのカラム数と指定した条件数が一致しない場合)
+     * @throws NoDataException (検索条件に該当するレコードが存在しない場合)
      */
     @Override
     public <T> T findById(final Class<T> entityClass, final Object... id) {
+        T result = findByIdOrNull(entityClass, id);
+        if (result == null) {
+            throw new NoDataException();
+        }
+
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * この実装では、プライマリーキーのメタデータを{@link java.sql.DatabaseMetaData}から取得する。
+     * @throws IllegalArgumentException (主キーのカラム数と指定した条件数が一致しない場合)
+     */
+    @Override
+    public <T> T findByIdOrNull(final Class<T> entityClass, final Object... id) {
         final List<ColumnMeta> idColumns = EntityUtil.findIdColumns(entityClass);
         if (id.length != idColumns.size()) {
             throw new IllegalArgumentException("Mismatch the counts of id columns. expected=" + idColumns.size());
@@ -94,7 +111,7 @@ public class BasicDaoContext implements DaoContext {
         }
         final ResultSetIterator rsIter = stmt.executeQuery();
         if (!rsIter.next()) {
-            throw new NoDataException();
+            return null;
         }
 
         final SqlRow row = rsIter.getRow();
@@ -198,8 +215,7 @@ public class BasicDaoContext implements DaoContext {
      */
     private <T> T createResultInstance(final Class<T> entityClass, final SqlRow row) {
         if (entityClass.equals(SqlRow.class)) {
-            @SuppressWarnings("unchecked")
-            final T t = (T) row;
+            @SuppressWarnings("unchecked") final T t = (T) row;
             return t;
         } else {
             return EntityUtil.createEntity(entityClass, row);
@@ -241,16 +257,24 @@ public class BasicDaoContext implements DaoContext {
     }
 
     /**
-     * SQL_IDをもとに検索処理を行いEntityを取得する。
-     *
-     * @param <T> 総称型
-     * @param entityClass エンティティクラス
-     * @param sqlId SQL_ID
-     * @param params バインド変数
-     * @return 1件のEntity。見つからない場合はNoDataExceptionを送出する。
+     * {@inheritDoc}
+     * @throws NoDataException (検索条件に該当するレコードが存在しない場合)
      */
     @Override
     public <T> T findBySqlFile(final Class<T> entityClass, final String sqlId, final Object params) {
+        T t = findBySqlFileOrNull(entityClass, sqlId, params);
+        if (t == null) {
+            throw new NoDataException();
+        }
+
+        return t;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T> T findBySqlFileOrNull(final Class<T> entityClass, final String sqlId, final Object params) {
         final SqlResourceHolder holder = executeQuery(normalizeSqlId(sqlId, entityClass), params, new SelectOption(0, 0));
         try {
             ResultSetIterator rows = holder.getResultSetIterator();
@@ -264,7 +288,7 @@ public class BasicDaoContext implements DaoContext {
                     return EntityUtil.createEntity(entityClass, row);
                 }
             } else {
-                throw new NoDataException();
+                return null;
             }
         } finally {
             holder.dispose();
@@ -309,7 +333,7 @@ public class BasicDaoContext implements DaoContext {
         long count;
         try {
             if (rs.next()) {
-                count =  rs.getLong(1);
+                count = rs.getLong(1);
             } else {
                 throw new IllegalStateException("Count query didn't return result.");
             }
@@ -364,8 +388,8 @@ public class BasicDaoContext implements DaoContext {
         final SqlPStatement stmt;
         if (generationType == GenerationType.IDENTITY) {
             sqlWithParams = sqlBuilder.buildInsertWithIdentityColumnSql(entity);
-            stmt = dbConnection.prepareStatement(sqlWithParams.getSql(), new String[]{
-                    DatabaseUtil.convertIdentifiers(generatedValueColumn.getName())});
+            stmt = dbConnection.prepareStatement(sqlWithParams.getSql(), new String[] {
+                    DatabaseUtil.convertIdentifiers(generatedValueColumn.getName()) });
         } else {
             sqlWithParams = sqlBuilder.buildInsertSql(entity);
             stmt = dbConnection.prepareStatement(sqlWithParams.getSql());
@@ -388,8 +412,7 @@ public class BasicDaoContext implements DaoContext {
             return;
         }
 
-        @SuppressWarnings("unchecked")
-        final Class<T> entityClass = (Class<T>) entities.get(0).getClass();
+        @SuppressWarnings("unchecked") final Class<T> entityClass = (Class<T>) entities.get(0).getClass();
 
         final ColumnMeta generatedValueColumn = EntityUtil.findGeneratedValueColumn(entityClass);
         final GenerationType generationType = findGeneratedType(generatedValueColumn);
@@ -403,7 +426,7 @@ public class BasicDaoContext implements DaoContext {
         if (generationType == GenerationType.IDENTITY) {
             sqlWithColumns = sqlBuilder.buildBatchInsertWithIdentityColumnSql(entityClass);
             stmt = dbConnection.prepareStatement(sqlWithColumns.getSql(),
-                    new String[] {DatabaseUtil.convertIdentifiers(generatedValueColumn.getName())});
+                    new String[] { DatabaseUtil.convertIdentifiers(generatedValueColumn.getName()) });
         } else {
             sqlWithColumns = sqlBuilder.buildBatchInsertSql(entityClass);
             stmt = dbConnection.prepareStatement(sqlWithColumns.getSql());
@@ -599,7 +622,6 @@ public class BasicDaoContext implements DaoContext {
             }
         }
     }
-
 
     @Override
     public <T> int delete(final T entity) {
