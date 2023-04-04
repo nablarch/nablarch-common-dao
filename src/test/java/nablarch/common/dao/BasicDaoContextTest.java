@@ -137,6 +137,25 @@ public class BasicDaoContextTest {
 
     /**
      * 単一の主キーを持つテーブルを
+     * {@link BasicDaoContext#findByIdOrNull(Class, Object...)}で検索するケース。
+     */
+    @Test
+    public void findByIdOrNull_singleKey() {
+
+        VariousDbTestHelper.setUpTable(
+                new Users(100L, "なまえ_100", DateUtil.getDate("20120101"), DaoTestHelper.getDate("20150401123456"), 99L),
+                new Users(101L, "なまえ_101", DateUtil.getDate("20120102"), DaoTestHelper.getDate("20150402123456"), 99L),
+                new Users(102L, "なまえ_102", DateUtil.getDate("20120103"), DaoTestHelper.getDate("20150403123456"), 99L));
+
+        Users user = sut.findByIdOrNull(Users.class, 101);
+        assertThat(user.getId(), is(101L));
+        assertThat(user.getName(), is("なまえ_101"));
+        assertThat(user.getBirthday(), is(DateUtil.getDate("20120102")));
+        assertThat(user.getInsertDate(), is(DaoTestHelper.getDate("20150402123456")));
+    }
+
+    /**
+     * 単一の主キーを持つテーブルを
      * {@link BasicDaoContext#findById(Class, Object...)}で検索するケース。
      */
     @Test
@@ -145,6 +164,23 @@ public class BasicDaoContextTest {
                 new Address(100L, "1", 1L, "1001001", "東京都新宿区・・・")
         );
         Address address = sut.findById(Address.class, 100, "1");
+        assertThat(address.getId(), is(100L));
+        assertThat(address.getCode(), is("1"));
+        assertThat(address.getUserId(), is(1L));
+        assertThat(address.getPostNo(), is("1001001"));
+        assertThat(address.getAddress(), is("東京都新宿区・・・"));
+    }
+
+    /**
+     * 単一の主キーを持つテーブルを
+     * {@link BasicDaoContext#findByIdOrNull(Class, Object...)}で検索するケース。
+     */
+    @Test
+    public void findByIdOrNull_multipleKey() {
+        VariousDbTestHelper.setUpTable(
+                new Address(100L, "1", 1L, "1001001", "東京都新宿区・・・")
+        );
+        Address address = sut.findByIdOrNull(Address.class, 100, "1");
         assertThat(address.getId(), is(100L));
         assertThat(address.getCode(), is("1"));
         assertThat(address.getUserId(), is(1L));
@@ -163,13 +199,34 @@ public class BasicDaoContextTest {
     }
 
     /**
-     * {@link BasicDaoContext#findById(Class, Object...)}で主キーの数と指定した条件数が一致しない場合のケース
+     * {@link BasicDaoContext#findByIdOrNull(Class, Object...)}でデータが存在しない場合のケース。
+     * <p/>
+     * nullがかえされること。
+     */
+    @Test
+    public void findByIdOrNullDataNotFound() {
+        Users user = sut.findByIdOrNull(Users.class, 100);
+        assertThat(user, nullValue());
+    }
+
+    /**
+     * {@link BasicDaoContext#findById(Class, Object...)}で主キーのカラム数と指定した条件数が一致しない場合のケース
      * <p/>
      * {@link IllegalArgumentException}が送出されること。
      */
     @Test(expected = IllegalArgumentException.class)
     public void findByIdMismatchIdColumnCount() {
         sut.findById(Users.class);
+    }
+
+    /**
+     * {@link BasicDaoContext#findByIdOrNull(Class, Object...)}で主キーのカラム数と指定した条件数が一致しない場合のケース
+     * <p/>
+     * {@link IllegalArgumentException}が送出されること。
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void findByIdOrNullMismatchIdColumnCount() {
+        sut.findByIdOrNull(Users.class);
     }
 
     /**
@@ -706,6 +763,60 @@ public class BasicDaoContextTest {
     }
 
     /**
+     * {@link BasicDaoContext#findBySqlFileOrNull(Class, String, Object)}のテスト。
+     */
+    @Test
+    public void findBySqlFileOrNull() {
+        VariousDbTestHelper.delete(Users.class);
+        for (int i = 0; i < 10; i++) {
+            long index = i + 1;
+            VariousDbTestHelper.insert(
+                    new Users(index, "なまえ_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
+                            DaoTestHelper.getDate("20150401123456"))
+            );
+        }
+
+        Object配列を条件に:
+        {
+            Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ARRAY",
+                    new Object[] { 7L });
+            assertThat(user.getId(), is(7L));
+            assertThat(user.getName(), is("なまえ_7"));
+        }
+
+        Entityを条件に:
+        {
+            Users cond = new Users();
+            cond.setId(5L);
+            Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+            assertThat(user.getId(), is(5L));
+            assertThat(user.getName(), is("なまえ_5"));
+        }
+
+        Mapを条件に:
+        {
+            HashMap<String, Object> cond = new HashMap<String, Object>();
+            cond.put("id", 3);
+            Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+            assertThat(user.getId(), is(3L));
+            assertThat(user.getName(), is("なまえ_3"));
+        }
+
+        Entityを条件にSqlRowを取得:
+        {
+            Users cond = new Users();
+            cond.setId(5L);
+            SqlRow user = sut.findBySqlFileOrNull(SqlRow.class, "nablarch.common.dao.Result_SqlRow#FIND_BY_ID_WHERE_ENTITY",
+                    cond);
+
+            assertThat(user.getLong("userId"), is(5L));
+            assertThat(user.getString("name"), is("なまえ_5"));
+        }
+    }
+
+    /**
      * {@link BasicDaoContext#findBySqlFile(Class, String, Object)}のサロゲートペア有のテスト。
      *
      * @throws Exception
@@ -763,6 +874,61 @@ public class BasicDaoContextTest {
     }
 
     /**
+     * {@link BasicDaoContext#findBySqlFileOrNull(Class, String, Object)}のサロゲートペア有のテスト。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void findBySqlFileOrNull_surrogatePair() {
+        VariousDbTestHelper.delete(Users.class);
+        for (int i = 0; i < 10; i++) {
+            long index = i + 1;
+            VariousDbTestHelper.insert(
+                    new Users(index, "なまえ\uD840\uDC0B_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
+                            DaoTestHelper.getDate("20150401123456"))
+            );
+        }
+
+        Object配列を条件に:
+        {
+            Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ARRAY",
+                    new Object[] { 7L });
+            assertThat(user.getId(), is(7L));
+            assertThat(user.getName(), is("なまえ\uD840\uDC0B_7"));
+        }
+
+        Entityを条件に:
+        {
+            Users cond = new Users();
+            cond.setId(5L);
+            Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+            assertThat(user.getId(), is(5L));
+            assertThat(user.getName(), is("なまえ\uD840\uDC0B_5"));
+        }
+
+        Mapを条件に:
+        {
+            HashMap<String, Object> cond = new HashMap<String, Object>();
+            cond.put("id", 3);
+            Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+            assertThat(user.getId(), is(3L));
+            assertThat(user.getName(), is("なまえ\uD840\uDC0B_3"));
+        }
+
+        Entityを条件にSqlRowを取得:
+        {
+            Users cond = new Users();
+            cond.setId(5L);
+            SqlRow user = sut.findBySqlFileOrNull(SqlRow.class, "nablarch.common.dao.Result_SqlRow#FIND_BY_ID_WHERE_ENTITY",
+                    cond);
+
+            assertThat(user.getLong("userId"), is(5L));
+            assertThat(user.getString("name"), is("なまえ\uD840\uDC0B_5"));
+        }
+    }
+
+    /**
      * {@link BasicDaoContext#findBySqlFile(Class, String, Object)}でデータが存在しない場合のケース。
      * <p/>
      * {@link NoDataException}が送出されること。
@@ -782,6 +948,28 @@ public class BasicDaoContextTest {
         Users cond = new Users();
         cond.setId(6L);
         sut.findBySqlFile(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+    }
+
+    /**
+     * {@link BasicDaoContext#findBySqlFileOrNull(Class, String, Object)}でデータが存在しない場合のケース。
+     * <p/>
+     * nullがかえされること。
+     */
+    @Test
+    public void findBySqlFileOrNull_DataNotFound() {
+        for (int i = 0; i < 5; i++) {
+            long index = i + 1;
+            VariousDbTestHelper.setUpTable(
+                    new Users(index, "name_" + index, DateUtil.getDate(String.valueOf(20140100 + index)),
+                            DaoTestHelper.getDate("20150401123456"))
+            );
+        }
+
+        Users cond = new Users();
+        cond.setId(6L);
+        Users user = sut.findBySqlFileOrNull(Users.class, "FIND_BY_ID_WHERE_ENTITY", cond);
+
+        assertThat(user, nullValue());
     }
 
     /**
