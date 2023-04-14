@@ -1,27 +1,9 @@
 package nablarch.common.dao;
 
-import static nablarch.common.dao.UniversalDao.exists;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import org.hamcrest.Matchers;
-import org.hamcrest.beans.HasPropertyWithValue;
-
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
 import nablarch.common.dao.DaoTestHelper.Users;
@@ -45,7 +27,9 @@ import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.TargetDb;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
-
+import nablarch.test.support.reflection.ReflectionUtil;
+import org.hamcrest.Matchers;
+import org.hamcrest.beans.HasPropertyWithValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -54,9 +38,22 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import mockit.Deencapsulation;
-import mockit.Expectations;
-import mockit.Mocked;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
+import static nablarch.common.dao.UniversalDao.exists;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author kawasima
@@ -186,7 +183,7 @@ public class UniversalDaoTest {
         // 主キー検索可否をfalseで上書き
         EntityMeta entityMeta = EntityUtil.findEntityMeta(Address.class);
 
-        Deencapsulation.setField(entityMeta, "enableFindById", false);
+        ReflectionUtil.setFieldValue(entityMeta, "enableFindById", false);
         try {
             UniversalDao.findById(Address.class, 1L, "1");
             fail("ここはとおらない");
@@ -209,7 +206,7 @@ public class UniversalDaoTest {
         // 主キー検索可否をfalseで上書き
         EntityMeta entityMeta = EntityUtil.findEntityMeta(Address.class);
 
-        Deencapsulation.setField(entityMeta, "enableFindById", false);
+        ReflectionUtil.setFieldValue(entityMeta, "enableFindById", false);
         try {
             UniversalDao.findByIdOrNull(Address.class, 1L, "1");
             fail("ここはとおらない");
@@ -524,13 +521,11 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    public void insert(@Mocked final IdGenerator mockGenerator) throws Exception {
+    public void insert() throws Exception {
+        IdGenerator mockGenerator = mock(IdGenerator.class);
         VariousDbTestHelper.delete(Users.class);
 
-        new Expectations() {{
-            mockGenerator.generateId("USER_ID_SEQ");
-            result = "1";
-        }};
+        when(mockGenerator.generateId("USER_ID_SEQ")).thenReturn("1");
 
         Users user = new Users();
         user.setName("ユーザ名");
@@ -566,13 +561,11 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    public void batchInsert(@Mocked final IdGenerator mockGenerator) throws Exception {
+    public void batchInsert() throws Exception {
+        IdGenerator mockGenerator = mock(IdGenerator.class);
         VariousDbTestHelper.delete(Users.class);
 
-        new Expectations() {{
-            mockGenerator.generateId("USER_ID_SEQ");
-            returns("1", "100");
-        }};
+        when(mockGenerator.generateId("USER_ID_SEQ")).thenReturn("1", "100");
 
         Users user1 = new Users(
                 null, "ユーザ名1", DateUtil.getDate("19700101"), DaoTestHelper.getDate("20150401123456"));
@@ -735,13 +728,11 @@ public class UniversalDaoTest {
      * @throws Exception
      */
     @Test
-    public void transaction(@Mocked final IdGenerator mockIdGenerator) throws Exception {
+    public void transaction() throws Exception {
+        IdGenerator mockIdGenerator = mock(IdGenerator.class);
         VariousDbTestHelper.delete(Users.class);
 
-        new Expectations() {{
-            mockIdGenerator.generateId("USER_ID_SEQ");
-            returns("1", "2");
-        }};
+        when(mockIdGenerator.generateId("USER_ID_SEQ")).thenReturn("1", "2");
 
         final DaoContextFactory daoContextFactory = new BasicDaoContextFactory();
         daoContextFactory.setSequenceIdGenerator(mockIdGenerator);
