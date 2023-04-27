@@ -1,24 +1,23 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import nablarch.core.repository.ObjectLoader;
+import nablarch.core.repository.SystemRepository;
+import nablarch.test.support.log.app.OnMemoryLogWriter;
+import org.junit.After;
+import org.junit.Test;
+import org.mockito.MockedStatic;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-
-import nablarch.core.repository.ObjectLoader;
-import nablarch.core.repository.SystemRepository;
-import nablarch.test.support.log.app.OnMemoryLogWriter;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import mockit.Mock;
-import mockit.MockUp;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 /**
  * {@link EntityMeta}のテストクラス。
@@ -58,35 +57,29 @@ public class EntityMetaTest {
     }
 
     @Test
-    @Ignore("jacoco と jmockit が競合してエラーになるため")
     public void testShowCauseExceptionLog() {
-        new MockUp<EntityMeta>() {
-            @Mock
-            public void sortIdColumns() {
-                throw new RuntimeException("Dummy exception by mock");
-            }
-        };
-        setSystemRepositoryParamHideCauseExceptionLog(false);
-        new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
-        OnMemoryLogWriter.assertLogContains(WRITER_NAME,
-                "WARN Failed to process sortIdColumns.",
-                "java.lang.RuntimeException: Dummy exception by mock");
+        try (final MockedStatic<DatabaseUtil> mocked = mockStatic(DatabaseUtil.class)) {
+            mocked.when(() -> DatabaseUtil.getPrimaryKey(anyString())).thenThrow(new RuntimeException("Dummy exception by mock"));
+
+            setSystemRepositoryParamHideCauseExceptionLog(false);
+            new EntityMeta(EntityMetaTest.class); //内部でエラーが発生し、エラーログが出力される
+            OnMemoryLogWriter.assertLogContains(WRITER_NAME,
+                    "WARN Failed to process sortIdColumns.",
+                    "java.lang.RuntimeException: Dummy exception by mock");
+        }
     }
 
     @Test
-    @Ignore("jacoco と jmockit が競合してエラーになるため")
     public void testHideCauseExceptionLog() {
-        new MockUp<EntityMeta>() {
-            @Mock
-            public void sortIdColumns() {
-                throw new RuntimeException("Dummy exception by mock");
-            }
-        };
-        setSystemRepositoryParamHideCauseExceptionLog(true);
-        new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
-        assertNotLogContains(WRITER_NAME,
-                "WARN Failed to process sortIdColumns.",
-                "java.lang.RuntimeException: Dummy exception by mock");
+        try (final MockedStatic<DatabaseUtil> mocked = mockStatic(DatabaseUtil.class)) {
+            mocked.when(() -> DatabaseUtil.getPrimaryKey(anyString())).thenThrow(new RuntimeException("Dummy exception by mock"));
+
+            setSystemRepositoryParamHideCauseExceptionLog(true);
+            new EntityMeta(EntityMetaTest.class); //内部でエラーが発生するが、エラーログは出力されない
+            assertNotLogContains(WRITER_NAME,
+                    "WARN Failed to process sortIdColumns.",
+                    "java.lang.RuntimeException: Dummy exception by mock");
+        }
     }
 
     /**

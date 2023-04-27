@@ -1,26 +1,23 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
-
-import java.util.Map;
-
 import jakarta.persistence.GenerationType;
-
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.connection.DbConnectionContext;
 import nablarch.core.db.connection.TransactionManagerConnection;
 import nablarch.core.db.dialect.DefaultDialect;
-
+import nablarch.test.support.reflection.ReflectionUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import mockit.Deencapsulation;
-import mockit.Expectations;
-import mockit.Mocked;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link BasicDaoContextFactory}のテストクラス。
@@ -30,14 +27,11 @@ public class BasicDaoContextFactoryTest {
     /** テスト対象 */
     BasicDaoContextFactory sut = new BasicDaoContextFactory();
 
-    @Mocked
-    private IdGenerator mockTableIdGenerator;
+    private final IdGenerator mockTableIdGenerator = mock(IdGenerator.class);
 
-    @Mocked
-    private IdGenerator mockSequenceIdGenerator;
+    private final IdGenerator mockSequenceIdGenerator = mock(IdGenerator.class);
 
-    @Mocked
-    private TransactionManagerConnection mockConnection;
+    private final TransactionManagerConnection mockConnection = mock(TransactionManagerConnection.class);
 
     @Before
     public void setUp() throws Exception {
@@ -61,7 +55,7 @@ public class BasicDaoContextFactoryTest {
         sut.setSequenceIdGenerator(mockSequenceIdGenerator);
 
         BasicDaoContext context = (BasicDaoContext) sut.create();
-        final Map<GenerationType, IdGenerator> generators = Deencapsulation.getField(context, "idGenerators");
+        final Map<GenerationType, IdGenerator> generators = ReflectionUtil.getFieldValue(context, "idGenerators");
         assertThat("シーケンス採番が設定されていること",
                 generators.get(GenerationType.SEQUENCE),
                 is(sameInstance(mockSequenceIdGenerator)));
@@ -86,13 +80,10 @@ public class BasicDaoContextFactoryTest {
                 return true;
             }
         };
-        new Expectations() {{
-            mockConnection.getDialect();
-            result = inputDialect;
-        }};
+        when(mockConnection.getDialect()).thenReturn(inputDialect);
         final BasicDaoContext context = (BasicDaoContext) sut.create();
 
-        final DefaultDialect dialect = Deencapsulation.getField(context, "dialect");
+        final DefaultDialect dialect = ReflectionUtil.getFieldValue(context, "dialect");
         assertThat(dialect, is(sameInstance(inputDialect)));
         assertThat(dialect.supportsIdentity(), is(true));
     }
@@ -108,7 +99,7 @@ public class BasicDaoContextFactoryTest {
     public void create_notSqlBuilder() throws Exception {
         final BasicDaoContext context = (BasicDaoContext) sut.create();
 
-        final Object builder = Deencapsulation.getField(context, "sqlBuilder");
+        final Object builder = ReflectionUtil.getFieldValue(context, "sqlBuilder");
         assertThat(builder, is(instanceOf(StandardSqlBuilder.class)));
     }
 
@@ -132,7 +123,7 @@ public class BasicDaoContextFactoryTest {
         sut.setSqlBuilder(builder);
         final BasicDaoContext context = (BasicDaoContext) sut.create();
 
-        final StandardSqlBuilder result = Deencapsulation.getField(context, "sqlBuilder");
+        final StandardSqlBuilder result = ReflectionUtil.getFieldValue(context, "sqlBuilder");
 
         assertThat(result, is(sameInstance(builder)));
         assertThat(result.buildSelectByIdSql(this.getClass()), is(SQL));
@@ -146,7 +137,9 @@ public class BasicDaoContextFactoryTest {
      * @throws Exception
      */
     @Test
-    public void create_NotDbConnection(@Mocked TransactionManagerConnection mock) throws Exception {
+    public void create_NotDbConnection() throws Exception {
+        TransactionManagerConnection mock = mock(TransactionManagerConnection.class);
+        
         // Factoryにコネクションは設定されていない。
         sut.setDbConnection(null);
 
@@ -154,7 +147,7 @@ public class BasicDaoContextFactoryTest {
 
         BasicDaoContext context = (BasicDaoContext) sut.create();
 
-        final TransactionManagerConnection result = Deencapsulation.getField(context, "dbConnection");
+        final TransactionManagerConnection result = ReflectionUtil.getFieldValue(context, "dbConnection");
         assertThat("DbConnectionContext上のDB接続が設定されていること", result, is(mock));
     }
 
@@ -166,12 +159,14 @@ public class BasicDaoContextFactoryTest {
      * @throws Exception
      */
     @Test
-    public void create_HasDbConnection(@Mocked TransactionManagerConnection mock) throws Exception {
+    public void create_HasDbConnection() throws Exception {
+        TransactionManagerConnection mock = mock(TransactionManagerConnection.class);
+        
         DbConnectionContext.setConnection(mock);
 
         BasicDaoContext context = (BasicDaoContext) sut.create();
 
-        final TransactionManagerConnection connection = Deencapsulation.getField(context, "dbConnection");
+        final TransactionManagerConnection connection = ReflectionUtil.getFieldValue(context, "dbConnection");
         assertThat("ファクトリ側のDB接続が設定されていること", connection, is(mockConnection));
     }
 }

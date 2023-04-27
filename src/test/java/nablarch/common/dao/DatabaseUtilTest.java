@@ -1,23 +1,9 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import org.hamcrest.collection.IsMapContaining;
-
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.core.db.connection.AppDbConnection;
@@ -28,16 +14,31 @@ import nablarch.core.transaction.TransactionContext;
 import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
-
+import org.hamcrest.collection.IsMapContaining;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 
-import mockit.Expectations;
-import mockit.Mocked;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link DatabaseUtil}のテストクラス。
@@ -61,8 +62,9 @@ public class DatabaseUtilTest {
     @Before
     public void setUp() throws Exception {
         ConnectionFactory connectionFactory = repositoryResource.getComponent("connectionFactory");
-        connection = connectionFactory.getConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
-        DbConnectionContext.setConnection(connection);
+        TransactionManagerConnection rawConnection = connectionFactory.getConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
+        this.connection = spy(rawConnection);
+        DbConnectionContext.setConnection(this.connection);
         repositoryResource.addComponent("databaseMetaDataExtractor", null);
     }
 
@@ -131,11 +133,10 @@ public class DatabaseUtilTest {
      */
     @Test
     public void getPrimaryKey_SQLException() throws Exception {
-        new Expectations(DbConnectionContext.class) {{
-            DbConnectionContext.getConnection();
-            result = new SQLException("sql error");
-        }};
-
+        Connection connection = mock(Connection.class);
+        when(this.connection.getConnection()).thenReturn(connection);
+        when(connection.getMetaData()).thenThrow(new SQLException("sql error"));
+        
         RuntimeException exception = null;
         try {
             Map<String, Short> primaryKeys = DatabaseUtil.getPrimaryKey("USER_ADDRESS");
@@ -151,13 +152,12 @@ public class DatabaseUtilTest {
      * @throws Exception
      */
     @Test(expected = IllegalStateException.class)
-    public void getPrimaryKey_MetaDataError(@Mocked final AppDbConnection con) throws Exception {
-        new Expectations(DbConnectionContext.class) {{
-            DbConnectionContext.getConnection();
-            result = con;
-        }};
-
-        DatabaseUtil.getPrimaryKey("USER_ADDRESS");
+    public void getPrimaryKey_MetaDataError() throws Exception {
+        AppDbConnection con = mock(AppDbConnection.class);
+        try (final MockedStatic<DbConnectionContext> mocked = mockStatic(DbConnectionContext.class)) {
+            mocked.when(DbConnectionContext::getConnection).thenReturn(con);
+            DatabaseUtil.getPrimaryKey("USER_ADDRESS");
+        }
     }
 
     /**
@@ -168,12 +168,9 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiers_notConverted() throws Exception {
 
-        new Expectations(connection) {{
-            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
-            final DatabaseMetaData metaData = connection.getMetaData();
-            metaData.storesMixedCaseIdentifiers();
-            result = true;
-        }};
+        Connection connection = mock(Connection.class, RETURNS_DEEP_STUBS);
+        when(this.connection.getConnection()).thenReturn(connection);
+        when(connection.getMetaData().storesMixedCaseIdentifiers()).thenReturn(true);
 
         String actual = DatabaseUtil.convertIdentifiers("Hoge_Fuga");
         assertThat("変換されないこと", actual, is("Hoge_Fuga"));
@@ -186,19 +183,11 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_convertUpper() throws Exception {
-        final DatabaseMetaData metaData = DatabaseUtil.getMetaData();
-
-        new Expectations(metaData) {{
-            metaData.storesMixedCaseIdentifiers();
-            minTimes = 0;
-            result = false;
-            metaData.storesUpperCaseIdentifiers();
-            minTimes = 0;
-            result = true;
-            metaData.storesLowerCaseIdentifiers();
-            minTimes = 0;
-            result = false;
-        }};
+        final DatabaseMetaData metaData = spy(DatabaseUtil.getMetaData());
+        
+        when(metaData.storesMixedCaseIdentifiers()).thenReturn(false);
+        when(metaData.storesUpperCaseIdentifiers()).thenReturn(true);
+        when(metaData.storesLowerCaseIdentifiers()).thenReturn(false);
 
         String actual = DatabaseUtil.convertIdentifiers("Hoge_Fuga");
         assertThat(actual, equalToIgnoringCase("HOGE_FUGA"));
@@ -211,17 +200,16 @@ public class DatabaseUtilTest {
      */
     @Test
     public void convertIdentifiers_convertLower() throws Exception {
-        new Expectations(connection) {{
-            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
-            final DatabaseMetaData metaData = connection.getMetaData();
-            metaData.storesMixedCaseIdentifiers();
-            result = false;
-            metaData.storesUpperCaseIdentifiers();
-            result = false;
-            metaData.storesLowerCaseIdentifiers();
-            result = true;
-        }};
+        Connection connection = mock(Connection.class);
+        when(this.connection.getConnection()).thenReturn(connection);
 
+        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        when(connection.getMetaData()).thenReturn(metaData);
+        
+        when(metaData.storesMixedCaseIdentifiers()).thenReturn(false);
+        when(metaData.storesUpperCaseIdentifiers()).thenReturn(false);
+        when(metaData.storesLowerCaseIdentifiers()).thenReturn(true);
+        
         String actual = DatabaseUtil.convertIdentifiers("Hoge_Fuga");
         assertThat(actual, is("hoge_fuga"));
     }
@@ -234,16 +222,15 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiers_convertOther() throws Exception {
 
-        new Expectations(connection) {{
-            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
-            final DatabaseMetaData metaData = connection.getMetaData();
-            metaData.storesMixedCaseIdentifiers();
-            result = false;
-            metaData.storesUpperCaseIdentifiers();
-            result = false;
-            metaData.storesLowerCaseIdentifiers();
-            result = false;
-        }};
+        Connection connection = mock(Connection.class);
+        when(this.connection.getConnection()).thenReturn(connection);
+        
+        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        when(connection.getMetaData()).thenReturn(metaData);
+        
+        when(metaData.storesMixedCaseIdentifiers()).thenReturn(false);
+        when(metaData.storesUpperCaseIdentifiers()).thenReturn(false);
+        when(metaData.storesLowerCaseIdentifiers()).thenReturn(false);
 
         String actual = DatabaseUtil.convertIdentifiers("Hoge_Fuga");
         assertThat(actual, is("Hoge_Fuga"));
@@ -257,12 +244,13 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiers_SQLException() throws Exception {
 
-        new Expectations(connection) {{
-            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
-            final DatabaseMetaData metaData = connection.getMetaData();
-            metaData.storesMixedCaseIdentifiers();
-            result = new SQLException("error");
-        }};
+        Connection connection = mock(Connection.class);
+        when(this.connection.getConnection()).thenReturn(connection);
+
+        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        when(connection.getMetaData()).thenReturn(metaData);
+        
+        when(metaData.storesMixedCaseIdentifiers()).thenThrow(new SQLException("error"));
 
         RuntimeException exception = null;
         try {
@@ -284,12 +272,9 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiersMetaData() throws SQLException {
 
-        final DatabaseMetaData metaData = connection.getConnection()
-                                                    .getMetaData();
-        new Expectations(metaData) {{
-            metaData.storesMixedCaseIdentifiers();
-            result = true;
-        }};
+        final DatabaseMetaData metaData = spy(connection.getConnection().getMetaData());
+        when(metaData.storesMixedCaseIdentifiers()).thenReturn(true);
+        
         String actual = DatabaseUtil.convertIdentifiers(metaData, "Hoge_Fuga");
         assertThat("変換されないこと", actual, is("Hoge_Fuga"));
     }
@@ -303,16 +288,10 @@ public class DatabaseUtilTest {
     @Test
     public void convertIdentifiersMetaData_SQLException() throws SQLException {
 
-        new Expectations(connection) {{
-            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
-            final DatabaseMetaData metaData = connection.getMetaData();
-            metaData.storesMixedCaseIdentifiers();
-            result = new SQLException("error");
-        }};
+        final DatabaseMetaData metaData = spy(connection.getConnection().getMetaData());
+        when(metaData.storesMixedCaseIdentifiers()).thenThrow(new SQLException("error"));
 
         try {
-            final Connection connection = DatabaseUtilTest.this.connection.getConnection();
-            final DatabaseMetaData metaData = connection.getMetaData();
             DatabaseUtil.convertIdentifiers(metaData, "hoge_fuga");
             fail();
         } catch (RuntimeException e) {
