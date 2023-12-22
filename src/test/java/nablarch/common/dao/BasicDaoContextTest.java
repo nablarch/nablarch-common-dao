@@ -1,27 +1,7 @@
 package nablarch.common.dao;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.persistence.GenerationType;
-import javax.persistence.OptimisticLockException;
-
-import org.hamcrest.CoreMatchers;
-
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.OptimisticLockException;
 import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.AutoGenUsers;
 import nablarch.common.dao.DaoTestHelper.IdentityGenUsers;
@@ -44,7 +24,7 @@ import nablarch.test.support.SystemRepositoryResource;
 import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.TargetDb;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
-
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -54,8 +34,36 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import mockit.Expectations;
-import mockit.Mocked;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link BasicDaoContext}のテストクラス
@@ -75,11 +83,9 @@ public class BasicDaoContextTest {
     /** テスト対象 */
     private BasicDaoContext sut = new BasicDaoContext(new StandardSqlBuilder(), new DefaultDialect());
 
-    @Mocked
-    private IdGenerator mockSequenceIdGenerator;
+    private final IdGenerator mockSequenceIdGenerator = mock(IdGenerator.class);
 
-    @Mocked
-    private IdGenerator mockTableIdGenerator;
+    private final IdGenerator mockTableIdGenerator = mock(IdGenerator.class);
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -93,6 +99,7 @@ public class BasicDaoContextTest {
     public void setUp() throws Exception {
         final ConnectionFactory connectionFactory = repositoryResource.getComponent("connectionFactory");
         connection = connectionFactory.getConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
+
         sut.setDbConnection(connection);
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
@@ -1028,14 +1035,16 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            ParameterizedSqlPStatement statement = connection.prepareParameterizedCountSqlStatementBySqlId(
-                    anyString, any);
-            ResultSetIterator keys = statement.executeQueryByMap((Map<String, Object>) any);
-            keys.next();
-            result = false;
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        ParameterizedSqlPStatement statement = mock(ParameterizedSqlPStatement.class);
+        doReturn(statement).when(spyConnection).prepareParameterizedCountSqlStatementBySqlId(anyString(), any());
+
+        ResultSetIterator keys = mock(ResultSetIterator.class);
+        when(statement.executeQueryByMap(any())).thenReturn(keys);
+        
+        when(keys.next()).thenReturn(false);
+        
+        sut.setDbConnection(spyConnection);
 
         HashMap<String, Object> cond = new HashMap<String, Object>();
         cond.put("name", "name_1");
@@ -1264,12 +1273,8 @@ public class BasicDaoContextTest {
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("1", "1");
-            mockTableIdGenerator.generateId("ADDRESS_ID_SEQ");
-            returns("1", "1");
-        }};
+        when(mockSequenceIdGenerator.generateId("USER_ID_SEQ")).thenReturn("1", "1");
+        when(mockTableIdGenerator.generateId("ADDRESS_ID_SEQ")).thenReturn("1", "1");
 
         バージョンカラムが存在しているテーブル:
         {
@@ -1353,10 +1358,7 @@ public class BasicDaoContextTest {
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("1", "1");
-        }};
+        when(mockSequenceIdGenerator.generateId("USER_ID_SEQ")).thenReturn("1", "1");
 
         バージョンカラムが存在しているテーブル:
         {
@@ -1393,10 +1395,7 @@ public class BasicDaoContextTest {
 
         Users users = new Users(null, "name", DateUtil.getDate("20140101"), DaoTestHelper.getDate("20150401123456"));
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("999", "9999");
-        }};
+        when(mockSequenceIdGenerator.generateId("USER_ID_SEQ")).thenReturn("999", "9999");
 
         sut.insert(users);
         assertThat("採番された値が設定されていること", users.getId(), is(999L));
@@ -1434,10 +1433,7 @@ public class BasicDaoContextTest {
      */
     @Test
     public void insertFromTableGenerator() throws Exception {
-        new Expectations() {{
-            mockTableIdGenerator.generateId("ADDRESS_ID_SEQ");
-            returns("12345", "54321");
-        }};
+        when(mockTableIdGenerator.generateId("ADDRESS_ID_SEQ")).thenReturn("12345", "54321");
         Address address = new Address(null, "1", 1L, "1231234", "住所");
         sut.insert(address);
 
@@ -1467,16 +1463,18 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString,(String[]) withNotNull());
-            ResultSet keys = statement.getGeneratedKeys();
-            keys.next();
-            result = true;
-            result = false;
-            keys.getString(1);
-            result = "12345";
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(),(String[]) notNull());
+
+        ResultSet keys = mock(ResultSet.class);
+        when(statement.getGeneratedKeys()).thenReturn(keys);
+        
+        when(keys.next()).thenReturn(true, false);
+        when(keys.getString(1)).thenReturn("12345");
+        
+        
+        sut.setDbConnection(spyConnection);
         IdentityGenUsers user = new IdentityGenUsers(
                 null, "name", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
 
@@ -1497,18 +1495,18 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
-            ResultSet keys = statement.getGeneratedKeys();
-            keys.next();
-            result = true;
-            result = false;
-            keys.getString(1);
-            result = "54321";
-            keys.close();
-            result = new SQLException("error");
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(), (String[]) notNull());
+
+        ResultSet keys = mock(ResultSet.class);
+        when(statement.getGeneratedKeys()).thenReturn(keys);
+        
+        when(keys.next()).thenReturn(true, false);
+        when(keys.getString(1)).thenReturn("54321");
+        doThrow(new SQLException("error")).when(keys).close();
+        
+        sut.setDbConnection(spyConnection);
         AutoGenUsers user = new AutoGenUsers(
                 null, "name", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
 
@@ -1529,13 +1527,12 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
-            statement.getGeneratedKeys()
-                    .next();
-            result = new SQLException("error");
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class, RETURNS_DEEP_STUBS);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(), (String[]) notNull());
+        when(statement.getGeneratedKeys().next()).thenThrow(new SQLException("error"));
+        
+        sut.setDbConnection(spyConnection);
         IdentityGenUsers user = new IdentityGenUsers(
                 null, "name", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
 
@@ -1588,10 +1585,7 @@ public class BasicDaoContextTest {
         sut.setDbConnection(connection);
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("DAO_USERS_USER_ID");
-            returns("100", "200");
-        }};
+        when(mockSequenceIdGenerator.generateId("DAO_USERS_USER_ID")).thenReturn("100", "200");
 
         AutoGenUsers user = new AutoGenUsers(null, "name", DateUtil.getDate("20150115"),
                 DaoTestHelper.getDate("20150401123456"));
@@ -1628,10 +1622,7 @@ public class BasicDaoContextTest {
         sut.setDbConnection(connection);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
 
-        new Expectations() {{
-            mockTableIdGenerator.generateId("DAO_USERS_USER_ID");
-            returns("101", null);
-        }};
+        when(mockTableIdGenerator.generateId("DAO_USERS_USER_ID")).thenReturn("101", null);
 
         AutoGenUsers users = new AutoGenUsers(null, "1", DateUtil.getDate("20000102"),
                 DaoTestHelper.getDate("20150401123456"));
@@ -1664,12 +1655,8 @@ public class BasicDaoContextTest {
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("1", "3", "5");
-            mockTableIdGenerator.generateId("ADDRESS_ID_SEQ");
-            returns("1", "10");
-        }};
+        when(mockSequenceIdGenerator.generateId("USER_ID_SEQ")).thenReturn("1", "3", "5");
+        when(mockTableIdGenerator.generateId("ADDRESS_ID_SEQ")).thenReturn("1", "10");
 
         バージョンカラムが存在しているテーブル:
         {
@@ -1799,10 +1786,7 @@ public class BasicDaoContextTest {
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("1", "3", "5");
-        }};
+        when(mockSequenceIdGenerator.generateId("USER_ID_SEQ")).thenReturn("1", "3", "5");
 
         バージョンカラムが存在しているテーブル:
         {
@@ -1869,10 +1853,7 @@ public class BasicDaoContextTest {
         Users user2 = new Users(
                 null, "name2", DateUtil.getDate("20140102"), DaoTestHelper.getDate("20150402123456"));
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("USER_ID_SEQ");
-            returns("999", "9999");
-        }};
+        when(mockSequenceIdGenerator.generateId("USER_ID_SEQ")).thenReturn("999", "9999");
 
         sut.batchInsert(Arrays.asList(user1, user2));
         assertThat("採番された値が設定されていること[user1]", user1.getId(), is(999L));
@@ -1907,10 +1888,7 @@ public class BasicDaoContextTest {
      */
     @Test
     public void batchInsertFromTableGenerator() throws Exception {
-        new Expectations() {{
-            mockTableIdGenerator.generateId("ADDRESS_ID_SEQ");
-            returns("12345", "54321");
-        }};
+        when(mockTableIdGenerator.generateId("ADDRESS_ID_SEQ")).thenReturn("12345", "54321");
         final Address address1 = new Address(null, "1", 1L, "1111111", "住所1");
         final Address address2 = new Address(null, "2", 2L, "2222222", "住所2");
         sut.batchInsert(Arrays.asList(address1, address2));
@@ -1952,15 +1930,16 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
-            ResultSet keys = statement.getGeneratedKeys();
-            keys.next();
-            returns(true, true, true, false);
-            keys.getString(1);
-            returns("1", "10", "100");
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(), (String[]) notNull());
+        
+        ResultSet keys = mock(ResultSet.class);
+        when(statement.getGeneratedKeys()).thenReturn(keys);
+        when(keys.next()).thenReturn(true, true, true, false);
+        when(keys.getString(1)).thenReturn("1", "10", "100");
+        
+        sut.setDbConnection(spyConnection);
         IdentityGenUsers user1 = new IdentityGenUsers(
                 null, "name1", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
         IdentityGenUsers user2 = new IdentityGenUsers(
@@ -1993,17 +1972,18 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
-            ResultSet keys = statement.getGeneratedKeys();
-            keys.next();
-            returns(true, false);
-            keys.getString(1);
-            result = "54321";
-            keys.close();
-            result = new SQLException("error");
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(), (String[]) notNull());
+
+        ResultSet keys = mock(ResultSet.class);
+        when(statement.getGeneratedKeys()).thenReturn(keys);
+        
+        when(keys.next()).thenReturn(true, false);
+        when(keys.getString(1)).thenReturn("54321");
+        doThrow(new SQLException("error")).when(keys).close();
+        
+        sut.setDbConnection(spyConnection);
         AutoGenUsers user = new AutoGenUsers(
                 null, "name", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
 
@@ -2029,12 +2009,12 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
-            statement.getGeneratedKeys().next();
-            result = new SQLException("error");
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class, RETURNS_DEEP_STUBS);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(), (String[]) notNull());
+        when(statement.getGeneratedKeys().next()).thenThrow(new SQLException("error"));
+        
+        sut.setDbConnection(spyConnection);
         IdentityGenUsers user = new IdentityGenUsers(
                 null, "name", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
 
@@ -2066,16 +2046,15 @@ public class BasicDaoContextTest {
             }
         });
 
-        new Expectations(connection) {{
-            SqlPStatement statement = connection.prepareStatement(anyString, (String[]) withNotNull());
-            final ResultSet rs = statement.getGeneratedKeys();
-            rs.next();
-            returns(true, false);
-            rs.getString(1);
-            returns("100", "200");
-
-        }};
-        sut.setDbConnection(connection);
+        final TransactionManagerConnection spyConnection = spy(connection);
+        SqlPStatement statement = mock(SqlPStatement.class);
+        doReturn(statement).when(spyConnection).prepareStatement(anyString(), (String[]) notNull());
+        ResultSet keys = mock(ResultSet.class);
+        when(statement.getGeneratedKeys()).thenReturn(keys);
+        when(keys.next()).thenReturn(true, false);
+        when(keys.getString(1)).thenReturn("100", "200");
+        
+        sut.setDbConnection(spyConnection);
         IdentityGenUsers user1 = new IdentityGenUsers(
                 null, "name1", DateUtil.getDate("19990102"), DaoTestHelper.getDate("20150401123456"));
         IdentityGenUsers user2 = new IdentityGenUsers(
@@ -2129,10 +2108,7 @@ public class BasicDaoContextTest {
         sut.setDbConnection(connection);
         sut.setIdGenerator(GenerationType.SEQUENCE, mockSequenceIdGenerator);
 
-        new Expectations() {{
-            mockSequenceIdGenerator.generateId("DAO_USERS_USER_ID");
-            returns("100", "200");
-        }};
+        when(mockSequenceIdGenerator.generateId("DAO_USERS_USER_ID")).thenReturn("100", "200");
 
         AutoGenUsers user1 = new AutoGenUsers(null, "name2", DateUtil.getDate("20150115"),
                 DaoTestHelper.getDate("20150401123456"));
@@ -2170,10 +2146,7 @@ public class BasicDaoContextTest {
         sut.setDbConnection(connection);
         sut.setIdGenerator(GenerationType.TABLE, mockTableIdGenerator);
 
-        new Expectations() {{
-            mockTableIdGenerator.generateId("DAO_USERS_USER_ID");
-            returns("101", "102");
-        }};
+        when(mockTableIdGenerator.generateId("DAO_USERS_USER_ID")).thenReturn("101", "102");
 
         AutoGenUsers users1 = new AutoGenUsers(null, "1", DateUtil.getDate("20000102"),
                 DaoTestHelper.getDate("20150401123456"));

@@ -26,15 +26,15 @@ import nablarch.core.util.annotation.Published;
  * サポートしているものは、以下である。
  * <p/>
  * <ul>
- * <li>{@link javax.persistence.Entity}</li>
- * <li>{@link javax.persistence.Table}</li>
- * <li>{@link javax.persistence.Column}</li>
- * <li>{@link javax.persistence.Id}</li>
- * <li>{@link javax.persistence.Version}</li>
- * <li>{@link javax.persistence.Temporal}</li>
- * <li>{@link javax.persistence.GeneratedValue}</li>
- * <li>{@link javax.persistence.SequenceGenerator}</li>
- * <li>{@link javax.persistence.TableGenerator}</li>
+ * <li>{@link jakarta.persistence.Entity}</li>
+ * <li>{@link jakarta.persistence.Table}</li>
+ * <li>{@link jakarta.persistence.Column}</li>
+ * <li>{@link jakarta.persistence.Id}</li>
+ * <li>{@link jakarta.persistence.Version}</li>
+ * <li>{@link jakarta.persistence.Temporal}</li>
+ * <li>{@link jakarta.persistence.GeneratedValue}</li>
+ * <li>{@link jakarta.persistence.SequenceGenerator}</li>
+ * <li>{@link jakarta.persistence.TableGenerator}</li>
  * </ul>
  * <p/>
  *
@@ -265,10 +265,10 @@ public final class UniversalDao {
      * <p/>
      * エンティティオブジェクトにてnullであるプロパティに対応するカラムは、そのままnullで更新される。
      * <p/>
-     * 更新対象のエンティティに{@link javax.persistence.Version}が付与されたプロパティが存在する場合には、
+     * 更新対象のエンティティに{@link jakarta.persistence.Version}が付与されたプロパティが存在する場合には、
      * 対象レコードは排他制御の対象となり、更新処理実行時に自動で排他制御が実行される。
      * <p/>
-     * 排他制御の対象であるエンティティを更新する際は、以下の場合に{@link javax.persistence.OptimisticLockException}を送出する。
+     * 排他制御の対象であるエンティティを更新する際は、以下の場合に{@link jakarta.persistence.OptimisticLockException}を送出する。
      * <ul>
      * <li>バージョン番号の不一致で、更新対象が存在しない場合</li>
      * <li>更新条件に合致する更新対象が存在しない場合</li>
@@ -278,7 +278,7 @@ public final class UniversalDao {
      * @param <T> エンティティクラス
      * @param entity エンティティオブジェクト
      * @return 更新件数
-     * @throws javax.persistence.OptimisticLockException 更新対象が存在しない場合
+     * @throws jakarta.persistence.OptimisticLockException 更新対象が存在しない場合
      */
     public static <T> int update(final T entity) {
         return daoContext().update(entity);
@@ -304,9 +304,9 @@ public final class UniversalDao {
      * <p/>
      * エンティティオブジェクトにてnullであるプロパティに対応するカラムは、そのままnullで登録される。
      * <p/>
-     * {@link javax.persistence.GeneratedValue}が付与されているプロパティは採番された値が登録される。
+     * {@link jakarta.persistence.GeneratedValue}が付与されているプロパティは採番された値が登録される。
      * <p/>
-     * {@link javax.persistence.Version}が付与されたversionカラムに対して明示的に値を設定していたとしても、
+     * {@link jakarta.persistence.Version}が付与されたversionカラムに対して明示的に値を設定していたとしても、
      * 「0」で上書きされてinsertされる。
      *
      * @param <T> エンティティクラス
@@ -321,9 +321,9 @@ public final class UniversalDao {
      * <p/>
      * エンティティオブジェクトにてnullであるプロパティに対応するカラムは、そのままnullで登録される。
      * <p/>
-     * {@link javax.persistence.GeneratedValue}が付与されているプロパティは採番された値が登録される。
+     * {@link jakarta.persistence.GeneratedValue}が付与されているプロパティは採番された値が登録される。
      * <p/>
-     * {@link javax.persistence.Version}が付与されたversionカラムに対して明示的に値を設定していたとしても、
+     * {@link jakarta.persistence.Version}が付与されたversionカラムに対して明示的に値を設定していたとしても、
      * 「0」で上書きされてinsertされる。
      *
      * @param <T> エンティティクラス

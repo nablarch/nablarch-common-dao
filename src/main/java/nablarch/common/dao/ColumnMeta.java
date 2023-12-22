@@ -1,6 +1,6 @@
 package nablarch.common.dao;
 
-import javax.persistence.GenerationType;
+import jakarta.persistence.GenerationType;
 
 import nablarch.core.util.annotation.Published;
 

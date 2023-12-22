@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.persistence.Entity;
-import javax.persistence.GenerationType;
-import javax.persistence.OptimisticLockException;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.OptimisticLockException;
 
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.beans.BeanUtil;

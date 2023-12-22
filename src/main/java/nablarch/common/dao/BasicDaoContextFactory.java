@@ -1,6 +1,6 @@
 package nablarch.common.dao;
 
-import javax.persistence.GenerationType;
+import jakarta.persistence.GenerationType;
 
 import nablarch.core.db.connection.AppDbConnection;
 import nablarch.core.db.connection.DbConnectionContext;
@@ -12,7 +12,7 @@ import nablarch.core.db.dialect.Dialect;
  * <p/>
  * 本実装では、{@link BasicDaoContext}を生成する。
  * <p/>
- * {@link javax.persistence.GeneratedValue}で必要となる
+ * {@link jakarta.persistence.GeneratedValue}で必要となる
  * {@link nablarch.common.idgenerator.IdGenerator}の実装をDIする必要がある。
  *
  * @author kawasima
