@@ -76,7 +76,7 @@ public class EntityUtilTest {
     public static class GetTableNameClass {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -122,7 +122,7 @@ public class EntityUtilTest {
     public static class GetSchemaName {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -180,7 +180,7 @@ public class EntityUtilTest {
     public static class GetTableNameWithSchema {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -239,7 +239,7 @@ public class EntityUtilTest {
     public static class FindIdColumnsFromClass {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         private static AppDbConnection getConnection() {
             ConnectionFactory connectionFactory = repositoryResource.getComponent("connectionFactory");
@@ -324,7 +324,7 @@ public class EntityUtilTest {
     public static class FindIdColumnsFromEntity {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -405,7 +405,7 @@ public class EntityUtilTest {
     public static class FindAllColumnsFromClass {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -713,7 +713,7 @@ public class EntityUtilTest {
     public static class FindVersionColumn {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -782,7 +782,7 @@ public class EntityUtilTest {
     public static class FindGeneratedValueColumn {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -1151,7 +1151,7 @@ public class EntityUtilTest {
     public static class CreateEntity {
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
@@ -1183,12 +1183,8 @@ public class EntityUtilTest {
             private Date dateType;
 
             private Date dateTimestampType;
-            
+
             private Timestamp timestampType;
-
-            private LocalDate localDateType;
-
-            private LocalDateTime localDateTimeType;
 
             private byte[] byteArray;
 
@@ -1303,22 +1299,6 @@ public class EntityUtilTest {
 
             public void setTimestampType(Timestamp timestampType) {
                 this.timestampType = timestampType;
-            }
-
-            public LocalDate getLocalDateType() {
-                return localDateType;
-            }
-
-            public void setLocalDateType(LocalDate localDateType) {
-                this.localDateType = localDateType;
-            }
-
-            public LocalDateTime getLocalDateTimeType() {
-                return localDateTimeType;
-            }
-
-            public void setLocalDateTimeType(LocalDateTime localDateTimeType) {
-                this.localDateTimeType = localDateTimeType;
             }
 
             public byte[] getByteArray() {
@@ -1497,7 +1477,7 @@ public class EntityUtilTest {
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
             assertThat(entity.getDateTimestampType(), is(date));
         }
-        
+
         @Test
         public void timestampType() {
             HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
@@ -1507,28 +1487,6 @@ public class EntityUtilTest {
             row.put("TIMESTAMP_TYPE", timestamp);
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
             assertThat(entity.getTimestampType(), is(timestamp));
-        }
-
-        @Test
-        public void localDateType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
-            typeMap.put("LOCAL_DATE_TYPE", Types.DATE);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
-            Date date = new Date();
-            row.put("LOCAL_DATE_TYPE", date);
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getLocalDateType(), is(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        }
-
-        @Test
-        public void localDateTimeType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
-            typeMap.put("LOCAL_DATE_TIME_TYPE", Types.TIMESTAMP);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            row.put("LOCAL_DATE_TIME_TYPE", timestamp);
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getLocalDateTimeType(), is(timestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
         }
 
         @Test
@@ -1630,6 +1588,65 @@ public class EntityUtilTest {
     }
 
     /**
+     * {@link EntityUtil#createEntity(Class, SqlRow)}のテストクラス。（JSR310アダプタを使用する場合）
+     */
+    public static class CreateEntityWithJSR310 {
+
+        @ClassRule
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("create-entity-with-jsr310-test.xml");
+
+        @After
+        public void tearDown() throws Exception {
+            DbConnectionContext.removeConnection();
+        }
+
+        public static class Hoge {
+
+            private LocalDate localDateType;
+
+            private LocalDateTime localDateTimeType;
+
+            public LocalDate getLocalDateType() {
+                return localDateType;
+            }
+
+            public void setLocalDateType(LocalDate localDateType) {
+                this.localDateType = localDateType;
+            }
+
+            public LocalDateTime getLocalDateTimeType() {
+                return localDateTimeType;
+            }
+
+            public void setLocalDateTimeType(LocalDateTime localDateTimeType) {
+                this.localDateTimeType = localDateTimeType;
+            }
+        }
+
+        @Test
+        public void localDateType() {
+            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            typeMap.put("LOCAL_DATE_TYPE", Types.DATE);
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            Date date = new Date();
+            row.put("LOCAL_DATE_TYPE", date);
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getLocalDateType(), is(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        }
+
+        @Test
+        public void localDateTimeType() {
+            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            typeMap.put("LOCAL_DATE_TIME_TYPE", Types.TIMESTAMP);
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            row.put("LOCAL_DATE_TIME_TYPE", timestamp);
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getLocalDateTimeType(), is(timestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+        }
+    }
+
+    /**
      * エンティティのキャッシュに関するテスト
      */
     public static class CacheTest {
@@ -1643,7 +1660,7 @@ public class EntityUtilTest {
         }
 
         @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("entity-util-test.xml");
+        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
         public void tearDown() throws Exception {
