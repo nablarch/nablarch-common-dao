@@ -1183,7 +1183,7 @@ public class EntityUtilTest {
             private Date dateType;
 
             private Date dateTimestampType;
-
+            
             private Timestamp timestampType;
 
             private byte[] byteArray;
@@ -1292,7 +1292,7 @@ public class EntityUtilTest {
             public void setDateType(Date dateType) {
                 this.dateType = dateType;
             }
-
+            
             public Timestamp getTimestampType() {
                 return timestampType;
             }
@@ -1477,7 +1477,7 @@ public class EntityUtilTest {
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
             assertThat(entity.getDateTimestampType(), is(date));
         }
-
+        
         @Test
         public void timestampType() {
             HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
