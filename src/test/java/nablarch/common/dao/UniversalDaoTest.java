@@ -10,6 +10,7 @@ import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.UniversalDao.Transaction;
 import nablarch.common.dao.entity.DatePkTable;
 import nablarch.common.dao.entity.IdentityColumnEntity;
+import nablarch.common.dao.entity.Jsr310Column;
 import nablarch.common.dao.entity.TimestampPkTable;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
@@ -39,6 +40,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,6 +53,7 @@ import static nablarch.common.dao.UniversalDao.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -62,7 +66,7 @@ import static org.mockito.Mockito.when;
 public class UniversalDaoTest {
 
     @Rule
-    public SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
+    public SystemRepositoryResource repositoryResource = new SystemRepositoryResource("universal-dao-test.xml");
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -934,6 +938,25 @@ public class UniversalDaoTest {
     }
 
     /**
+     * Date and Time API（JSR-310）型（{@link LocalDate}, {@link LocalDateTime}）のフィールドを持つEntityのデータを登録できること
+     */
+    @Test
+    @TargetDb(exclude = { TargetDb.Db.ORACLE, TargetDb.Db.DB2 })
+    public void test_insertJsr310Column() throws Exception {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 1L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        UniversalDao.insert(entity);
+        connection.commit();
+
+        final Jsr310Column actual = VariousDbTestHelper.findById(Jsr310Column.class, entity.id);
+        assertEquals(entity.localDate, actual.localDate);
+        assertEquals(entity.localDateTime, actual.localDateTime);
+    }
+
+    /**
      * CLOB型のカラムのデータを更新できること
      */
     @Test
@@ -973,6 +996,29 @@ public class UniversalDaoTest {
         assertThat(actual.text, is(entity.text));
     }
 
+    /**
+     * Date and Time API（JSR-310）型（{@link LocalDate}, {@link LocalDateTime}）のフィールドを持つEntityのデータを更新できること
+     */
+    @Test
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
+    public void test_updateJsr310Column() throws Exception {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 12345L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        VariousDbTestHelper.insert(entity);
+
+        entity.localDate = LocalDate.parse("2014-03-31");
+        entity.localDateTime =  LocalDateTime.parse("2014-03-31T01:23:45");
+        UniversalDao.update(entity);
+        connection.commit();
+
+        final Jsr310Column actual = VariousDbTestHelper.findById(Jsr310Column.class, entity.id);
+        assertEquals(entity.localDate, actual.localDate);
+        assertEquals(entity.localDateTime, actual.localDateTime);
+    }
+    
     /**
      * {@link UniversalDao#findById(Class, Object...)}を使用してCLOBカラムの値が取得できること。
      * @throws Exception
@@ -1080,6 +1126,44 @@ public class UniversalDaoTest {
         assertThat(actual, hasSize(1));
         assertThat(actual.get(0).text, is(entity.text));
 
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用して{@link LocalDate}でのデータ検索ができること。
+     */
+    @Test
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
+    public void test_findAllBySqlFile_localDate() throws Exception {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 12345L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        VariousDbTestHelper.insert(entity);
+
+        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class, 
+                "find_where_local_date", new Object[] { entity.localDate });
+
+        assertEquals(1, actual.size());
+        assertEquals(entity.localDate, actual.get(0).localDate);
+    }
+    
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用して{@link LocalDateTime}でのデータ検索ができること。
+     */
+    @Test
+    @TargetDb(include = { TargetDb.Db.ORACLE, TargetDb.Db.DB2, TargetDb.Db.H2 })
+    public void test_findAllBySqlFile_localDateTime() throws Exception {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 12345L;
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        VariousDbTestHelper.insert(entity);
+
+        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class, 
+                "find_where_local_date_time", new Object[] { entity.localDateTime });
+
+        assertEquals(1, actual.size());
+        assertEquals(entity.localDateTime, actual.get(0).localDateTime);
     }
 
     @Test
