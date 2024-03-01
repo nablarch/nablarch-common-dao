@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 /**
  * Date and Time API（JSR-310）の型（{@link LocalDate}, {@link LocalDateTime}）の動作検証用エンティティ
  */
+@SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(name = "jsr310_column")
 public class Jsr310Column {
