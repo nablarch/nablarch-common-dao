@@ -102,8 +102,9 @@ public class UniversalDaoWithJsr310Test {
         entity.localDate = LocalDate.parse("2015-04-01");
         VariousDbTestHelper.insert(entity);
 
-        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class, 
-                "find_where_local_date", new Object[] { entity.localDate });
+        // DBによってDateを保持する精度が異なるため、「指定したlocalDate以降であること」を検索条件とする
+        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class,
+                "find_where_local_date_greater_than", new Object[] { entity.localDate.minusDays(1) });
 
         assertThat(actual.size(), is(1));
         assertThat(actual.get(0).localDate, is(entity.localDate));
@@ -120,8 +121,9 @@ public class UniversalDaoWithJsr310Test {
         entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
         VariousDbTestHelper.insert(entity);
 
-        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class, 
-                "find_where_local_date_time", new Object[] { entity.localDateTime });
+        // DBによってTimestampを保持する精度が異なるため、「指定したlocalDateTime以降であること」を検索条件とする
+        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class,
+                "find_where_local_date_time_greater_than", new Object[] { entity.localDateTime.minusMinutes(1) });
 
         assertThat(actual.size(), is(1));
         assertThat(actual.get(0).localDateTime, is(entity.localDateTime));
