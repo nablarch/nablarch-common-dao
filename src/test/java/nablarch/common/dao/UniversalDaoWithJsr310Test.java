@@ -60,7 +60,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(exclude = Db.SQL_SERVER)
-    public void test_insertJsr310Column() throws Exception {
+    public void test_insertJsr310Column() {
         VariousDbTestHelper.createTable(Jsr310Column.class);
         final Jsr310Column entity = new Jsr310Column();
         entity.id = 1L;
@@ -79,7 +79,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(include = Db.SQL_SERVER)
-    public void test_insertJsr310Column_SQLServer() throws Exception {
+    public void test_insertJsr310Column_SQLServer() {
         VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
         final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
         entity.id = 1L;
@@ -98,7 +98,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(exclude = Db.SQL_SERVER)
-    public void test_updateJsr310Column() throws Exception {
+    public void test_updateJsr310Column() {
         VariousDbTestHelper.createTable(Jsr310Column.class);
         final Jsr310Column entity = new Jsr310Column();
         entity.id = 12345L;
@@ -122,7 +122,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(include = Db.SQL_SERVER)
-    public void test_updateJsr310Column_SQLServer() throws Exception {
+    public void test_updateJsr310Column_SQLServer() {
         VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
         final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
         entity.id = 12345L;
@@ -146,7 +146,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(exclude = Db.SQL_SERVER)
-    public void test_findAllBySqlFile_localDate() throws Exception {
+    public void test_findAllBySqlFile_localDate() {
         VariousDbTestHelper.createTable(Jsr310Column.class);
         final Jsr310Column entity = new Jsr310Column();
         entity.id = 12345L;
@@ -166,7 +166,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(include = Db.SQL_SERVER)
-    public void test_findAllBySqlFile_localDate_SQLServer() throws Exception {
+    public void test_findAllBySqlFile_localDate_SQLServer() {
         VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
         final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
         entity.id = 12345L;
@@ -186,7 +186,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(exclude = Db.SQL_SERVER)
-    public void test_findAllBySqlFile_localDateTime() throws Exception {
+    public void test_findAllBySqlFile_localDateTime() {
         VariousDbTestHelper.createTable(Jsr310Column.class);
         final Jsr310Column entity = new Jsr310Column();
         entity.id = 12345L;
@@ -206,7 +206,7 @@ public class UniversalDaoWithJsr310Test {
      */
     @Test
     @TargetDb(include = Db.SQL_SERVER)
-    public void test_findAllBySqlFile_localDateTime_SQLServer() throws Exception {
+    public void test_findAllBySqlFile_localDateTime_SQLServer() {
         VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
         final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
         entity.id = 12345L;
