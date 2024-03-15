@@ -2,6 +2,8 @@ package nablarch.common.dao;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -213,6 +215,10 @@ public final class EntityUtil {
                     BeanUtil.setProperty(entity, meta.getPropertyName(), row.getDate(meta.getName()));
                 }
             } else if (type.equals(Timestamp.class)) {
+                BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
+            } else if (type.equals(LocalDate.class)) {
+                BeanUtil.setProperty(entity, meta.getPropertyName(), row.getDate(meta.getName()));
+            } else if (type.equals(LocalDateTime.class)) {
                 BeanUtil.setProperty(entity, meta.getPropertyName(), row.getTimestamp(meta.getName()));
             } else if (type.isArray() && type.getComponentType()
                                              .equals(byte.class)) {
