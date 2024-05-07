@@ -51,7 +51,7 @@ import static nablarch.common.dao.UniversalDao.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -236,21 +236,10 @@ public class UniversalDaoTest {
         EntityList<Users> allUsers = UniversalDao.findAll(Users.class);
         assertThat("全レコード取得できること", allUsers.size(), is(5));
 
-        List<Users> result = new ArrayList<Users>(allUsers);
+        List<Users> result = new ArrayList<>(allUsers);
 
         // idでソートする
-        Collections.sort(result, new Comparator<Users>() {
-            @Override
-            public int compare(Users o1, Users o2) {
-                if (o1.getId() > o2.getId()) {
-                    return 1;
-                } else if (o1.getId() < o2.getId()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        result.sort(Comparator.comparing(Users::getId));
 
         long id = 1;
         for (Users user : result) {
@@ -300,24 +289,13 @@ public class UniversalDaoTest {
 
         assertThat("全て取得できること", allUsers.size(), is(5));
 
-        List<Users> result = new ArrayList<Users>(allUsers);
+        List<Users> result = new ArrayList<>(allUsers);
         // idでソートする
-        Collections.sort(result, new Comparator<Users>() {
-            @Override
-            public int compare(Users o1, Users o2) {
-                if (o1.getId() > o2.getId()) {
-                    return 1;
-                } else if (o1.getId() < o2.getId()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        result.sort(Comparator.comparing(Users::getId));
 
         long id = 10;
 
-        for (Users user : allUsers) {
+        for (Users user : result) {
             assertThat(user.getId(), is(id));
             id++;
         }
@@ -656,7 +634,7 @@ public class UniversalDaoTest {
     public void batchDelete() throws Exception {
 
         VariousDbTestHelper.delete(Users.class);
-        List<Users> users = new ArrayList<Users>();
+        List<Users> users = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             final Users user = new Users((long) (i + 1));
             VariousDbTestHelper.insert(user);
@@ -1260,7 +1238,7 @@ public class UniversalDaoTest {
         UniversalDao.insert(entity);
         connection.commit();
         final List<DatePkTable> setupData = UniversalDao.findAll(DatePkTable.class);
-        assertThat("セットアップ確認", setupData, Matchers.<DatePkTable>hasSize(1));
+        assertThat("セットアップ確認", setupData, Matchers.hasSize(1));
 
         // execute
         entity.dateCol = DaoTestHelper.trimTime(date);
@@ -1269,7 +1247,7 @@ public class UniversalDaoTest {
 
         // assert
         assertThat(deleteCount, is(1));
-        assertThat(UniversalDao.findAll(DatePkTable.class), Matchers.<DatePkTable>empty());
+        assertThat(UniversalDao.findAll(DatePkTable.class), Matchers.empty());
     }
 
     @Test
@@ -1282,7 +1260,7 @@ public class UniversalDaoTest {
         UniversalDao.insert(entity);
         connection.commit();
         final List<DatePkTable> setupData = UniversalDao.findAll(DatePkTable.class);
-        assertThat("セットアップ確認", setupData, Matchers.<DatePkTable>hasSize(1));
+        assertThat("セットアップ確認", setupData, Matchers.hasSize(1));
 
         // execute
         entity.dateCol = DaoTestHelper.trimTime(date);
@@ -1294,7 +1272,7 @@ public class UniversalDaoTest {
         assertThat("1レコード更新されること", updateCount, is(1));
         final DatePkTable actual = UniversalDao.findById(DatePkTable.class, DaoTestHelper.trimTime(date));
         assertThat("主キー検索で更新ごのレコードが取得できること", actual,
-                HasPropertyWithValue.<DatePkTable>hasProperty("name", is("なまえ")));
+                HasPropertyWithValue.hasProperty("name", is("なまえ")));
     }
 
     @Test
@@ -1306,7 +1284,7 @@ public class UniversalDaoTest {
         final TimestampPkTable entity = new TimestampPkTable(date, "name");
         UniversalDao.insert(entity);
         connection.commit();
-        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
+        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.hasSize(1));
 
         // execute
         final int deleteCount = UniversalDao.delete(entity);
@@ -1314,7 +1292,7 @@ public class UniversalDaoTest {
 
         // assert
         assertThat("1レコード削除されること", deleteCount, is(1));
-        assertThat(UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>empty());
+        assertThat(UniversalDao.findAll(TimestampPkTable.class), Matchers.empty());
     }
 
     @Test
@@ -1326,7 +1304,7 @@ public class UniversalDaoTest {
         final TimestampPkTable entity = new TimestampPkTable(date, "name");
         UniversalDao.insert(entity);
         connection.commit();
-        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
+        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.hasSize(1));
 
         // execute
         entity.name = "名前を変更";
@@ -1335,7 +1313,7 @@ public class UniversalDaoTest {
         // assert
         assertThat("1レコード更新されること", updateCount, is(1));
         assertThat(UniversalDao.findById(TimestampPkTable.class, entity.timestampCol),
-                HasPropertyWithValue.<TimestampPkTable>hasProperty("name", is("名前を変更")));
+                HasPropertyWithValue.hasProperty("name", is("名前を変更")));
     }
 
     /**
@@ -1347,7 +1325,7 @@ public class UniversalDaoTest {
     private void setDialect(DefaultDialect dialect,
             ConnectionFactory connectionFactory) {
         if (connectionFactory instanceof ConnectionFactorySupport) {
-            ConnectionFactorySupport.class.cast(connectionFactory).setDialect(dialect);
+            ((ConnectionFactorySupport) connectionFactory).setDialect(dialect);
             return;
         }
         throw new RuntimeException("can't set dialect to ConnectionFactory. please fix #setDialect method.");
@@ -1362,7 +1340,7 @@ public class UniversalDaoTest {
     private void setDialect(DefaultDialect dialect, TransactionManagerConnection connection) {
         if (connection instanceof BasicDbConnection) {
             DbExecutionContext context = new DbExecutionContext(connection, dialect, TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
-            BasicDbConnection.class.cast(connection).setContext(context);
+            ((BasicDbConnection) connection).setContext(context);
             return;
         }
         throw new RuntimeException("can't set dialect to TransactionmanagerConnection. please fix #setDialect method.");
