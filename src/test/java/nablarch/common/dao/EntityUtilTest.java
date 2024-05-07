@@ -1186,6 +1186,10 @@ public class EntityUtilTest {
             
             private Timestamp timestampType;
 
+            private LocalDate localDateType;
+
+            private LocalDateTime localDateTimeType;
+
             private byte[] byteArray;
 
             private List<String> listType;
@@ -1300,6 +1304,14 @@ public class EntityUtilTest {
             public void setTimestampType(Timestamp timestampType) {
                 this.timestampType = timestampType;
             }
+
+            public LocalDate getLocalDateType() { return localDateType; }
+
+            public void setLocalDateType(LocalDate localDateType) { this.localDateType = localDateType; }
+
+            public LocalDateTime getLocalDateTimeType() { return localDateTimeType; }
+
+            public void setLocalDateTimeType(LocalDateTime localDateTimeType) { this.localDateTimeType = localDateTimeType; }
 
             public byte[] getByteArray() {
                 return byteArray;
@@ -1490,6 +1502,28 @@ public class EntityUtilTest {
         }
 
         @Test
+        public void localDateType() {
+            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            typeMap.put("LOCAL_DATE_TYPE", Types.DATE);
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            Date date = new Date();
+            row.put("LOCAL_DATE_TYPE", date);
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getLocalDateType(), is(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        }
+
+        @Test
+        public void localDateTimeType() {
+            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            typeMap.put("LOCAL_DATE_TIME_TYPE", Types.TIMESTAMP);
+            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            row.put("LOCAL_DATE_TIME_TYPE", timestamp);
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getLocalDateTimeType(), is(timestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+        }
+
+        @Test
         public void byteArray() {
             HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
             typeMap.put("BYTE_ARRAY", Types.BINARY);
@@ -1584,65 +1618,6 @@ public class EntityUtilTest {
 
         private static SqlRow createEmptySqlRow() {
             return new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>());
-        }
-    }
-
-    /**
-     * {@link EntityUtil#createEntity(Class, SqlRow)}のテストクラス。（JSR310アダプタを使用する場合）
-     */
-    public static class CreateEntityWithJSR310 {
-
-        @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("create-entity-with-jsr310-test.xml");
-
-        @After
-        public void tearDown() throws Exception {
-            DbConnectionContext.removeConnection();
-        }
-
-        public static class Hoge {
-
-            private LocalDate localDateType;
-
-            private LocalDateTime localDateTimeType;
-
-            public LocalDate getLocalDateType() {
-                return localDateType;
-            }
-
-            public void setLocalDateType(LocalDate localDateType) {
-                this.localDateType = localDateType;
-            }
-
-            public LocalDateTime getLocalDateTimeType() {
-                return localDateTimeType;
-            }
-
-            public void setLocalDateTimeType(LocalDateTime localDateTimeType) {
-                this.localDateTimeType = localDateTimeType;
-            }
-        }
-
-        @Test
-        public void localDateType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
-            typeMap.put("LOCAL_DATE_TYPE", Types.DATE);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
-            Date date = new Date();
-            row.put("LOCAL_DATE_TYPE", date);
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getLocalDateType(), is(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        }
-
-        @Test
-        public void localDateTimeType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
-            typeMap.put("LOCAL_DATE_TIME_TYPE", Types.TIMESTAMP);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            row.put("LOCAL_DATE_TIME_TYPE", timestamp);
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getLocalDateTimeType(), is(timestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
         }
     }
 
