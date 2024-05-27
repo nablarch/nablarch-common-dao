@@ -155,7 +155,7 @@ public class EntityUtilTest {
          */
         @Test
         public void schemaAttributeEmptyString() {
-            @Table(name = "hoge")
+            @Table(name = "hoge", schema = "")
             class HogeTable {
             }
             assertThat("スキーマ名はnull", EntityUtil.getSchemaName(HogeTable.class), is(nullValue()));
@@ -213,7 +213,7 @@ public class EntityUtilTest {
          */
         @Test
         public void schemaAttributeEmptyString() {
-            @Table(name = "hoge_table")
+            @Table(name = "hoge_table", schema = "")
             class HogeTable {}
 
             assertThat("テーブル名のみが取得できる", EntityUtil.getTableNameWithSchema(HogeTable.class), is("hoge_table"));
