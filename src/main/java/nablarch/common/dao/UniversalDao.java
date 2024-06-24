@@ -58,7 +58,7 @@ public final class UniversalDao {
 
     /**
      * {@link DaoContext}を取得する。
-     *
+     * <p>
      * {@link #DAO_CONTEXT_FACTORY}で{@link SystemRepository}上に{@link DaoContextFactory}実装が登録されている場合はそのクラスを、
      * 登録されていない場合には{@link BasicDaoContextFactory}を用いて{@link DaoContext}を生成する。
      *
