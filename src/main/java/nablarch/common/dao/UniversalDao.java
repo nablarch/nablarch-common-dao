@@ -21,7 +21,7 @@ import nablarch.core.util.annotation.Published;
  * <li>検索時に遅延ロードを行う</li>
  * </ul>
  * <p/>
- * EntityはJPA2.0のアノテーションに準拠する。
+ * EntityはJakarta Persistence 3.1のアノテーションに準拠する。
  * <p/>
  * サポートしているものは、以下である。
  * <p/>
@@ -58,7 +58,7 @@ public final class UniversalDao {
 
     /**
      * {@link DaoContext}を取得する。
-     *
+     * <p>
      * {@link #DAO_CONTEXT_FACTORY}で{@link SystemRepository}上に{@link DaoContextFactory}実装が登録されている場合はそのクラスを、
      * 登録されていない場合には{@link BasicDaoContextFactory}を用いて{@link DaoContext}を生成する。
      *

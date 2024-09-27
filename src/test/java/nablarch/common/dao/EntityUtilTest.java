@@ -2,7 +2,7 @@ package nablarch.common.dao;
 
 import static nablarch.common.dao.EntityUtil.getTableName;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -79,7 +79,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -125,7 +125,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -183,7 +183,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -201,7 +201,7 @@ public class EntityUtilTest {
          * {@link Table#schema()}が設定されていない場合、テーブル名のみが取得される。
          */
         @Test
-        public void withoutSchemaAttribute() throws Exception {
+        public void withoutSchemaAttribute() {
             @Table(name = "hoge_entity")
             class HogeTable {}
 
@@ -212,7 +212,7 @@ public class EntityUtilTest {
          * {@link Table#schema()}が空文字列の場合、テーブル名のみが取得される。
          */
         @Test
-        public void schemaAttributeEmptyString() throws Exception {
+        public void schemaAttributeEmptyString() {
             @Table(name = "hoge_table", schema = "")
             class HogeTable {}
 
@@ -327,7 +327,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -408,7 +408,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -526,8 +526,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "ID");
                 assertThat("主キーも含まれる", column.getName(), is("ID"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("id"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Long.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Long.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Long.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Long.class));
                 assertThat("採番タイプが取得できる", column.getGenerationType(), is(GenerationType.TABLE));
                 assertThat("採番の名称が取得できる", column.getGeneratorName(), is("GEN_ID"));
                 assertThat("採番対象カラム", column.isGeneratedValue(), is(true));
@@ -540,8 +540,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "USER_NAME");
                 assertThat("カラム名が取得できる", column.getName(), is("USER_NAME"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("userName"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(String.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(String.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(String.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(String.class));
                 assertThat("採番タイプはnull", column.getGenerationType(), is(nullValue()));
                 assertThat("採番の名称もnull", column.getGeneratorName(), is(nullValue()));
                 assertThat("採番対象カラムではない", column.isGeneratedValue(), is(false));
@@ -554,8 +554,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "VERSION");
                 assertThat("カラム名が取得できる", column.getName(), is("VERSION"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("version"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Integer.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Integer.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Integer.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Integer.class));
                 assertThat("採番タイプはnull", column.getGenerationType(), is(nullValue()));
                 assertThat("採番の名称もnull", column.getGeneratorName(), is(nullValue()));
                 assertThat("採番対象カラムではない", column.isGeneratedValue(), is(false));
@@ -568,8 +568,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "AMOUNT");
                 assertThat("カラム名が取得できる", column.getName(), is("AMOUNT"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("amount"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(BigDecimal.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(BigDecimal.class));
             }
 
             sql_dateカラム:
@@ -577,9 +577,9 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "SQL_DATE");
                 assertThat("カラム名が取得できる", column.getName(), is("SQL_DATE"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("sqlDate"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(
                         java.sql.Date.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(java.sql.Date.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(java.sql.Date.class));
             }
 
             sql_dateカラム:
@@ -587,8 +587,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "TIMESTAMP");
                 assertThat("カラム名が取得できる", column.getName(), is("TIMESTAMP"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("timestamp"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Timestamp.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Timestamp.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Timestamp.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Timestamp.class));
             }
 
             sql_timestampカラム:
@@ -596,8 +596,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "TIMESTAMP");
                 assertThat("カラム名が取得できる", column.getName(), is("TIMESTAMP"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("timestamp"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Timestamp.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Timestamp.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Timestamp.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Timestamp.class));
             }
 
             sql_timeカラム:
@@ -605,8 +605,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "TIME");
                 assertThat("カラム名が取得できる", column.getName(), is("TIME"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("time"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Time.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Time.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Time.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Time.class));
             }
 
             temporal_dateカラム:
@@ -614,8 +614,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "TEMPORAL_DATE");
                 assertThat("カラム名が取得できる", column.getName(), is("TEMPORAL_DATE"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("temporalDate"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Date.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(java.sql.Date.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Date.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(java.sql.Date.class));
             }
 
             temporal_timestampカラム:
@@ -623,8 +623,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "TEMPORAL_TIMESTAMP");
                 assertThat("カラム名が取得できる", column.getName(), is("TEMPORAL_TIMESTAMP"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("temporalTimestamp"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Calendar.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Timestamp.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Calendar.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Timestamp.class));
             }
 
             temporal_timeカラム:
@@ -632,8 +632,8 @@ public class EntityUtilTest {
                 ColumnMeta column = findColumn(columns, "TEMPORAL_TIME");
                 assertThat("カラム名が取得できる", column.getName(), is("TEMPORAL_TIME"));
                 assertThat("プロパティ名が取得できる", column.getPropertyName(), is("temporalTime"));
-                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.<Class<?>>equalTo(Date.class));
-                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.<Class<?>>equalTo(Time.class));
+                assertThat("プロパティの型が取得できる", column.getPropertyType(), CoreMatchers.equalTo(Date.class));
+                assertThat("JDBCの型が取得できる", column.getJdbcType(), CoreMatchers.equalTo(Time.class));
             }
 
             Columnアノテーションでカラム名を指定した場合:
@@ -685,22 +685,22 @@ public class EntityUtilTest {
             }
         }
         @Test
-        public void findAllColumnsFromNotEntityClass() throws Exception {
+        public void findAllColumnsFromNotEntityClass() {
             List<ColumnMeta> actual = EntityUtil.findAllColumns(FugaDto.class);
 
             ColumnMeta bigDecimal = findColumn(actual, "BIG_DECIMAL");
             assertThat(bigDecimal.getName(), is("BIG_DECIMAL"));
             assertThat(bigDecimal.getPropertyName(), is("bigDecimal"));
-            assertThat(bigDecimal.getPropertyType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
-            assertThat(bigDecimal.getJdbcType(), CoreMatchers.<Class<?>>equalTo(BigDecimal.class));
+            assertThat(bigDecimal.getPropertyType(), CoreMatchers.equalTo(BigDecimal.class));
+            assertThat(bigDecimal.getJdbcType(), CoreMatchers.equalTo(BigDecimal.class));
             assertThat(bigDecimal.getGenerationType(), is(nullValue()));
             assertThat(bigDecimal.getGeneratorName(), is(nullValue()));
 
             ColumnMeta string = findColumn(actual, "STRING");
             assertThat(string.getName(), is("STRING"));
             assertThat(string.getPropertyName(), is("string"));
-            assertThat(string.getPropertyType(), CoreMatchers.<Class<?>>equalTo(String.class));
-            assertThat(string.getJdbcType(), CoreMatchers.<Class<?>>equalTo(String.class));
+            assertThat(string.getPropertyType(), CoreMatchers.equalTo(String.class));
+            assertThat(string.getJdbcType(), CoreMatchers.equalTo(String.class));
             assertThat(string.getGenerationType(), is(nullValue()));
             assertThat(string.getGeneratorName(), is(nullValue()));
         }
@@ -716,7 +716,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -727,7 +727,7 @@ public class EntityUtilTest {
          * バージョンカラムが存在しないクラスの場合
          */
         @Test
-        public void notVersionCol() throws Exception {
+        public void notVersionCol() {
             class Hoge {
 
             }
@@ -738,10 +738,9 @@ public class EntityUtilTest {
         /**
          * バージョンカラムが存在するクラスの場合
          *
-         * @throws Exception
          */
         @Test
-        public void existsVersionCol() throws Exception {
+        public void existsVersionCol() {
             class Hoge {
 
                 @Version
@@ -758,7 +757,7 @@ public class EntityUtilTest {
          * バージョンカラムが複数存在した場合エラーとなること
          */
         @Test
-        public void multiVersionCol() throws Exception {
+        public void multiVersionCol() {
             class Hoge {
 
                 @Version
@@ -785,7 +784,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -796,7 +795,7 @@ public class EntityUtilTest {
          * 採番対象カラムが存在しないクラスの場合
          */
         @Test
-        public void notGeneratedValueCol() throws Exception {
+        public void notGeneratedValueCol() {
             class Hoge {
 
             }
@@ -808,7 +807,7 @@ public class EntityUtilTest {
          * 採番対象カラムが存在するクラスの場合
          */
         @Test
-        public void existsGeneratedValueCol() throws Exception {
+        public void existsGeneratedValueCol() {
             class Hoge {
 
                 @GeneratedValue(strategy = GenerationType.AUTO)
@@ -844,7 +843,7 @@ public class EntityUtilTest {
          * 採番対象カラムのstrategyでシーケンスを指定している場合
          */
         @Test
-        public void generatedValueSequence() throws Exception {
+        public void generatedValueSequence() {
             class Hoge {
 
                 @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ")
@@ -865,10 +864,9 @@ public class EntityUtilTest {
         /**
          * 採番対象カラムのstrategyでシーケンスでシーケンス名を設定していない場合
          *
-         * @throws Exception
          */
         @Test
-        public void generatedValueSequenceWithoutGenerator() throws Exception {
+        public void generatedValueSequenceWithoutGenerator() {
             class Hoge {
 
                 @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -1154,7 +1152,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 
@@ -1185,6 +1183,10 @@ public class EntityUtilTest {
             private Date dateTimestampType;
             
             private Timestamp timestampType;
+
+            private LocalDate localDateType;
+
+            private LocalDateTime localDateTimeType;
 
             private byte[] byteArray;
 
@@ -1300,6 +1302,14 @@ public class EntityUtilTest {
             public void setTimestampType(Timestamp timestampType) {
                 this.timestampType = timestampType;
             }
+
+            public LocalDate getLocalDateType() { return localDateType; }
+
+            public void setLocalDateType(LocalDate localDateType) { this.localDateType = localDateType; }
+
+            public LocalDateTime getLocalDateTimeType() { return localDateTimeType; }
+
+            public void setLocalDateTimeType(LocalDateTime localDateTimeType) { this.localDateTimeType = localDateTimeType; }
 
             public byte[] getByteArray() {
                 return byteArray;
@@ -1458,9 +1468,9 @@ public class EntityUtilTest {
 
         @Test
         public void dateType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            HashMap<String, Integer> typeMap = new HashMap<>();
             typeMap.put("DATE_TYPE", Types.DATE);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
             Date date = new Date();
             row.put("DATE_TYPE", date);
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
@@ -1469,9 +1479,9 @@ public class EntityUtilTest {
 
         @Test
         public void dateTimestampType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            HashMap<String, Integer> typeMap = new HashMap<>();
             typeMap.put("DATE_TIMESTAMP_TYPE", Types.TIMESTAMP);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
             Date date = new Date();
             row.put("DATE_TIMESTAMP_TYPE", new Timestamp(date.getTime()));
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
@@ -1480,9 +1490,9 @@ public class EntityUtilTest {
         
         @Test
         public void timestampType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            HashMap<String, Integer> typeMap = new HashMap<>();
             typeMap.put("TIMESTAMP_TYPE", Types.TIMESTAMP);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             row.put("TIMESTAMP_TYPE", timestamp);
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
@@ -1490,11 +1500,33 @@ public class EntityUtilTest {
         }
 
         @Test
+        public void localDateType() {
+            HashMap<String, Integer> typeMap = new HashMap<>();
+            typeMap.put("LOCAL_DATE_TYPE", Types.DATE);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
+            Date date = new Date();
+            row.put("LOCAL_DATE_TYPE", date);
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getLocalDateType(), is(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
+        }
+
+        @Test
+        public void localDateTimeType() {
+            HashMap<String, Integer> typeMap = new HashMap<>();
+            typeMap.put("LOCAL_DATE_TIME_TYPE", Types.TIMESTAMP);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            row.put("LOCAL_DATE_TIME_TYPE", timestamp);
+            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
+            assertThat(entity.getLocalDateTimeType(), is(timestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+        }
+
+        @Test
         public void byteArray() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            HashMap<String, Integer> typeMap = new HashMap<>();
             typeMap.put("BYTE_ARRAY", Types.BINARY);
 
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
             byte[] bytes = {0x01, 0x02};
             row.put("BYTE_ARRAY", bytes);
             Hoge entity = EntityUtil.createEntity(Hoge.class, row);
@@ -1503,10 +1535,10 @@ public class EntityUtilTest {
 
         @Test
         public void invalidType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
+            HashMap<String, Integer> typeMap = new HashMap<>();
             typeMap.put("INVALID", Types.CHAR);
 
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
+            SqlRow row = new SqlRow(new HashMap<>(), typeMap);
             row.put("INVALID", 'A');
 
             exception.expect(RuntimeException.class);
@@ -1583,66 +1615,7 @@ public class EntityUtilTest {
         }
 
         private static SqlRow createEmptySqlRow() {
-            return new SqlRow(new HashMap<String, Object>(), new HashMap<String, Integer>());
-        }
-    }
-
-    /**
-     * {@link EntityUtil#createEntity(Class, SqlRow)}のテストクラス。（JSR310アダプタを使用する場合）
-     */
-    public static class CreateEntityWithJSR310 {
-
-        @ClassRule
-        public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("create-entity-with-jsr310-test.xml");
-
-        @After
-        public void tearDown() throws Exception {
-            DbConnectionContext.removeConnection();
-        }
-
-        public static class Hoge {
-
-            private LocalDate localDateType;
-
-            private LocalDateTime localDateTimeType;
-
-            public LocalDate getLocalDateType() {
-                return localDateType;
-            }
-
-            public void setLocalDateType(LocalDate localDateType) {
-                this.localDateType = localDateType;
-            }
-
-            public LocalDateTime getLocalDateTimeType() {
-                return localDateTimeType;
-            }
-
-            public void setLocalDateTimeType(LocalDateTime localDateTimeType) {
-                this.localDateTimeType = localDateTimeType;
-            }
-        }
-
-        @Test
-        public void localDateType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
-            typeMap.put("LOCAL_DATE_TYPE", Types.DATE);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
-            Date date = new Date();
-            row.put("LOCAL_DATE_TYPE", date);
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getLocalDateType(), is(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        }
-
-        @Test
-        public void localDateTimeType() {
-            HashMap<String, Integer> typeMap = new HashMap<String, Integer>();
-            typeMap.put("LOCAL_DATE_TIME_TYPE", Types.TIMESTAMP);
-            SqlRow row = new SqlRow(new HashMap<String, Object>(), typeMap);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            row.put("LOCAL_DATE_TIME_TYPE", timestamp);
-            Hoge entity = EntityUtil.createEntity(Hoge.class, row);
-            assertThat(entity.getLocalDateTimeType(), is(timestamp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+            return new SqlRow(new HashMap<>(), new HashMap<>());
         }
     }
 
@@ -1663,7 +1636,7 @@ public class EntityUtilTest {
         public static SystemRepositoryResource repositoryResource = new SystemRepositoryResource("db-default.xml");
 
         @After
-        public void tearDown() throws Exception {
+        public void tearDown() {
             DbConnectionContext.removeConnection();
         }
 

@@ -8,9 +8,7 @@ import nablarch.common.dao.DaoTestHelper.Address;
 import nablarch.common.dao.DaoTestHelper.SqlFunctionResult;
 import nablarch.common.dao.DaoTestHelper.Users;
 import nablarch.common.dao.UniversalDao.Transaction;
-import nablarch.common.dao.entity.DatePkTable;
-import nablarch.common.dao.entity.IdentityColumnEntity;
-import nablarch.common.dao.entity.TimestampPkTable;
+import nablarch.common.dao.entity.*;
 import nablarch.common.idgenerator.IdGenerator;
 import nablarch.core.db.DbExecutionContext;
 import nablarch.core.db.connection.BasicDbConnection;
@@ -28,6 +26,7 @@ import nablarch.test.support.db.helper.DatabaseTestRunner;
 import nablarch.test.support.db.helper.TargetDb;
 import nablarch.test.support.db.helper.VariousDbTestHelper;
 import nablarch.test.support.reflection.ReflectionUtil;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.beans.HasPropertyWithValue;
 import org.junit.After;
@@ -39,6 +38,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +51,7 @@ import static nablarch.common.dao.UniversalDao.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -235,21 +236,10 @@ public class UniversalDaoTest {
         EntityList<Users> allUsers = UniversalDao.findAll(Users.class);
         assertThat("全レコード取得できること", allUsers.size(), is(5));
 
-        List<Users> result = new ArrayList<Users>(allUsers);
+        List<Users> result = new ArrayList<>(allUsers);
 
         // idでソートする
-        Collections.sort(result, new Comparator<Users>() {
-            @Override
-            public int compare(Users o1, Users o2) {
-                if (o1.getId() > o2.getId()) {
-                    return 1;
-                } else if (o1.getId() < o2.getId()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        result.sort(Comparator.comparing(Users::getId));
 
         long id = 1;
         for (Users user : result) {
@@ -299,24 +289,13 @@ public class UniversalDaoTest {
 
         assertThat("全て取得できること", allUsers.size(), is(5));
 
-        List<Users> result = new ArrayList<Users>(allUsers);
+        List<Users> result = new ArrayList<>(allUsers);
         // idでソートする
-        Collections.sort(result, new Comparator<Users>() {
-            @Override
-            public int compare(Users o1, Users o2) {
-                if (o1.getId() > o2.getId()) {
-                    return 1;
-                } else if (o1.getId() < o2.getId()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        result.sort(Comparator.comparing(Users::getId));
 
         long id = 10;
 
-        for (Users user : allUsers) {
+        for (Users user : result) {
             assertThat(user.getId(), is(id));
             id++;
         }
@@ -655,7 +634,7 @@ public class UniversalDaoTest {
     public void batchDelete() throws Exception {
 
         VariousDbTestHelper.delete(Users.class);
-        List<Users> users = new ArrayList<Users>();
+        List<Users> users = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             final Users user = new Users((long) (i + 1));
             VariousDbTestHelper.insert(user);
@@ -934,6 +913,44 @@ public class UniversalDaoTest {
     }
 
     /**
+     * Date and Time API（JSR-310）型（{@link LocalDate}, {@link LocalDateTime}）のフィールドを持つEntityのデータを登録できること（SQLServer以外）。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void test_insertJsr310Column() {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 1L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        UniversalDao.insert(entity);
+        connection.commit();
+
+        final Jsr310Column actual = VariousDbTestHelper.findById(Jsr310Column.class, entity.id);
+        MatcherAssert.assertThat(actual.localDate, is(entity.localDate));
+        MatcherAssert.assertThat(actual.localDateTime, is(entity.localDateTime));
+    }
+
+    /**
+     * Date and Time API（JSR-310）型（{@link LocalDate}, {@link LocalDateTime}）のフィールドを持つEntityのデータを登録できること（SQLServer用）。
+     */
+    @Test
+    @TargetDb(include = TargetDb.Db.SQL_SERVER)
+    public void test_insertJsr310Column_SQLServer() {
+        VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
+        final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
+        entity.id = 1L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        UniversalDao.insert(entity);
+        connection.commit();
+
+        final Jsr310ColumnForSqlServer actual = VariousDbTestHelper.findById(Jsr310ColumnForSqlServer.class, entity.id);
+        MatcherAssert.assertThat(actual.localDate, is(entity.localDate));
+        MatcherAssert.assertThat(actual.localDateTime, is(entity.localDateTime));
+    }
+
+    /**
      * CLOB型のカラムのデータを更新できること
      */
     @Test
@@ -972,6 +989,55 @@ public class UniversalDaoTest {
         final TextColumn actual = VariousDbTestHelper.findById(TextColumn.class, entity.id);
         assertThat(actual.text, is(entity.text));
     }
+
+    /**
+     * Date and Time API（JSR-310）型（{@link LocalDate}, {@link LocalDateTime}）のフィールドを持つEntityのデータを更新できること（SQLServer以外）。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void test_updateJsr310Column() {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 12345L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        VariousDbTestHelper.insert(entity);
+
+        entity.localDate = LocalDate.parse("2014-03-31");
+        entity.localDateTime =  LocalDateTime.parse("2014-03-31T01:23:45");
+        UniversalDao.update(entity);
+        connection.commit();
+
+        final Jsr310Column actual = VariousDbTestHelper.findById(Jsr310Column.class, entity.id);
+        MatcherAssert.assertThat(actual.localDate, is(entity.localDate));
+        MatcherAssert.assertThat(actual.localDateTime, is(entity.localDateTime));
+
+    }
+
+    /**
+     * Date and Time API（JSR-310）型（{@link LocalDate}, {@link LocalDateTime}）のフィールドを持つEntityのデータを更新できること（SQLServer用）。
+     */
+    @Test
+    @TargetDb(include = TargetDb.Db.SQL_SERVER)
+    public void test_updateJsr310Column_SQLServer() {
+        VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
+        final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
+        entity.id = 12345L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        VariousDbTestHelper.insert(entity);
+
+        entity.localDate = LocalDate.parse("2014-03-31");
+        entity.localDateTime =  LocalDateTime.parse("2014-03-31T01:23:45");
+        UniversalDao.update(entity);
+        connection.commit();
+
+        final Jsr310ColumnForSqlServer actual = VariousDbTestHelper.findById(Jsr310ColumnForSqlServer.class, entity.id);
+        MatcherAssert.assertThat(actual.localDate, is(entity.localDate));
+        MatcherAssert.assertThat(actual.localDateTime, is(entity.localDateTime));
+
+    }
+
 
     /**
      * {@link UniversalDao#findById(Class, Object...)}を使用してCLOBカラムの値が取得できること。
@@ -1082,6 +1148,86 @@ public class UniversalDaoTest {
 
     }
 
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用して{@link LocalDate}でのデータ検索ができること（SQLServer以外）。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void test_findAllBySqlFile_localDate() {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 12345L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        VariousDbTestHelper.insert(entity);
+
+        // DBによってDateを保持する精度が異なるため、「指定したlocalDate以降であること」を検索条件とする
+        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class,
+                "find_where_local_date_greater_than", new Object[] { entity.localDate.minusDays(1) });
+
+        MatcherAssert.assertThat(actual.size(), is(1));
+        MatcherAssert.assertThat(actual.get(0).localDate, is(entity.localDate));
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用して{@link LocalDate}でのデータ検索ができること（SQLServer用）。
+     */
+    @Test
+    @TargetDb(include = TargetDb.Db.SQL_SERVER)
+    public void test_findAllBySqlFile_localDate_SQLServer() {
+        VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
+        final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
+        entity.id = 12345L;
+        entity.localDate = LocalDate.parse("2015-04-01");
+        VariousDbTestHelper.insert(entity);
+
+        // DBによってDateを保持する精度が異なるため、「指定したlocalDate以降であること」を検索条件とする
+        final EntityList<Jsr310ColumnForSqlServer> actual = UniversalDao.findAllBySqlFile(Jsr310ColumnForSqlServer.class,
+                "find_where_local_date_greater_than", new Object[] { entity.localDate.minusDays(1) });
+
+        MatcherAssert.assertThat(actual.size(), is(1));
+        MatcherAssert.assertThat(actual.get(0).localDate, is(entity.localDate));
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用して{@link LocalDateTime}でのデータ検索ができること（SQLServer以外）。
+     */
+    @Test
+    @TargetDb(exclude = TargetDb.Db.SQL_SERVER)
+    public void test_findAllBySqlFile_localDateTime() {
+        VariousDbTestHelper.createTable(Jsr310Column.class);
+        final Jsr310Column entity = new Jsr310Column();
+        entity.id = 12345L;
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        VariousDbTestHelper.insert(entity);
+
+        // DBによってTimestampを保持する精度が異なるため、「指定したlocalDateTime以降であること」を検索条件とする
+        final EntityList<Jsr310Column> actual = UniversalDao.findAllBySqlFile(Jsr310Column.class,
+                "find_where_local_date_time_greater_than", new Object[] { entity.localDateTime.minusMinutes(1) });
+
+        MatcherAssert.assertThat(actual.size(), is(1));
+        MatcherAssert.assertThat(actual.get(0).localDateTime, is(entity.localDateTime));
+    }
+
+    /**
+     * {@link UniversalDao#findBySqlFile(Class, String, Object)}を使用して{@link LocalDateTime}でのデータ検索ができること（SQLServer用）。
+     */
+    @Test
+    @TargetDb(include = TargetDb.Db.SQL_SERVER)
+    public void test_findAllBySqlFile_localDateTime_SQLServer() {
+        VariousDbTestHelper.createTable(Jsr310ColumnForSqlServer.class);
+        final Jsr310ColumnForSqlServer entity = new Jsr310ColumnForSqlServer();
+        entity.id = 12345L;
+        entity.localDateTime =  LocalDateTime.parse("2015-04-01T12:34:56");
+        VariousDbTestHelper.insert(entity);
+
+        // DBによってTimestampを保持する精度が異なるため、「指定したlocalDateTime以降であること」を検索条件とする
+        final EntityList<Jsr310ColumnForSqlServer> actual = UniversalDao.findAllBySqlFile(Jsr310ColumnForSqlServer.class,
+                "find_where_local_date_time_greater_than", new Object[] { entity.localDateTime.minusMinutes(1) });
+
+        MatcherAssert.assertThat(actual.size(), is(1));
+        MatcherAssert.assertThat(actual.get(0).localDateTime, is(entity.localDateTime));
+    }
+
     @Test
     public void DATEが主キーのテーブルの削除ができること() {
         // setup
@@ -1092,7 +1238,7 @@ public class UniversalDaoTest {
         UniversalDao.insert(entity);
         connection.commit();
         final List<DatePkTable> setupData = UniversalDao.findAll(DatePkTable.class);
-        assertThat("セットアップ確認", setupData, Matchers.<DatePkTable>hasSize(1));
+        assertThat("セットアップ確認", setupData, Matchers.hasSize(1));
 
         // execute
         entity.dateCol = DaoTestHelper.trimTime(date);
@@ -1101,7 +1247,7 @@ public class UniversalDaoTest {
 
         // assert
         assertThat(deleteCount, is(1));
-        assertThat(UniversalDao.findAll(DatePkTable.class), Matchers.<DatePkTable>empty());
+        assertThat(UniversalDao.findAll(DatePkTable.class), Matchers.empty());
     }
 
     @Test
@@ -1114,7 +1260,7 @@ public class UniversalDaoTest {
         UniversalDao.insert(entity);
         connection.commit();
         final List<DatePkTable> setupData = UniversalDao.findAll(DatePkTable.class);
-        assertThat("セットアップ確認", setupData, Matchers.<DatePkTable>hasSize(1));
+        assertThat("セットアップ確認", setupData, Matchers.hasSize(1));
 
         // execute
         entity.dateCol = DaoTestHelper.trimTime(date);
@@ -1126,7 +1272,7 @@ public class UniversalDaoTest {
         assertThat("1レコード更新されること", updateCount, is(1));
         final DatePkTable actual = UniversalDao.findById(DatePkTable.class, DaoTestHelper.trimTime(date));
         assertThat("主キー検索で更新ごのレコードが取得できること", actual,
-                HasPropertyWithValue.<DatePkTable>hasProperty("name", is("なまえ")));
+                HasPropertyWithValue.hasProperty("name", is("なまえ")));
     }
 
     @Test
@@ -1138,7 +1284,7 @@ public class UniversalDaoTest {
         final TimestampPkTable entity = new TimestampPkTable(date, "name");
         UniversalDao.insert(entity);
         connection.commit();
-        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
+        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.hasSize(1));
 
         // execute
         final int deleteCount = UniversalDao.delete(entity);
@@ -1146,7 +1292,7 @@ public class UniversalDaoTest {
 
         // assert
         assertThat("1レコード削除されること", deleteCount, is(1));
-        assertThat(UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>empty());
+        assertThat(UniversalDao.findAll(TimestampPkTable.class), Matchers.empty());
     }
 
     @Test
@@ -1158,7 +1304,7 @@ public class UniversalDaoTest {
         final TimestampPkTable entity = new TimestampPkTable(date, "name");
         UniversalDao.insert(entity);
         connection.commit();
-        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.<TimestampPkTable>hasSize(1));
+        assertThat("セットアップ確認", UniversalDao.findAll(TimestampPkTable.class), Matchers.hasSize(1));
 
         // execute
         entity.name = "名前を変更";
@@ -1167,7 +1313,7 @@ public class UniversalDaoTest {
         // assert
         assertThat("1レコード更新されること", updateCount, is(1));
         assertThat(UniversalDao.findById(TimestampPkTable.class, entity.timestampCol),
-                HasPropertyWithValue.<TimestampPkTable>hasProperty("name", is("名前を変更")));
+                HasPropertyWithValue.hasProperty("name", is("名前を変更")));
     }
 
     /**
@@ -1179,7 +1325,7 @@ public class UniversalDaoTest {
     private void setDialect(DefaultDialect dialect,
             ConnectionFactory connectionFactory) {
         if (connectionFactory instanceof ConnectionFactorySupport) {
-            ConnectionFactorySupport.class.cast(connectionFactory).setDialect(dialect);
+            ((ConnectionFactorySupport) connectionFactory).setDialect(dialect);
             return;
         }
         throw new RuntimeException("can't set dialect to ConnectionFactory. please fix #setDialect method.");
@@ -1194,7 +1340,7 @@ public class UniversalDaoTest {
     private void setDialect(DefaultDialect dialect, TransactionManagerConnection connection) {
         if (connection instanceof BasicDbConnection) {
             DbExecutionContext context = new DbExecutionContext(connection, dialect, TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
-            BasicDbConnection.class.cast(connection).setContext(context);
+            ((BasicDbConnection) connection).setContext(context);
             return;
         }
         throw new RuntimeException("can't set dialect to TransactionmanagerConnection. please fix #setDialect method.");

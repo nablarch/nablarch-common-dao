@@ -1,6 +1,5 @@
 package nablarch.common.dao.entity;
 
-import java.sql.Timestamp;
 import java.util.Date;
 
 import jakarta.persistence.Column;
