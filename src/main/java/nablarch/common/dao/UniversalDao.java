@@ -472,6 +472,7 @@ public final class UniversalDao {
      * @author kawasima
      * @author Hisaaki Shioiri
      */
+    @Published
     public abstract static class Transaction extends SimpleDbTransactionExecutor<Void> {
 
         /**
